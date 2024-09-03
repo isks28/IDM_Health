@@ -115,7 +115,6 @@ struct accelerometerDataView: View {
                             .cornerRadius(15)
                             .multilineTextAlignment(.center)
                     }
-                    .padding()
                     .onChange(of: isRecording) { _, newValue in
                         motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
                         
