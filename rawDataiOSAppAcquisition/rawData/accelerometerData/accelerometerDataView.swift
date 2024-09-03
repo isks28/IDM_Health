@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import CoreMotion
 
 struct accelerometerDataView: View {
     @StateObject private var motionManager = AccelerometerManager()
@@ -15,31 +14,68 @@ struct accelerometerDataView: View {
     @State private var endDate = Date().addingTimeInterval(3600)
     @State private var isRecordingRealTime = false
     @State private var isRecordingInterval = false
-    
+    @State private var samplingRate: Double = 60.0 // Default sampling rate
+
     var body: some View {
         VStack {
             Text("Accelerometer Data Acquisition")
                 .font(.title)
                 .foregroundStyle(Color.mint)
+                .padding(.top, 5)
+            Spacer()
             
-            TabView {
-                List(motionManager.accelerometerData, id: \.self) { data in
-                    Text(data)
-                }
-            }
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-            
-            if let latestData = motionManager.accelerometerData.last {
-                Text(latestData)
+            if motionManager.accelerometerData.last != nil {
+                Text("UserAcceleration Data")
+                    .font(.title2)
+                    .foregroundStyle(Color.pink)
                     .padding()
             } else {
                 Text("No Data")
                     .padding()
             }
             
+            // Simple Graph View
+            VStack{
+                if motionManager.accelerometerData.last != nil {
+                    Text("X-Axis")
+                        .font(.title3)
+                        .foregroundStyle(Color.gray)
+                } else {
+                }
+                AccelerometerGraphView(dataPoints: motionManager.accelerometerDataPointsX, lineColor: .red.opacity(0.5))
+                    .frame(height: 90)
+                if motionManager.accelerometerData.last != nil {
+                    Text("Y-Axis")
+                        .font(.title3)
+                        .foregroundStyle(Color.gray)
+                } else {
+                }
+                AccelerometerGraphView(dataPoints: motionManager.accelerometerDataPointsY, lineColor: .green.opacity(0.5))
+                    .frame(height: 90)
+                if motionManager.accelerometerData.last != nil {
+                    Text("Z-Axis")
+                        .font(.title3)
+                        .foregroundStyle(Color.gray)
+                } else {
+                }
+                AccelerometerGraphView(dataPoints: motionManager.accelerometerDataPointsZ, lineColor: .blue.opacity(0.5))
+                    .frame(height: 90)
+            }
+            // Sampling Rate Control
+            if !isRecording, !isRecordingInterval, !isRecordingRealTime{
+                VStack {
+                    Text("Sampling Rate: \(Int(samplingRate)) Hz")
+                    Slider(value: $samplingRate, in: 5...100, step: 5)
+                        .padding()
+                        .onChange(of: samplingRate) { oldRate, newRate in
+                            motionManager.updateSamplingRate(rate: newRate)
+                        }
+                }
+            }
+
             HStack {
                 Toggle("Real-Time", isOn: $isRecordingRealTime)
-                    .onChange(of: isRecordingRealTime) { oldValue, newValue in
+                    .onChange(of: isRecordingRealTime) { _, newValue in
                         isRecording = false
                         motionManager.stopAccelerometerDataCollection()
                         motionManager.savedFilePath = nil // Reset "File saved" text
@@ -50,7 +86,7 @@ struct accelerometerDataView: View {
                     }
                 
                 Toggle("Time-Interval", isOn: $isRecordingInterval)
-                    .onChange(of: isRecordingInterval) { oldValue, newValue in
+                    .onChange(of: isRecordingInterval) { _, newValue in
                         isRecording = false
                         motionManager.stopAccelerometerDataCollection()
                         motionManager.savedFilePath = nil // Reset "File saved" text
@@ -63,22 +99,24 @@ struct accelerometerDataView: View {
             .padding()
             
             VStack {
-                if isRecordingInterval {
+                if isRecordingInterval && !isRecording, motionManager.accelerometerData.last == nil {
                     DatePicker("Start Date and Time", selection: $startDate)
                         .datePickerStyle(CompactDatePickerStyle())
                     
                     DatePicker("End Date and Time", selection: $endDate)
                         .datePickerStyle(CompactDatePickerStyle())
-                    
+                }
+                    if isRecordingInterval{
                     Toggle(isOn: $isRecording) {
-                        Text("Turn the toggle on to start automatic Accelerometer Data retrieval")
+                        Text("Start timed recording")
                             .padding()
                             .background(isRecording ? Color.mint : Color.gray)
                             .foregroundColor(.white)
                             .cornerRadius(15)
+                            .multilineTextAlignment(.center)
                     }
                     .padding()
-                    .onChange(of: isRecording, initial: false) { oldValue, newValue in
+                    .onChange(of: isRecording) { _, newValue in
                         motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
                         
                         if newValue {
@@ -110,16 +148,42 @@ struct accelerometerDataView: View {
                             .foregroundColor(.white)
                             .cornerRadius(15)
                     }
-                    .padding()
                 }
-                
                 if motionManager.savedFilePath != nil {
                     Text("File saved")
                         .font(.footnote)
-                        .padding()
                 }
             }
             .padding()
+        }
+    }
+}
+
+struct AccelerometerGraphView: View {
+    var dataPoints: [Double]
+    var lineColor: Color
+
+    var body: some View {
+        GeometryReader { geometry in
+            Path { path in
+                guard dataPoints.count > 1 else { return }
+                
+                let width = geometry.size.width
+                let height = geometry.size.height
+                let maxValue = dataPoints.max() ?? 1
+                let minValue = dataPoints.min() ?? 0
+                let scaleX = width / CGFloat(dataPoints.count - 1)
+                let scaleY = height / CGFloat(maxValue - minValue)
+
+                path.move(to: CGPoint(x: 0, y: height - CGFloat(dataPoints[0] - minValue) * scaleY))
+                
+                for index in 1..<dataPoints.count {
+                    let x = CGFloat(index) * scaleX
+                    let y = height - CGFloat(dataPoints[index] - minValue) * scaleY
+                    path.addLine(to: CGPoint(x: x, y: y))
+                }
+            }
+            .stroke(lineColor, lineWidth: 2)
         }
     }
 }
