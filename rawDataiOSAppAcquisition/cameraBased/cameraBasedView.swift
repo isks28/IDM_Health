@@ -118,7 +118,7 @@ struct PreviewView: View {
             
             VStack {
                 Text("Preview screen")
-                    .font(.title)
+                    .font(.title2)
                     .foregroundStyle(Color(.systemMint))
                     .padding(.top, 100)
                 Spacer()
