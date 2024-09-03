@@ -21,7 +21,7 @@ struct mobilityView: View {
         let calendar = Calendar.current
             var components = DateComponents()
             components.year = 2024
-            components.month = 5
+            components.month = 1
             components.day = 1
             let customStartDate = calendar.date(from: components) ?? Date()
 

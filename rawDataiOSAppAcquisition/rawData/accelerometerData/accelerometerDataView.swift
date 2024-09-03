@@ -106,6 +106,7 @@ struct accelerometerDataView: View {
                     DatePicker("End Date and Time", selection: $endDate)
                         .datePickerStyle(CompactDatePickerStyle())
                 }
+                HStack{
                     if isRecordingInterval{
                     Toggle(isOn: $isRecording) {
                         Text(isRecording ? "Data will be fetched according to setted time interval":"Start timed recording")
@@ -128,9 +129,16 @@ struct accelerometerDataView: View {
                             motionManager.stopAccelerometerDataCollection()
                         }
                     }
+                        if motionManager.savedFilePath != nil {
+                            Text("File saved")
+                                .font(.footnote)
+                                .foregroundStyle(Color(.blue))
+                    }
+                }
                 }
                 
-                if isRecordingRealTime {
+                HStack{
+                    if isRecordingRealTime {
                     Button(action: {
                         motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
                         
@@ -146,11 +154,12 @@ struct accelerometerDataView: View {
                             .background(isRecording ? Color.gray : Color.mint)
                             .foregroundColor(.white)
                             .cornerRadius(15)
+                        if motionManager.savedFilePath != nil {
+                            Text("File saved")
+                                .font(.footnote)
                     }
                 }
-                if motionManager.savedFilePath != nil {
-                    Text("File saved")
-                        .font(.footnote)
+                    }
                 }
             }
             .padding()
