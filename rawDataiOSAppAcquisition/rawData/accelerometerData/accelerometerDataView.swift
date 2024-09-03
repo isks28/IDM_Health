@@ -108,7 +108,7 @@ struct accelerometerDataView: View {
                 }
                     if isRecordingInterval{
                     Toggle(isOn: $isRecording) {
-                        Text("Start timed recording")
+                        Text(isRecording ? "Data will be fetched according to setted time interval":"Start timed recording")
                             .padding()
                             .background(isRecording ? Color.mint : Color.gray)
                             .foregroundColor(.white)
