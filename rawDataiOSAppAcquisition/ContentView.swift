@@ -8,14 +8,32 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State var selectedTab = "Home"
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView(selection: $selectedTab) {
+            
+            healthKitView()
+                .tag("HealthKit")
+                .tabItem{
+                    Image(systemName: "figure.walk")
+                    Text("HealthKit")
+                }
+            
+            rawDataView()
+                .tag("CoreMotion")
+                .tabItem{
+                    Image(systemName: "gyroscope")
+                    Text("Raw Data")
+                }
+            
+            cameraBasedView()
+                .tag("AVFoundation")
+                .tabItem{
+                    Image(systemName: "camera.fill")
+                    Text("Photo and Video")
+                }
         }
-        .padding()
     }
 }
 

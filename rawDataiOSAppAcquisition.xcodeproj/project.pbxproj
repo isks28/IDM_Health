@@ -14,6 +14,23 @@
 		5A554E6D2C8705090081747B /* rawDataiOSAppAcquisitionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554E6C2C8705090081747B /* rawDataiOSAppAcquisitionTests.swift */; };
 		5A554E772C8705090081747B /* rawDataiOSAppAcquisitionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554E762C8705090081747B /* rawDataiOSAppAcquisitionUITests.swift */; };
 		5A554E792C8705090081747B /* rawDataiOSAppAcquisitionUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554E782C8705090081747B /* rawDataiOSAppAcquisitionUITestsLaunchTests.swift */; };
+		5A554E8F2C8705DB0081747B /* healthKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554E8E2C8705DB0081747B /* healthKitView.swift */; };
+		5A554E912C8705ED0081747B /* activityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554E902C8705ED0081747B /* activityView.swift */; };
+		5A554E932C8705F70081747B /* activityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554E922C8705F70081747B /* activityManager.swift */; };
+		5A554E952C8706080081747B /* mobilityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554E942C8706080081747B /* mobilityView.swift */; };
+		5A554E972C8706110081747B /* mobilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554E962C8706110081747B /* mobilityManager.swift */; };
+		5A554E992C87061E0081747B /* rawDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554E982C87061E0081747B /* rawDataView.swift */; };
+		5A554E9B2C8706310081747B /* accelerometerDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554E9A2C8706310081747B /* accelerometerDataView.swift */; };
+		5A554E9D2C87063D0081747B /* accelerometerDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554E9C2C87063D0081747B /* accelerometerDataManager.swift */; };
+		5A554E9F2C8706470081747B /* gyroscopeDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554E9E2C8706470081747B /* gyroscopeDataView.swift */; };
+		5A554EA12C87065A0081747B /* gyroscopeDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA02C87065A0081747B /* gyroscopeDataManager.swift */; };
+		5A554EA32C8706690081747B /* magnetometerDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA22C8706690081747B /* magnetometerDataView.swift */; };
+		5A554EA52C8706730081747B /* magnetometerDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA42C8706730081747B /* magnetometerDataManager.swift */; };
+		5A554EA72C8706810081747B /* rawDataAllView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA62C8706810081747B /* rawDataAllView.swift */; };
+		5A554EA92C87068D0081747B /* rawDataAllManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA82C87068D0081747B /* rawDataAllManager.swift */; };
+		5A554EAB2C87069D0081747B /* cameraBasedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAA2C87069D0081747B /* cameraBasedView.swift */; };
+		5A554EAD2C8706AA0081747B /* cameraBasedController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAC2C8706AA0081747B /* cameraBasedController.swift */; };
+		5A554EAF2C8706BE0081747B /* cameraBasedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +62,24 @@
 		5A554E722C8705090081747B /* rawDataiOSAppAcquisitionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = rawDataiOSAppAcquisitionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A554E762C8705090081747B /* rawDataiOSAppAcquisitionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataiOSAppAcquisitionUITests.swift; sourceTree = "<group>"; };
 		5A554E782C8705090081747B /* rawDataiOSAppAcquisitionUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataiOSAppAcquisitionUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		5A554E8E2C8705DB0081747B /* healthKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = healthKitView.swift; sourceTree = "<group>"; };
+		5A554E902C8705ED0081747B /* activityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = activityView.swift; sourceTree = "<group>"; };
+		5A554E922C8705F70081747B /* activityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = activityManager.swift; sourceTree = "<group>"; };
+		5A554E942C8706080081747B /* mobilityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mobilityView.swift; sourceTree = "<group>"; };
+		5A554E962C8706110081747B /* mobilityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mobilityManager.swift; sourceTree = "<group>"; };
+		5A554E982C87061E0081747B /* rawDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataView.swift; sourceTree = "<group>"; };
+		5A554E9A2C8706310081747B /* accelerometerDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = accelerometerDataView.swift; sourceTree = "<group>"; };
+		5A554E9C2C87063D0081747B /* accelerometerDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = accelerometerDataManager.swift; sourceTree = "<group>"; };
+		5A554E9E2C8706470081747B /* gyroscopeDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = gyroscopeDataView.swift; sourceTree = "<group>"; };
+		5A554EA02C87065A0081747B /* gyroscopeDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = gyroscopeDataManager.swift; sourceTree = "<group>"; };
+		5A554EA22C8706690081747B /* magnetometerDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = magnetometerDataView.swift; sourceTree = "<group>"; };
+		5A554EA42C8706730081747B /* magnetometerDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = magnetometerDataManager.swift; sourceTree = "<group>"; };
+		5A554EA62C8706810081747B /* rawDataAllView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllView.swift; sourceTree = "<group>"; };
+		5A554EA82C87068D0081747B /* rawDataAllManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllManager.swift; sourceTree = "<group>"; };
+		5A554EAA2C87069D0081747B /* cameraBasedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedView.swift; sourceTree = "<group>"; };
+		5A554EAC2C8706AA0081747B /* cameraBasedController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedController.swift; sourceTree = "<group>"; };
+		5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedManager.swift; sourceTree = "<group>"; };
+		5A554EB02C8708AA0081747B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,8 +130,12 @@
 		5A554E592C8705080081747B /* rawDataiOSAppAcquisition */ = {
 			isa = PBXGroup;
 			children = (
+				5A554EB02C8708AA0081747B /* Info.plist */,
 				5A554E5A2C8705080081747B /* rawDataiOSAppAcquisitionApp.swift */,
 				5A554E5C2C8705080081747B /* ContentView.swift */,
+				5A554E852C87053B0081747B /* healthKit */,
+				5A554E882C8705720081747B /* rawData */,
+				5A554E8D2C8705C10081747B /* cameraBased */,
 				5A554E5E2C8705090081747B /* Assets.xcassets */,
 				5A554E602C8705090081747B /* rawDataiOSAppAcquisition.entitlements */,
 				5A554E612C8705090081747B /* Preview Content */,
@@ -127,6 +166,92 @@
 				5A554E782C8705090081747B /* rawDataiOSAppAcquisitionUITestsLaunchTests.swift */,
 			);
 			path = rawDataiOSAppAcquisitionUITests;
+			sourceTree = "<group>";
+		};
+		5A554E852C87053B0081747B /* healthKit */ = {
+			isa = PBXGroup;
+			children = (
+				5A554E8E2C8705DB0081747B /* healthKitView.swift */,
+				5A554E862C8705560081747B /* activity */,
+				5A554E872C87055D0081747B /* mobility */,
+			);
+			path = healthKit;
+			sourceTree = "<group>";
+		};
+		5A554E862C8705560081747B /* activity */ = {
+			isa = PBXGroup;
+			children = (
+				5A554E902C8705ED0081747B /* activityView.swift */,
+				5A554E922C8705F70081747B /* activityManager.swift */,
+			);
+			path = activity;
+			sourceTree = "<group>";
+		};
+		5A554E872C87055D0081747B /* mobility */ = {
+			isa = PBXGroup;
+			children = (
+				5A554E942C8706080081747B /* mobilityView.swift */,
+				5A554E962C8706110081747B /* mobilityManager.swift */,
+			);
+			path = mobility;
+			sourceTree = "<group>";
+		};
+		5A554E882C8705720081747B /* rawData */ = {
+			isa = PBXGroup;
+			children = (
+				5A554E982C87061E0081747B /* rawDataView.swift */,
+				5A554E892C87058F0081747B /* accelerometerData */,
+				5A554E8A2C8705970081747B /* gyroscopeData */,
+				5A554E8B2C87059F0081747B /* magnetometerData */,
+				5A554E8C2C8705A60081747B /* rawDataAll */,
+			);
+			path = rawData;
+			sourceTree = "<group>";
+		};
+		5A554E892C87058F0081747B /* accelerometerData */ = {
+			isa = PBXGroup;
+			children = (
+				5A554E9A2C8706310081747B /* accelerometerDataView.swift */,
+				5A554E9C2C87063D0081747B /* accelerometerDataManager.swift */,
+			);
+			path = accelerometerData;
+			sourceTree = "<group>";
+		};
+		5A554E8A2C8705970081747B /* gyroscopeData */ = {
+			isa = PBXGroup;
+			children = (
+				5A554E9E2C8706470081747B /* gyroscopeDataView.swift */,
+				5A554EA02C87065A0081747B /* gyroscopeDataManager.swift */,
+			);
+			path = gyroscopeData;
+			sourceTree = "<group>";
+		};
+		5A554E8B2C87059F0081747B /* magnetometerData */ = {
+			isa = PBXGroup;
+			children = (
+				5A554EA22C8706690081747B /* magnetometerDataView.swift */,
+				5A554EA42C8706730081747B /* magnetometerDataManager.swift */,
+			);
+			path = magnetometerData;
+			sourceTree = "<group>";
+		};
+		5A554E8C2C8705A60081747B /* rawDataAll */ = {
+			isa = PBXGroup;
+			children = (
+				5A554EA62C8706810081747B /* rawDataAllView.swift */,
+				5A554EA82C87068D0081747B /* rawDataAllManager.swift */,
+			);
+			path = rawDataAll;
+			sourceTree = "<group>";
+		};
+		5A554E8D2C8705C10081747B /* cameraBased */ = {
+			isa = PBXGroup;
+			children = (
+				5A554EAA2C87069D0081747B /* cameraBasedView.swift */,
+				5A554EAC2C8706AA0081747B /* cameraBasedController.swift */,
+				5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */,
+			);
+			path = cameraBased;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -259,8 +384,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A554E972C8706110081747B /* mobilityManager.swift in Sources */,
+				5A554EA12C87065A0081747B /* gyroscopeDataManager.swift in Sources */,
+				5A554EAD2C8706AA0081747B /* cameraBasedController.swift in Sources */,
+				5A554E9B2C8706310081747B /* accelerometerDataView.swift in Sources */,
+				5A554E8F2C8705DB0081747B /* healthKitView.swift in Sources */,
+				5A554E912C8705ED0081747B /* activityView.swift in Sources */,
+				5A554E992C87061E0081747B /* rawDataView.swift in Sources */,
 				5A554E5D2C8705080081747B /* ContentView.swift in Sources */,
+				5A554E952C8706080081747B /* mobilityView.swift in Sources */,
+				5A554EA72C8706810081747B /* rawDataAllView.swift in Sources */,
+				5A554E9D2C87063D0081747B /* accelerometerDataManager.swift in Sources */,
+				5A554EA92C87068D0081747B /* rawDataAllManager.swift in Sources */,
+				5A554EAB2C87069D0081747B /* cameraBasedView.swift in Sources */,
+				5A554EAF2C8706BE0081747B /* cameraBasedManager.swift in Sources */,
+				5A554EA52C8706730081747B /* magnetometerDataManager.swift in Sources */,
+				5A554E932C8705F70081747B /* activityManager.swift in Sources */,
 				5A554E5B2C8705080081747B /* rawDataiOSAppAcquisitionApp.swift in Sources */,
+				5A554E9F2C8706470081747B /* gyroscopeDataView.swift in Sources */,
+				5A554EA32C8706690081747B /* magnetometerDataView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -349,6 +491,20 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Rear camera will be accessed to record photo or video";
+				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "the fetched data will be saved into documents directories";
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "This app need to access your health data";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app need to access your health data";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app need to access your health data";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationTemporaryUsageDescriptionDictionary = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone will be accessed to record audio during video recording";
+				INFOPLIST_KEY_NSMotionUsageDescription = "We use motion data to track your activity";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -404,6 +560,20 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Rear camera will be accessed to record photo or video";
+				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "the fetched data will be saved into documents directories";
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "This app need to access your health data";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app need to access your health data";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app need to access your health data";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationTemporaryUsageDescriptionDictionary = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone will be accessed to record audio during video recording";
+				INFOPLIST_KEY_NSMotionUsageDescription = "We use motion data to track your activity";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -424,8 +594,22 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = rawDataiOSAppAcquisition/Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Rear camera will be accessed to record photo or video";
+				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "the fetched data will be saved into documents directories";
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "This app need to access your health data";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app need to access your health data";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app need to access your health data";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationTemporaryUsageDescriptionDictionary = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone will be accessed to record audio during video recording";
+				INFOPLIST_KEY_NSMotionUsageDescription = "We use motion data to track your activity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
@@ -434,6 +618,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
@@ -462,8 +647,22 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = rawDataiOSAppAcquisition/Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Rear camera will be accessed to record photo or video";
+				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "the fetched data will be saved into documents directories";
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "This app need to access your health data";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app need to access your health data";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app need to access your health data";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationTemporaryUsageDescriptionDictionary = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone will be accessed to record audio during video recording";
+				INFOPLIST_KEY_NSMotionUsageDescription = "We use motion data to track your activity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
@@ -472,6 +671,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
