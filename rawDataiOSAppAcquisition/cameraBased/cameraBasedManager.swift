@@ -9,7 +9,7 @@ import UIKit
 import AVFoundation
 
 class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate {
-    
+
     private let captureSession = AVCaptureSession()
     private var videoPreviewLayer: AVCaptureVideoPreviewLayer!
     private var videoOutput: AVCaptureMovieFileOutput?
@@ -76,9 +76,26 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
             return
         }
 
-        let filename = UUID().uuidString + ".jpg"
-        let fileURL = documentsDirectory.appendingPathComponent(filename)
+        // Define the folder name
+        let folderName = "Recorded Photo and Video"
+        let folderURL = documentsDirectory.appendingPathComponent(folderName)
 
+        // Create the folder if it doesn't exist
+        if !FileManager.default.fileExists(atPath: folderURL.path) {
+            do {
+                try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
+                print("Created folder: \(folderURL.path)")
+            } catch {
+                print("Failed to create folder: \(error)")
+                return
+            }
+        }
+
+        // Generate a unique filename for the photo
+        let filename = UUID().uuidString + ".jpg"
+        let fileURL = folderURL.appendingPathComponent(filename)
+
+        // Save the photo data to the specified file path
         guard let data = image.jpegData(compressionQuality: 1.0) else { return }
 
         do {
@@ -96,9 +113,26 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
             return
         }
 
-        let filename = UUID().uuidString + ".mp4"
-        let fileURL = documentsDirectory.appendingPathComponent(filename)
+        // Define the folder name
+        let folderName = "Recorded Photo and Video"
+        let folderURL = documentsDirectory.appendingPathComponent(folderName)
 
+        // Create the folder if it doesn't exist
+        if !FileManager.default.fileExists(atPath: folderURL.path) {
+            do {
+                try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
+                print("Created folder: \(folderURL.path)")
+            } catch {
+                print("Failed to create folder: \(error)")
+                return
+            }
+        }
+
+        // Generate a unique filename for the video
+        let filename = UUID().uuidString + ".mp4"
+        let fileURL = folderURL.appendingPathComponent(filename)
+
+        // Move the video to the new location
         do {
             try FileManager.default.moveItem(at: videoURL, to: fileURL)
             print("Saved video to: \(fileURL.path)")
@@ -107,7 +141,7 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
             print("Failed to save video: \(error)")
         }
     }
-    
+
     // MARK: - AVCaptureFileOutputRecordingDelegate
 
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {

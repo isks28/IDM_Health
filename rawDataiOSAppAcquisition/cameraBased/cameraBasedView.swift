@@ -117,13 +117,17 @@ struct PreviewView: View {
             }
             
             VStack {
+                Text("Preview screen")
+                    .font(.title)
+                    .foregroundStyle(Color(.systemMint))
+                    .padding(.top, 100)
                 Spacer()
                 Button(action: onDismiss) {
                     Text("Close")
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
                         .padding()
-                        .background(Color.black.opacity(0.5))
+                        .background(Color.pink.opacity(0.25))
                         .cornerRadius(25)
                 }
                 .padding(.bottom, 180) // Adjust padding as needed for UI
