@@ -92,7 +92,7 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
             return
         }
         
-        let folderURL = documentsDirectory.appendingPathComponent("IMUData")
+        let folderURL = documentsDirectory.appendingPathComponent("Accelerometer Data")
         
         do {
             try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)

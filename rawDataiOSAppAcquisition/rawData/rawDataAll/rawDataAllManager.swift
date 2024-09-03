@@ -96,7 +96,7 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate{
             return
         }
         
-        let folderURL = documentsDirectory.appendingPathComponent("IMUData")
+        let folderURL = documentsDirectory.appendingPathComponent("IMU-Data")
         
         do {
             try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)

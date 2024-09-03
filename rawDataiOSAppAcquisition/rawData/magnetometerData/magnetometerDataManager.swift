@@ -72,7 +72,7 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
             return
         }
         
-        let folderURL = documentsDirectory.appendingPathComponent("IMUData")
+        let folderURL = documentsDirectory.appendingPathComponent("Magnetometer Data")
         
         do {
             try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
