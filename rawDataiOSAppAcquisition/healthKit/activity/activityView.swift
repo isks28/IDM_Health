@@ -381,6 +381,8 @@ struct BoxChartViewActivity: View {
     
     var body: some View {
         VStack(alignment: .leading) {
+                Text(title)
+                    .font(.headline)
             // Check if all values in the data are 0 or if there's no data at all
             if data.allSatisfy({ $0.value == 0 }) {
                 // Display "No Data" in the center of the chart area
@@ -389,9 +391,6 @@ struct BoxChartViewActivity: View {
                     .foregroundColor(.gray)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
-                Text(title)
-                    .font(.headline)
-                
                 // Show the chart when there is valid data
                 Chart {
                     ForEach(data) { item in
