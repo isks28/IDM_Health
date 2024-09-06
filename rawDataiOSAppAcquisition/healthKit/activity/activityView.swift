@@ -197,7 +197,15 @@ struct ChartWithTimeFramePicker: View {
     
     // State to control the selected time frame
     @State private var selectedTimeFrame: TimeFrame = .daily
-    @State private var currentPage: Int = 0 // Track the current page for paging behavior
+    
+    // Dictionary to track the current page for each time frame independently
+    @State private var currentPageForTimeFrames: [TimeFrame: Int] = [
+        .daily: 0,
+        .weekly: 0,
+        .monthly: 0,
+        .sixMonths: 0,
+        .yearly: 0
+    ]
     
     var body: some View {
         VStack {
@@ -211,13 +219,18 @@ struct ChartWithTimeFramePicker: View {
             .padding()
             
             // Display date title for each time frame and page
-            Text(getTitleForCurrentPage(timeFrame: selectedTimeFrame, page: currentPage))
+            Text(getTitleForCurrentPage(timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0))
                 .font(.title2)
                 .padding(.bottom)
             
             // Display the chart with horizontal paging
-            TabView(selection: $currentPage) {
-                if !data.isEmpty{
+            TabView(selection: Binding(
+                get: { currentPageForTimeFrames[selectedTimeFrame] ?? 0 },
+                set: { newValue in
+                    currentPageForTimeFrames[selectedTimeFrame] = newValue
+                }
+            )) {
+                if !data.isEmpty {
                     ForEach((0..<10).reversed(), id: \.self) { page in
                         BoxChartViewActivity(data: filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrame, page: page), timeFrame: selectedTimeFrame, title: title)
                             .tag(page)
@@ -248,7 +261,6 @@ struct ChartWithTimeFramePicker: View {
             filteredData = hourlyData
             
         case .weekly:
-            // Ensure the week always starts with Monday
             let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: calendar.date(byAdding: .weekOfYear, value: -page, to: now)!)
             let mondayOfWeek = calendar.date(from: components) ?? now
             
@@ -279,9 +291,11 @@ struct ChartWithTimeFramePicker: View {
         
         return filteredData
     }
-
-
     
+    // Same helper functions as before for aggregating data
+    // ...
+}
+
     // Aggregate data by hour for the daily time frame
     private func aggregateDataByHour(for date: Date, data: [ChartDataactivity]) -> [ChartDataactivity] {
         let calendar = Calendar.current
@@ -389,11 +403,19 @@ struct ChartWithTimeFramePicker: View {
             title = dateFormatter.string(from: pageDate)
             
         case .weekly:
-            let startOfWeek = calendar.date(byAdding: .weekOfYear, value: -page, to: now) ?? now
-            let endOfWeek = calendar.date(byAdding: .day, value: 6, to: startOfWeek) ?? now
-            dateFormatter.dateFormat = "MMM dd"
-            title = "\(dateFormatter.string(from: startOfWeek)) - \(dateFormatter.string(from: endOfWeek))"
-            
+                // Find the Monday of the current week
+                var components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: calendar.date(byAdding: .weekOfYear, value: -page, to: now)!)
+                components.weekday = 2 // Monday is the 2nd day of the week
+                
+                let mondayOfWeek = calendar.date(from: components) ?? now
+                let sundayOfWeek = calendar.date(byAdding: .day, value: 6, to: mondayOfWeek) ?? now
+                
+                dateFormatter.dateFormat = "MMM dd"
+                let mondayString = dateFormatter.string(from: mondayOfWeek)
+                let sundayString = dateFormatter.string(from: sundayOfWeek)
+                
+                title = "\(mondayString) - \(sundayString)" // Show Monday to Sunday
+                
         case .monthly:
             let pageDate = calendar.date(byAdding: .month, value: -page, to: now) ?? now
             dateFormatter.dateFormat = "MMMM yyyy"
@@ -413,7 +435,6 @@ struct ChartWithTimeFramePicker: View {
         
         return title
     }
-}
 
 struct ChartDataactivity: Identifiable {
     let id = UUID()
@@ -455,7 +476,7 @@ struct BoxChartViewActivity: View {
                         
                     case .weekly:
                         // Day marks for weekly view
-                        AxisMarks(values: stride(from: 0, through: 7, by: 1).map { $0 }) { value in
+                        AxisMarks(values: data.map { $0.date }) { value in
                             AxisValueLabel(format: .dateTime.weekday(.abbreviated))
                         }
                         
