@@ -241,7 +241,7 @@ struct ChartWithTimeFramePicker: View {
                 }
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never)) // Remove default page indicator for a smooth effect
-            .frame(height: 300)
+            .padding(.bottom)
             
             Spacer()
         }
@@ -264,7 +264,7 @@ struct ChartWithTimeFramePicker: View {
             let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: calendar.date(byAdding: .weekOfYear, value: -page, to: now)!)
             let mondayOfWeek = calendar.date(from: components) ?? now
             
-            let dailyData = (0..<7).map { offset -> ChartDataactivity in
+            let dailyData = (0..<8).map { offset -> ChartDataactivity in
                 let date = calendar.date(byAdding: .day, value: offset, to: mondayOfWeek)!
                 return aggregateDataByDay(for: date, data: data)
             }
@@ -297,42 +297,47 @@ struct ChartWithTimeFramePicker: View {
 }
 
     // Aggregate data by hour for the daily time frame
-    private func aggregateDataByHour(for date: Date, data: [ChartDataactivity]) -> [ChartDataactivity] {
-        let calendar = Calendar.current
-        var hourlyData: [ChartDataactivity] = []
-        
-        for hour in 0..<24 {
-            let startOfHour = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: date)!
-            let endOfHour = calendar.date(bySettingHour: hour, minute: 59, second: 59, of: date)!
-            
-            var hourlyValue = 0.0
-            
-            // Loop through all the data and distribute it properly
-            for item in data {
-                let sampleStart = item.date
-                let sampleEnd = calendar.date(byAdding: .second, value: Int(item.value), to: sampleStart) ?? sampleStart
-                
-                // Check if the sample overlaps with the current hour
-                if sampleStart <= endOfHour && sampleEnd >= startOfHour {
-                    // Calculate the overlap between this hour and the sample period
-                    let overlapStart = max(sampleStart, startOfHour)
-                    let overlapEnd = min(sampleEnd, endOfHour)
-                    
-                    let overlapDuration = overlapEnd.timeIntervalSince(overlapStart)
-                    let totalDuration = sampleEnd.timeIntervalSince(sampleStart)
-                    
-                    // Proportionally distribute the step count based on the overlap
-                    let proportion = overlapDuration / totalDuration
-                    hourlyValue += item.value * proportion
-                }
+private func aggregateDataByHour(for date: Date, data: [ChartDataactivity]) -> [ChartDataactivity] {
+    let calendar = Calendar.current
+    var hourlyData: [ChartDataactivity] = []
+
+    for hour in 0..<24 {
+        let startOfHour = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: date)!
+        let endOfHour = calendar.date(bySettingHour: hour, minute: 59, second: 59, of: date)!
+
+        var hourlyValue = 0.0
+
+        // Loop through all the data and aggregate it for the current hour range
+        for item in data {
+            let sampleStart = item.date
+            let sampleEnd = calendar.date(byAdding: .second, value: Int(item.value), to: sampleStart) ?? sampleStart
+
+            // Check if the sample overlaps with the current hour
+            if sampleStart <= endOfHour && sampleEnd >= startOfHour {
+                // Calculate the overlap between this hour and the sample period
+                let overlapStart = max(sampleStart, startOfHour)
+                let overlapEnd = min(sampleEnd, endOfHour)
+
+                let overlapDuration = overlapEnd.timeIntervalSince(overlapStart)
+                let totalDuration = sampleEnd.timeIntervalSince(sampleStart)
+
+                // Proportionally distribute the data based on the overlap
+                let proportion = overlapDuration / totalDuration
+                hourlyValue += item.value * proportion
             }
-            
-            // Append the data for this hour
-            hourlyData.append(ChartDataactivity(date: startOfHour, value: hourlyValue))
         }
-        
-        return hourlyData
+
+        // Append the data for this hour, showing the start and end of the hour
+        if hourlyValue > 0 {
+            hourlyData.append(ChartDataactivity(date: startOfHour, value: hourlyValue))
+        } else {
+            // Append even if there's no data for consistent display in the list and chart
+            hourlyData.append(ChartDataactivity(date: startOfHour, value: 0))
+        }
     }
+
+    return hourlyData
+}
 
 
     // Aggregate data by day for weekly and monthly time frames
@@ -446,12 +451,12 @@ struct BoxChartViewActivity: View {
     var data: [ChartDataactivity]
     var timeFrame: TimeFrame
     var title: String
-    
+
     var body: some View {
         VStack(alignment: .leading) {
             Text(title)
                 .font(.headline)
-            
+
             if data.allSatisfy({ $0.value == 0 }) {
                 Text("No Data")
                     .font(.headline)
@@ -464,6 +469,7 @@ struct BoxChartViewActivity: View {
                             x: .value("Date", item.date),
                             y: .value("Value", item.value)
                         )
+                        .offset(x: 6)
                     }
                 }
                 .chartXAxis {
@@ -472,26 +478,28 @@ struct BoxChartViewActivity: View {
                         // Hourly marks for daily view
                         AxisMarks(values: .automatic(desiredCount: 4)) { value in
                             AxisValueLabel(format: .dateTime.hour())
+                            AxisGridLine()
                         }
-                        
+
                     case .weekly:
                         // Day marks for weekly view
-                        AxisMarks(values: data.map { $0.date }) { value in
+                        AxisMarks(values: .automatic(desiredCount: 7)) { value in
                             AxisValueLabel(format: .dateTime.weekday(.abbreviated))
+                            AxisGridLine()
                         }
-                        
+
                     case .monthly:
                         // Date marks for monthly view (from the 1st to the end of the month)
-                        AxisMarks(values: stride(from: 1, through: 31, by: 1).map { $0 }) { value in
+                        AxisMarks(values: .automatic(desiredCount: 7)) { value in
                             AxisValueLabel(format: .dateTime.day())
                         }
-                        
+
                     case .sixMonths:
                         // Month marks for six months view
                         AxisMarks(values: stride(from: 1, through: 6, by: 1).map { $0 }) { value in
                             AxisValueLabel(format: .dateTime.month(.abbreviated))
                         }
-                        
+
                     case .yearly:
                         // Narrow month marks (first letter) for yearly view
                         AxisMarks(values: stride(from: 1, through: 12, by: 1).map { $0 }) { value in
@@ -499,6 +507,23 @@ struct BoxChartViewActivity: View {
                         }
                     }
                 }
+
+                // Scrollable List of Data below the chart
+                ScrollView {
+                    ForEach(data) { item in
+                        HStack {
+                            Text(formatDateForTimeFrame(item.date)) // Display date formatted based on time frame
+                            Spacer()
+                            Text("\(Int(item.value))") // Display value with 2 decimal places
+                        }
+                        .padding()
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .cornerRadius(8)
+                        .shadow(radius: 3)
+                        .padding(.horizontal)
+                    }
+                }
+                .frame(maxHeight: 200) // Restrict the height of the scrollable list
             }
         }
         .padding()
@@ -506,8 +531,53 @@ struct BoxChartViewActivity: View {
         .cornerRadius(8)
         .shadow(radius: 5)
     }
-}
 
+    // Helper function to format the date based on the selected time frame
+    private func formatDateForTimeFrame(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        let calendar = Calendar.current
+
+        switch timeFrame {
+        case .daily:
+            // Format as hour (24 Hours)
+            formatter.dateFormat = "HH"
+            return "\(formatter.string(from: date)) Hours"
+
+        case .weekly:
+            // Format as day of the week (e.g., Monday, Tuesday)
+            formatter.dateFormat = "EEEE"
+            return formatter.string(from: date)
+
+        case .monthly:
+            // Format as day of the month (e.g., 1st, 2nd, etc.)
+            formatter.dateFormat = "d"
+            let day = formatter.string(from: date)
+            return day + ordinalSuffix(for: day)
+
+        case .sixMonths, .yearly:
+            // Format as month (e.g., Jan, Feb)
+            formatter.dateFormat = "MMM"
+            return formatter.string(from: date)
+        }
+    }
+
+    // Helper function to provide the ordinal suffix for day (1st, 2nd, 3rd, etc.)
+    private func ordinalSuffix(for day: String) -> String {
+        guard let dayInt = Int(day) else { return "" }
+        switch dayInt {
+        case 11...13:
+            return "th"
+        case _ where dayInt % 10 == 1:
+            return "st"
+        case _ where dayInt % 10 == 2:
+            return "nd"
+        case _ where dayInt % 10 == 3:
+            return "rd"
+        default:
+            return "th"
+        }
+    }
+}
 
 #Preview {
     activityView()
