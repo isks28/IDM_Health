@@ -469,7 +469,7 @@ struct BoxChartViewActivity: View {
                             x: .value("Date", item.date),
                             y: .value("Value", item.value)
                         )
-                        .offset(x: 6)
+                        .offset(x: getOffsetForTimeFrame(timeFrame))
                     }
                 }
                 .chartXAxis {
@@ -531,6 +531,22 @@ struct BoxChartViewActivity: View {
         .cornerRadius(8)
         .shadow(radius: 5)
     }
+    
+    // Function to get the offset based on the time frame
+        private func getOffsetForTimeFrame(_ timeFrame: TimeFrame) -> CGFloat {
+            switch timeFrame {
+            case .daily:
+                return 6 // Offset for daily view
+            case .weekly:
+                return 15 // Offset for weekly view
+            case .monthly:
+                return 5 // Offset for monthly view
+            case .sixMonths:
+                return 2 // Offset for 6 months view
+            case .yearly:
+                return 0 // No offset for yearly view
+            }
+        }
 
     // Helper function to format the date based on the selected time frame
     private func formatDateForTimeFrame(_ date: Date) -> String {
@@ -539,9 +555,11 @@ struct BoxChartViewActivity: View {
 
         switch timeFrame {
         case .daily:
-            // Format as hour (24 Hours)
+                // Format as "HH-HH Hours" for daily view
             formatter.dateFormat = "HH"
-            return "\(formatter.string(from: date)) Hours"
+            let startHour = formatter.string(from: date)
+            let endHour = formatter.string(from: calendar.date(byAdding: .hour, value: 1, to: date) ?? date)
+            return "\(startHour)-\(endHour) Hours"
 
         case .weekly:
             // Format as day of the week (e.g., Monday, Tuesday)
