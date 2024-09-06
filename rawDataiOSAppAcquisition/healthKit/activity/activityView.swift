@@ -266,6 +266,9 @@ struct ChartWithTimeFramePicker: View {
             
             let dailyData = (0..<8).map { offset -> ChartDataactivity in
                 let date = calendar.date(byAdding: .day, value: offset, to: mondayOfWeek)!
+                if offset == 7 {
+                return ChartDataactivity(date: date, value: 0)
+                            }
                 return aggregateDataByDay(for: date, data: data)
             }
             filteredData = dailyData
@@ -485,6 +488,7 @@ struct BoxChartViewActivity: View {
                         // Day marks for weekly view
                         AxisMarks(values: .automatic(desiredCount: 7)) { value in
                             AxisValueLabel(format: .dateTime.weekday(.abbreviated))
+                                .offset(x: 5)
                             AxisGridLine()
                         }
 
@@ -510,7 +514,7 @@ struct BoxChartViewActivity: View {
 
                 // Scrollable List of Data below the chart
                 ScrollView {
-                    ForEach(data) { item in
+                    ForEach(timeFrame == .weekly ? Array(data.prefix(7)) : data) { item in
                         HStack {
                             Text(formatDateForTimeFrame(item.date)) // Display date formatted based on time frame
                             Spacer()
@@ -538,7 +542,7 @@ struct BoxChartViewActivity: View {
             case .daily:
                 return 6 // Offset for daily view
             case .weekly:
-                return 15 // Offset for weekly view
+                return 20 // Offset for weekly view
             case .monthly:
                 return 5 // Offset for monthly view
             case .sixMonths:
