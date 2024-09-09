@@ -564,6 +564,7 @@ struct BoxChartViewActivity: View {
                         .offset(x: getOffsetForTimeFrame(timeFrame))
                     }
                 }
+                .chartXScale(domain: getXScaleDomain())
                 .chartXAxis {
                     switch timeFrame {
                     case .daily:
@@ -696,7 +697,19 @@ struct BoxChartViewActivity: View {
             return "th"
         }
     }
-}
+    // Function to extend the X-axis range based on the data
+        private func getXScaleDomain() -> ClosedRange<Date> {
+            let calendar = Calendar.current
+            guard let firstDate = data.first?.date, let lastDate = data.last?.date else {
+                return Date()...Date()
+            }
+            
+            // Add one day to the last date to push the final bar away from the edge
+            let adjustedLastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
+            
+            return firstDate...adjustedLastDate
+        }
+    }
 
 #Preview {
     activityView()
