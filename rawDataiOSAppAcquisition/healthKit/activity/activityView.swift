@@ -207,8 +207,44 @@ struct ChartWithTimeFramePicker: View {
         .yearly: 0
     ]
     
+    // State for showing the popover
+    @State private var showInfoPopover: Bool = false
+    
     var body: some View {
         VStack {
+            
+            // Display additional information based on the selected section (Step Count, Active Energy, etc.)
+            HStack {
+                Text(getInformationText())
+                    .font(.headline)
+                    .padding(.top)
+                
+                Spacer()
+                
+                // Information button with popover
+                Button(action: {
+                    showInfoPopover.toggle()
+                }) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.blue)
+                        .padding(.top)
+                }
+                .popover(isPresented: $showInfoPopover) {
+                    // Popover content
+                    VStack(alignment: .leading) {
+                        Text("Additional Information")
+                            .font(.headline)
+                            .padding(.bottom, 5)
+                        Text(getDetailedInformation())
+                            .font(.body)
+                            .padding()
+                        Spacer()
+                    }
+                    .frame(width: 300, height: 200) // Customize popover size
+                }
+            }
+            .padding(.horizontal)
+            
             // Picker for selecting the time frame
             Picker("Time Frame", selection: $selectedTimeFrame) {
                 ForEach(TimeFrame.allCases, id: \.self) { timeFrame in
@@ -247,6 +283,39 @@ struct ChartWithTimeFramePicker: View {
         }
         .padding()
     }
+    
+    // Helper function to display different text based on the selected data section
+    private func getInformationText() -> String {
+        switch title {
+        case "Step Count":
+            return "This chart shows the number of steps recorded."
+        case "Active Energy Burned in KiloCalorie":
+            return "This chart shows the active energy burned, displayed in kilocalories"
+        case "Move Time (s)":
+            return "This chart shows the total move time, displayed in seconds."
+        case "Stand Time (s)":
+            return "This chart shows the total stand time, displayed in seconds."
+        default:
+            return "Data not available."
+        }
+    }
+    
+    // Helper function for detailed popover information
+    private func getDetailedInformation() -> String {
+        switch title {
+        case "Step Count":
+            return "Steps are recorded based on movement detected by the accelerometer. Steps are a great way to monitor physical activity."
+        case "Active Energy Burned in KiloCalorie":
+            return "Active energy is the amount of energy burned while engaging in physical activities. This is typically measured in kilocalories."
+        case "Move Time (s)":
+            return "Move time represents the time during which physical activity was recorded. It's measured in seconds."
+        case "Stand Time (s)":
+            return "Stand time is the total duration in which the user stood up and moved around during the day, measured in seconds."
+        default:
+            return "More information about this section is not available."
+        }
+    }
+}
     
     // Function to dynamically adjust the number of pages based on time frame
         private func getPageCount(for timeFrame: TimeFrame) -> Int {
@@ -313,7 +382,6 @@ struct ChartWithTimeFramePicker: View {
     
     // Same helper functions as before for aggregating data
     // ...
-}
 
 private func aggregateDataByHour(for date: Date, data: [ChartDataactivity]) -> [ChartDataactivity] {
     let calendar = Calendar.current
