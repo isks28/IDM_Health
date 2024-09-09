@@ -231,7 +231,7 @@ struct ChartWithTimeFramePicker: View {
                 }
             )) {
                 if !data.isEmpty {
-                    ForEach((0..<10).reversed(), id: \.self) { page in
+                    ForEach((0..<getPageCount(for: selectedTimeFrame)).reversed(), id: \.self) { page in
                         BoxChartViewActivity(data: filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrame, page: page), timeFrame: selectedTimeFrame, title: title)
                             .tag(page)
                             .padding(.horizontal)
@@ -247,6 +247,22 @@ struct ChartWithTimeFramePicker: View {
         }
         .padding()
     }
+    
+    // Function to dynamically adjust the number of pages based on time frame
+        private func getPageCount(for timeFrame: TimeFrame) -> Int {
+            switch timeFrame {
+            case .daily:
+                return 21  // 21 pages for daily (three week)
+            case .weekly:
+                return 16  // 16 pages for weekly (four month)
+            case .monthly:
+                return 12 // 12 pages for monthly (one year)
+            case .sixMonths:
+                return 6  // 6 pages for six months
+            case .yearly:
+                return 3  // 3 years
+            }
+        }
     
     // Function to filter and aggregate data based on the current page and time frame
     private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFrame: TimeFrame, page: Int) -> [ChartDataactivity] {
@@ -536,7 +552,7 @@ struct BoxChartViewActivity: View {
         .shadow(radius: 5)
     }
     
-    // Function to get the offset based on the time frame
+    // Function to get the offset based on the time frame. Offset to set the position of the X-Axis Label
         private func getOffsetForTimeFrame(_ timeFrame: TimeFrame) -> CGFloat {
             switch timeFrame {
             case .daily:
