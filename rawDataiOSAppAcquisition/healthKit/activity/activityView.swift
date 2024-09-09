@@ -382,11 +382,17 @@ struct ChartWithTimeFramePicker: View {
             filteredData = monthlyData
             
         case .yearly:
-            let pageDate = calendar.date(byAdding: .year, value: -page, to: now) ?? now
-            let monthlyData = aggregateDataByMonth(for: pageDate, data: data, months: 12)
-            filteredData = monthlyData
+                // Set up to aggregate data from January to December of the current year
+            let selectedYear = calendar.component(.year, from: now)
+                
+            let startOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 1))!
+            let endOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 12, day: 31))!
+                
+            // Aggregate data by month from January to December of the selected year
+            let monthlyData = aggregateDataByMonth(for: startOfYear, data: data, months: 12)
+                filteredData = monthlyData
         }
-        
+            
         return filteredData
     }
     
@@ -559,7 +565,7 @@ struct BoxChartViewActivity: View {
                     ForEach(data) { item in
                         BarMark(
                             x: .value("Date", item.date),
-                            y: .value("Value", item.value)
+                            y: .value("Value", title == "Active Energy Burned in KiloCalorie" ? item.value / 1000 : item.value)
                         )
                         .offset(x: getOffsetForTimeFrame(timeFrame))
                     }
@@ -592,14 +598,19 @@ struct BoxChartViewActivity: View {
 
                     case .sixMonths:
                         // Month marks for six months view
-                        AxisMarks(values: stride(from: 1, through: 6, by: 1).map { $0 }) { value in
+                        AxisMarks(values: .stride(by: .month)) { value in
                             AxisValueLabel(format: .dateTime.month(.abbreviated))
+                                .offset(x: 8)
+                            AxisGridLine()
                         }
 
                     case .yearly:
                         // Narrow month marks (first letter) for yearly view
-                        AxisMarks(values: stride(from: 1, through: 12, by: 1).map { $0 }) { value in
-                            AxisValueLabel(format: .dateTime.month(.narrow))
+                        AxisMarks(values: .automatic(desiredCount: 12)) { value in
+                            AxisValueLabel(format: 
+                                .dateTime.month(.narrow))
+                            .offset(x: 2.5)
+                            AxisGridLine()
                         }
                     }
                 }
@@ -644,9 +655,9 @@ struct BoxChartViewActivity: View {
             case .monthly:
                 return 5 // Offset for monthly view
             case .sixMonths:
-                return 2 // Offset for 6 months view
+                return 10 // Offset for 6 months view
             case .yearly:
-                return 0 // No offset for yearly view
+                return 10 // No offset for yearly view
             }
         }
 
@@ -708,7 +719,16 @@ struct BoxChartViewActivity: View {
             if timeFrame == .monthly {
                 let adjustedLastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
                 return firstDate...adjustedLastDate
-            } else {
+            }
+            if timeFrame == .sixMonths {
+                let adjustedLastDate = calendar.date(byAdding: .day, value: 15, to: lastDate) ?? lastDate
+                return firstDate...adjustedLastDate
+            }
+            if timeFrame == .yearly {
+                let adjustedLastDate = calendar.date(byAdding: .month, value: 1, to: lastDate) ?? lastDate
+                return firstDate...adjustedLastDate
+            }
+            else {
                 // For other time frames, use the default range from first to last date
                 return firstDate...lastDate
             }
