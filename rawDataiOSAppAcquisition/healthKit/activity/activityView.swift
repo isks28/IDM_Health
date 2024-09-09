@@ -105,7 +105,7 @@ struct activityView: View {
                                     .foregroundStyle(Color.pink)
                             }
                             .sheet(isPresented: $showingActiveEnergyChart) {
-                                ChartWithTimeFramePicker(title: "Active Energy Burned in KiloCalorie", data: healthKitManager.activeEnergyBurnedData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.largeCalorie())) })
+                                ChartWithTimeFramePicker(title: "Active Energy Burned in KiloCalorie", data: healthKitManager.activeEnergyBurnedData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.smallCalorie())) })
                             }
                         }
                         .padding(.bottom, 10)
@@ -315,7 +315,6 @@ struct ChartWithTimeFramePicker: View {
     // ...
 }
 
-    // Aggregate data by hour for the daily time frame
 private func aggregateDataByHour(for date: Date, data: [ChartDataactivity]) -> [ChartDataactivity] {
     let calendar = Calendar.current
     var hourlyData: [ChartDataactivity] = []
@@ -347,51 +346,47 @@ private func aggregateDataByHour(for date: Date, data: [ChartDataactivity]) -> [
         }
 
         // Append the data for this hour, showing the start and end of the hour
-        if hourlyValue > 0 {
-            hourlyData.append(ChartDataactivity(date: startOfHour, value: hourlyValue))
-        } else {
-            // Append even if there's no data for consistent display in the list and chart
-            hourlyData.append(ChartDataactivity(date: startOfHour, value: 0))
-        }
+        hourlyData.append(ChartDataactivity(date: startOfHour, value: hourlyValue))
     }
 
     return hourlyData
 }
 
 
-    // Aggregate data by day for weekly and monthly time frames
-    private func aggregateDataByDay(for date: Date, data: [ChartDataactivity]) -> ChartDataactivity {
-        let calendar = Calendar.current
-        
-        // Define the start and end of the day
-        let startOfDay = calendar.startOfDay(for: date)
-        let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: date)!
-        
-        var dailyValue = 0.0
-        
-        // Loop through all the data to sum the values for the day
-        for item in data {
-            let sampleStart = item.date
-            let sampleEnd = calendar.date(byAdding: .second, value: Int(item.value), to: sampleStart) ?? sampleStart
-            
-            // Check if the sample overlaps with the current day
-            if sampleStart <= endOfDay && sampleEnd >= startOfDay {
-                // Calculate the overlap between this day and the sample period
-                let overlapStart = max(sampleStart, startOfDay)
-                let overlapEnd = min(sampleEnd, endOfDay)
-                
-                let overlapDuration = overlapEnd.timeIntervalSince(overlapStart)
-                let totalDuration = sampleEnd.timeIntervalSince(sampleStart)
-                
-                // Proportionally distribute the step count based on the overlap
-                let proportion = overlapDuration / totalDuration
-                dailyValue += item.value * proportion
-            }
+
+private func aggregateDataByDay(for date: Date, data: [ChartDataactivity]) -> ChartDataactivity {
+    let calendar = Calendar.current
+
+    // Define the start and end of the day
+    let startOfDay = calendar.startOfDay(for: date)
+    let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: date)!
+
+    var dailyValue = 0.0
+
+    // Loop through all the data to sum the values for the day
+    for item in data {
+        let sampleStart = item.date
+        let sampleEnd = calendar.date(byAdding: .second, value: Int(item.value), to: sampleStart) ?? sampleStart
+
+        // Check if the sample overlaps with the current day
+        if sampleStart <= endOfDay && sampleEnd >= startOfDay {
+            // Calculate the overlap between this day and the sample period
+            let overlapStart = max(sampleStart, startOfDay)
+            let overlapEnd = min(sampleEnd, endOfDay)
+
+            let overlapDuration = overlapEnd.timeIntervalSince(overlapStart)
+            let totalDuration = sampleEnd.timeIntervalSince(sampleStart)
+
+            // Proportionally distribute the data based on the overlap
+            let proportion = overlapDuration / totalDuration
+            dailyValue += item.value * proportion
         }
-        
-        // Return the aggregated data for the entire day
-        return ChartDataactivity(date: startOfDay, value: dailyValue)
     }
+
+    // Return the aggregated data for the entire day, even if there's no data (returning 0 in that case)
+    return ChartDataactivity(date: startOfDay, value: dailyValue)
+}
+
 
 
     // Aggregate data by month for 6-month and yearly time frames
@@ -534,7 +529,13 @@ struct BoxChartViewActivity: View {
                         HStack {
                             Text(formatDateForTimeFrame(item.date)) // Display date formatted based on time frame
                             Spacer()
-                            Text("\(Int(item.value))") // Display value with 2 decimal places
+                            
+                            // Apply division by 1000 if the title indicates it's the Active Energy Burned section
+                            if title == "Active Energy Burned in KiloCalorie" {
+                                Text("\(String(format: "%.0f", item.value / 1000)) kcal") // Convert to kiloCalories
+                            } else {
+                                Text("\(String(format: "%.0f", item.value))") // Display value without conversion
+                            }
                         }
                         .padding()
                         .background(Color(UIColor.secondarySystemBackground))
