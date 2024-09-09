@@ -360,11 +360,21 @@ struct ChartWithTimeFramePicker: View {
             
         case .monthly:
             let pageDate = calendar.date(byAdding: .month, value: -page, to: now) ?? now
-            let dailyData = (0..<30).map { offset -> ChartDataactivity in
-                let date = calendar.date(byAdding: .day, value: offset, to: pageDate)!
+            
+            // Get the first day of the month
+            let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: pageDate))!
+            
+            // Calculate the number of days in the month
+            let range = calendar.range(of: .day, in: .month, for: startOfMonth)!
+            let numberOfDaysInMonth = range.count
+            
+            // Aggregate data for each day of the month
+            let dailyData = (0..<numberOfDaysInMonth).map { offset -> ChartDataactivity in
+                let date = calendar.date(byAdding: .day, value: offset, to: startOfMonth)!
                 return aggregateDataByDay(for: date, data: data)
             }
             filteredData = dailyData
+
             
         case .sixMonths:
             let pageDate = calendar.date(byAdding: .month, value: -(page * 6), to: now) ?? now
@@ -573,8 +583,10 @@ struct BoxChartViewActivity: View {
 
                     case .monthly:
                         // Date marks for monthly view (from the 1st to the end of the month)
-                        AxisMarks(values: .automatic(desiredCount: 7)) { value in
+                        AxisMarks(values: .automatic) { value in
                             AxisValueLabel(format: .dateTime.day())
+                                .offset(x: -(2))
+                            AxisGridLine()
                         }
 
                     case .sixMonths:
