@@ -697,17 +697,21 @@ struct BoxChartViewActivity: View {
             return "th"
         }
     }
-    // Function to extend the X-axis range based on the data
+    // Function to extend the X-axis range based on the data for monthly time frame
         private func getXScaleDomain() -> ClosedRange<Date> {
             let calendar = Calendar.current
             guard let firstDate = data.first?.date, let lastDate = data.last?.date else {
-                return Date()...Date()
+                return Date()...Date() // Fallback to current date
             }
             
-            // Add one day to the last date to push the final bar away from the edge
-            let adjustedLastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
-            
-            return firstDate...adjustedLastDate
+            // Only extend the last date if the timeFrame is .monthly
+            if timeFrame == .monthly {
+                let adjustedLastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
+                return firstDate...adjustedLastDate
+            } else {
+                // For other time frames, use the default range from first to last date
+                return firstDate...lastDate
+            }
         }
     }
 
