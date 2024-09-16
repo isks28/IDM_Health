@@ -216,31 +216,35 @@ struct ChartWithTimeFramePicker: View {
             // Display additional information based on the selected section (Step Count, Active Energy, etc.)
             HStack {
                 Text(getInformationText())
-                    .font(.headline)
+                    .font(.subheadline)
                     .padding(.top)
-                
-                Spacer()
+                    .multilineTextAlignment(.center)
                 
                 // Information button with popover
                 Button(action: {
                     showInfoPopover.toggle()
                 }) {
                     Image(systemName: "info.circle")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.pink)
                         .padding(.top)
                 }
                 .popover(isPresented: $showInfoPopover) {
                     // Popover content
                     VStack(alignment: .leading) {
                         Text("Additional Information")
-                            .font(.headline)
-                            .padding(.bottom, 5)
-                        Text(getDetailedInformation())
+                            .font(.title)
+                            .padding(.bottom, 7)
+                            .foregroundStyle(Color.pink)
+                        Text(measuredUsing())
                             .font(.body)
-                            .padding()
-                        Spacer()
+                            .padding(.bottom, 3)
+                        Text(useCase())
+                            .font(.body)
+                            .padding(.bottom, 3)
+                        Text(normalRange())
+                            .font(.body)
                     }
-                    .frame(width: 300, height: 200) // Customize popover size
+                    .frame(width: 300, height: 400) // Customize popover size
                 }
             }
             .padding(.horizontal)
@@ -288,25 +292,53 @@ struct ChartWithTimeFramePicker: View {
     private func getInformationText() -> String {
         switch title {
         case "Step Count":
-            return "This chart shows the number of steps recorded."
+            return "Number of Steps taken"
         case "Active Energy Burned in KiloCalorie":
-            return "This chart shows the active energy burned, displayed in kilocalories"
+            return "Amount of Energy burned (Calories) through physical activity, excluding Energy burned at Rest (basal metabolic rate)"
         case "Move Time (s)":
-            return "This chart shows the total move time, displayed in seconds."
+            return "Amount of time spent performing activities that involve full-body movements during the specified day."
         case "Stand Time (s)":
-            return "This chart shows the total stand time, displayed in seconds."
+            return "Amount of time has spent standing"
         default:
             return "Data not available."
         }
     }
     
     // Helper function for detailed popover information
-    private func getDetailedInformation() -> String {
+    private func measuredUsing() -> String {
         switch title {
         case "Step Count":
-            return "Steps are recorded based on movement detected by the accelerometer. Steps are a great way to monitor physical activity."
+            return "MEASURED USING: Accelerometer and Gyroscope"
         case "Active Energy Burned in KiloCalorie":
-            return "Active energy is the amount of energy burned while engaging in physical activities. This is typically measured in kilocalories."
+            return "Measured using: Accelerometer, Gyroscope and GPS. Use Case: Managing weight, metabolic conditions, diabetes, cardiovascular diseases"
+        case "Move Time (s)":
+            return "Move time represents the time during which physical activity was recorded. It's measured in seconds."
+        case "Stand Time (s)":
+            return "Stand time is the total duration in which the user stood up and moved around during the day, measured in seconds."
+        default:
+            return "More information about this section is not available."
+        }
+    }
+    private func useCase() -> String {
+        switch title {
+        case "Step Count":
+            return "USE CASE: Cardiovascular Diseases, Diabetes, Parkinson Diseases, Musculoskeletal Issues such as Arthritis"
+        case "Active Energy Burned in KiloCalorie":
+            return "Measured using: Accelerometer, Gyroscope and GPS. Use Case: Managing weight, metabolic conditions, diabetes, cardiovascular diseases"
+        case "Move Time (s)":
+            return "Move time represents the time during which physical activity was recorded. It's measured in seconds."
+        case "Stand Time (s)":
+            return "Stand time is the total duration in which the user stood up and moved around during the day, measured in seconds."
+        default:
+            return "More information about this section is not available."
+        }
+    }
+    private func normalRange() -> String {
+        switch title {
+        case "Step Count":
+            return "NORMAL RANGE: 10.000 per Day"
+        case "Active Energy Burned in KiloCalorie":
+            return "Measured using: Accelerometer, Gyroscope and GPS. Use Case: Managing weight, metabolic conditions, diabetes, cardiovascular diseases"
         case "Move Time (s)":
             return "Move time represents the time during which physical activity was recorded. It's measured in seconds."
         case "Stand Time (s)":
@@ -386,7 +418,7 @@ struct ChartWithTimeFramePicker: View {
             let selectedYear = calendar.component(.year, from: now)
                 
             let startOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 1))!
-            let endOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 12, day: 31))!
+            _ = calendar.date(from: DateComponents(year: selectedYear, month: 12, day: 31))!
                 
             // Aggregate data by month from January to December of the selected year
             let monthlyData = aggregateDataByMonth(for: startOfYear, data: data, months: 12)
@@ -672,7 +704,7 @@ struct BoxChartViewActivity: View {
             formatter.dateFormat = "HH"
             let startHour = formatter.string(from: date)
             let endHour = formatter.string(from: calendar.date(byAdding: .hour, value: 1, to: date) ?? date)
-            return "\(startHour)-\(endHour) Hours"
+            return "\(startHour)-\(endHour)"
 
         case .weekly:
             // Format as day of the week (e.g., Monday, Tuesday)
