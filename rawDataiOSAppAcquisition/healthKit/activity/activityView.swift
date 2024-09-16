@@ -261,7 +261,40 @@ struct ChartWithTimeFramePicker: View {
             // Display date title for each time frame and page
             Text(getTitleForCurrentPage(timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0))
                 .font(.title2)
-                .padding(.bottom)
+                .padding(.bottom, 8)
+            
+            // Filter the data for the current page and time frame
+            let filteredData = filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0)
+
+            
+            // Calculate sum and average
+            let (sum, average) = calculateSumAndAverage(for: selectedTimeFrame, data: filteredData)
+
+            // Display correct title for total or average
+            Text(getTitleForMetric())
+                .font(.headline)
+
+            // Conditional display: show total for daily view, average for others
+            if title != "Active Energy Burned in KiloCalorie" && selectedTimeFrame == .daily {
+                Text(sum == 0 ? "--" : "\(String(format: "%.0f", sum))")
+                    .font(.headline)
+                    .foregroundStyle(Color.mint)
+            } 
+            if title == "Active Energy Burned in KiloCalorie" && selectedTimeFrame == .daily {
+                Text(sum == 0 ? "--" : "\(String(format: "%.2f", sum/1000))")
+                    .font(.headline)
+                    .foregroundStyle(Color.mint)
+            } 
+            if title == "Active Energy Burned in KiloCalorie" && selectedTimeFrame != .daily {
+                Text(sum == 0 ? "--" : "\(String(format: "%.2f", average/1000))")
+                    .font(.headline)
+                    .foregroundStyle(Color.mint)
+            }
+            if title != "Active Energy Burned in KiloCalorie" && selectedTimeFrame != .daily {
+                Text(average == 0 ? "--" : "\(String(format: "%.0f", average))")
+                    .font(.headline)
+                    .foregroundStyle(Color.mint)
+            }
             
             // Display the chart with horizontal paging
             TabView(selection: Binding(
@@ -287,6 +320,59 @@ struct ChartWithTimeFramePicker: View {
         }
         .padding()
     }
+    
+    private func calculateSumAndAverage(for timeFrame: TimeFrame, data: [ChartDataactivity]) -> (sum: Double, average: Double) {
+        let totalSum = data.map { $0.value }.reduce(0, +)
+        let count: Int
+        
+        switch timeFrame {
+        case .daily:
+            count = 1
+        case .weekly:
+            count = 7
+        case .monthly:
+            let calendar = Calendar.current
+            let range = calendar.range(of: .day, in: .month, for: Date())!
+            count = range.count
+        case .sixMonths:
+            count = 6 * 30 // Approximation, assuming 30 days in each month
+        case .yearly:
+            count = 365 // Assuming non-leap year
+        }
+        
+        let average = totalSum / Double(count)
+        return (sum: totalSum, average: average)
+    }
+    
+    private func getTitleForMetric() -> String {
+        let prefix: String
+        let dataType: String
+        
+        // Determine the prefix based on the selected time frame
+        if selectedTimeFrame == .daily {
+            prefix = "Total"
+        } else {
+            prefix = "Average"
+        }
+        
+        // Determine the data type based on the title of the chart
+        switch title {
+        case "Step Count":
+            dataType = "Step Count"
+        case "Active Energy Burned in KiloCalorie":
+            dataType = "Active Energy Burned in KCal"
+        case "Move Time (s)":
+            dataType = "Move Time in s"
+        case "Stand Time (s)":
+            dataType = "Stand Time in s"
+        default:
+            dataType = "Data"
+        }
+        
+        return "\(prefix) \(dataType)"
+    }
+
+
     
     // Helper function to display different text based on the selected data section
     private func getInformationText() -> String {
@@ -687,7 +773,7 @@ struct BoxChartViewActivity: View {
             case .monthly:
                 return 5 // Offset for monthly view
             case .sixMonths:
-                return 10 // Offset for 6 months view
+                return 0 // Offset for 6 months view
             case .yearly:
                 return 10 // No offset for yearly view
             }
