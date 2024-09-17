@@ -48,127 +48,55 @@ class ActivityManager: ObservableObject {
     }
     
     func fetchActivityData(startDate: Date, endDate: Date) {
-        fetchStepCountData(startDate: startDate, endDate: endDate)
-        fetchActiveEnergyBurnedData(startDate: startDate, endDate: endDate)
-        fetchAppleMoveTimeData(startDate: startDate, endDate: endDate)
-        fetchAppleStandTimeData(startDate: startDate, endDate: endDate)
+        fetchAggregatedData(for: .stepCount, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in
+            self.stepCountData = result
+        }
+        fetchAggregatedData(for: .activeEnergyBurned, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in
+            self.activeEnergyBurnedData = result
+        }
+        fetchAggregatedData(for: .appleMoveTime, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in
+            self.appleMoveTimeData = result
+        }
+        fetchAggregatedData(for: .appleStandTime, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in
+            self.appleStandTimeData = result
+        }
     }
     
-    private func fetchStepCountData(startDate: Date, endDate: Date) {
-            guard let stepCountType = HKQuantityType.quantityType(forIdentifier: .stepCount) else {
-                print("Step Count Type is unavailable")
-                return
-            }
-            
-            let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
-            
-            let query = HKSampleQuery(sampleType: stepCountType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { query, results, error in
-                if let error = error {
-                    print("Failed to fetch step count data: \(error.localizedDescription)")
-                    return
-                }
-                
-                guard let results = results as? [HKQuantitySample] else {
-                    print("No step count data found")
-                    return
-                }
-                
-                DispatchQueue.main.async {
-                    self.stepCountData = results
-                    print("Fetched \(results.count) step count samples")
-                }
-            }
-            
-            healthStore.execute(query)
+    private func fetchAggregatedData(for identifier: HKQuantityTypeIdentifier, startDate: Date, endDate: Date, interval: DateComponents, completion: @escaping ([HKQuantitySample]) -> Void) {
+        guard let quantityType = HKQuantityType.quantityType(forIdentifier: identifier) else {
+            print("\(identifier.rawValue) Type is unavailable")
+            return
         }
         
-        private func fetchActiveEnergyBurnedData(startDate: Date, endDate: Date) {
-            guard let activeEnergyBurnedType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) else {
-                print("Active Energy Burned Type is unavailable")
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+        let query = HKStatisticsCollectionQuery(quantityType: quantityType, quantitySamplePredicate: predicate, options: .cumulativeSum, anchorDate: startDate, intervalComponents: interval)
+        
+        query.initialResultsHandler = { _, results, error in
+            if let error = error {
+                print("Failed to fetch \(identifier.rawValue) data: \(error.localizedDescription)")
                 return
             }
             
-            let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
-            
-            let query = HKSampleQuery(sampleType: activeEnergyBurnedType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { query, results, error in
-                if let error = error {
-                    print("Failed to fetch active energy burned data: \(error.localizedDescription)")
-                    return
-                }
-                
-                guard let results = results as? [HKQuantitySample] else {
-                    print("No active energy burned data found")
-                    return
-                }
-                
-                DispatchQueue.main.async {
-                    self.activeEnergyBurnedData = results
-                    print("Fetched \(results.count) active energy burned samples")
+            var aggregatedData: [HKQuantitySample] = []
+            results?.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
+                if let sumQuantity = statistics.sumQuantity() {
+                    let sample = HKQuantitySample(type: quantityType, quantity: sumQuantity, start: statistics.startDate, end: statistics.endDate)
+                    aggregatedData.append(sample)
                 }
             }
             
-            healthStore.execute(query)
+            DispatchQueue.main.async {
+                completion(aggregatedData)
+                print("Fetched \(aggregatedData.count) hourly samples for \(identifier.rawValue)")
+            }
         }
         
-        private func fetchAppleMoveTimeData(startDate: Date, endDate: Date) {
-            guard let appleMoveTimeType = HKQuantityType.quantityType(forIdentifier: .appleMoveTime) else {
-                print("Apple Move Time Type is unavailable")
-                return
-            }
-            
-            let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
-            
-            let query = HKSampleQuery(sampleType: appleMoveTimeType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { query, results, error in
-                if let error = error {
-                    print("Failed to fetch apple move time data: \(error.localizedDescription)")
-                    return
-                }
-                
-                guard let results = results as? [HKQuantitySample] else {
-                    print("No apple move time data found")
-                    return
-                }
-                
-                DispatchQueue.main.async {
-                    self.appleMoveTimeData = results
-                    print("Fetched \(results.count) apple move time samples")
-                }
-            }
-            
-            healthStore.execute(query)
-        }
-        
-        private func fetchAppleStandTimeData(startDate: Date, endDate: Date) {
-            guard let appleStandTimeType = HKQuantityType.quantityType(forIdentifier: .appleStandTime) else {
-                print("Apple Stand Time Type is unavailable")
-                return
-            }
-            
-            let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
-            
-            let query = HKSampleQuery(sampleType: appleStandTimeType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { query, results, error in
-                if let error = error {
-                    print("Failed to fetch apple stand time data: \(error.localizedDescription)")
-                    return
-                }
-                
-                guard let results = results as? [HKQuantitySample] else {
-                    print("No apple stand time data found")
-                    return
-                }
-                
-                DispatchQueue.main.async {
-                    self.appleStandTimeData = results
-                    print("Fetched \(results.count) apple stand time samples")
-                }
-            }
-            
-            healthStore.execute(query)
-        }
+        healthStore.execute(query)
+    }
     
     func saveDataAsCSV() {
         saveCSV(for: stepCountData, fileName: "step_count_data.csv", valueUnit: HKUnit.count(), unitLabel: "Count")
-        saveCSV(for: activeEnergyBurnedData, fileName: "active_energy_burned_data.csv", valueUnit: HKUnit.largeCalorie(), unitLabel: "Kilo Calories")
+        saveCSV(for: activeEnergyBurnedData, fileName: "active_energy_burned_data.csv", valueUnit: HKUnit.largeCalorie(), multiplier: 1.0, unitLabel: "Kilo Calories")
         saveCSV(for: appleMoveTimeData, fileName: "move_time_data.csv", valueUnit: HKUnit.second(), unitLabel: "Seconds")
         saveCSV(for: appleStandTimeData, fileName: "apple_stand_time_data.csv", valueUnit: HKUnit.second(), unitLabel: "Seconds")
     }
@@ -182,7 +110,7 @@ class ActivityManager: ObservableObject {
             let value = sample.quantity.doubleValue(for: valueUnit) * multiplier
             let date = sample.startDate
             let dateString = dateFormatter.string(from: date)
-            csvString += "\(dateString),\(value) \(unitLabel)\n"
+            csvString += "\(dateString),\(value)\n"
         }
         
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
@@ -202,7 +130,6 @@ class ActivityManager: ObservableObject {
         let fileURL = folderURL.appendingPathComponent(fileName)
         
         do {
-            print("Attempting to save file at \(fileURL.path)")
             try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
             print("File saved at \(fileURL.path)")
             savedFilePath = fileURL.path

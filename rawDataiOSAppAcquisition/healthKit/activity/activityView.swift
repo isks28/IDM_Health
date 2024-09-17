@@ -335,9 +335,9 @@ struct ChartWithTimeFramePicker: View {
             let range = calendar.range(of: .day, in: .month, for: Date())!
             count = range.count
         case .sixMonths:
-            count = 6 * 30 // Approximation, assuming 30 days in each month
+            count = data.count
         case .yearly:
-            count = 365 // Assuming non-leap year
+            count = 12 // Assuming non-leap year
         }
         
         let average = totalSum / Double(count)
@@ -345,34 +345,39 @@ struct ChartWithTimeFramePicker: View {
     }
     
     private func getTitleForMetric() -> String {
-        let prefix: String
+        let description: String
         let dataType: String
-        
-        // Determine the prefix based on the selected time frame
-        if selectedTimeFrame == .daily {
-            prefix = "Total"
-        } else {
-            prefix = "Average"
-        }
         
         // Determine the data type based on the title of the chart
         switch title {
         case "Step Count":
-            dataType = "Step Count"
+            dataType = "Step Counts"
         case "Active Energy Burned in KiloCalorie":
             dataType = "Active Energy Burned in KCal"
         case "Move Time (s)":
-            dataType = "Move Time in s"
+            dataType = "Move Time in seconds"
         case "Stand Time (s)":
-            dataType = "Stand Time in s"
+            dataType = "Stand Time in seconds"
         default:
             dataType = "Data"
         }
         
-        return "\(prefix) \(dataType)"
+        // Determine the description based on the selected timeframe
+        switch selectedTimeFrame {
+        case .daily:
+            description = "Total \(dataType) in this Day"
+        case .weekly:
+            description = "Daily Average \(dataType) in this Week"
+        case .monthly:
+            description = "Daily Average \(dataType) in this Month"
+        case .sixMonths:
+            description = "Weekly Average \(dataType) in this 6 Months Span"
+        case .yearly:
+            description = "Monthly Average \(dataType) in this Year"
+        }
+        
+        return description
     }
-
-
     
     // Helper function to display different text based on the selected data section
     private func getInformationText() -> String {
@@ -447,12 +452,12 @@ struct ChartWithTimeFramePicker: View {
             case .sixMonths:
                 return 6  // 6 pages for six months
             case .yearly:
-                return 3  // 3 years
+                return 1  // 1 years
             }
         }
     
     // Function to filter and aggregate data based on the current page and time frame
-    private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFrame: TimeFrame, page: Int) -> [ChartDataactivity] {
+private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFrame: TimeFrame, page: Int) -> [ChartDataactivity] {
         let calendar = Calendar.current
         let now = Date()
         var filteredData: [ChartDataactivity] = []
@@ -492,23 +497,24 @@ struct ChartWithTimeFramePicker: View {
                 return aggregateDataByDay(for: date, data: data)
             }
             filteredData = dailyData
-
             
         case .sixMonths:
-            let pageDate = calendar.date(byAdding: .month, value: -(page * 6), to: now) ?? now
-            let monthlyData = aggregateDataByMonth(for: pageDate, data: data, months: 6)
-            filteredData = monthlyData
+            // Subtract the page number to get a 6-month period starting point
+            let startOfSixMonths = calendar.date(byAdding: .month, value: -(page * 6), to: now) ?? now
             
+            // Aggregate data by day and sum it by week for the 6-month view
+            let sixMonthsData = aggregateDataByWeek(for: startOfSixMonths, data: data, weeks: 26)
+            filteredData = sixMonthsData
+
         case .yearly:
-                // Set up to aggregate data from January to December of the current year
-            let selectedYear = calendar.component(.year, from: now)
-                
+            // Subtract the page number to get a 1-year period starting point
+            let selectedYear = calendar.component(.year, from: now) - page
             let startOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 1))!
-            _ = calendar.date(from: DateComponents(year: selectedYear, month: 12, day: 31))!
-                
-            // Aggregate data by month from January to December of the selected year
-            let monthlyData = aggregateDataByMonth(for: startOfYear, data: data, months: 12)
-                filteredData = monthlyData
+            
+            // Aggregate data by day and sum it by month for the yearly view
+            let yearlyData = aggregateDataByMonth(for: startOfYear, data: data, months: 12)
+            filteredData = yearlyData
+
         }
             
         return filteredData
@@ -517,99 +523,153 @@ struct ChartWithTimeFramePicker: View {
     // Same helper functions as before for aggregating data
     // ...
 
-private func aggregateDataByHour(for date: Date, data: [ChartDataactivity]) -> [ChartDataactivity] {
-    let calendar = Calendar.current
-    var hourlyData: [ChartDataactivity] = []
+    private func aggregateDataByHour(for date: Date, data: [ChartDataactivity]) -> [ChartDataactivity] {
+        let calendar = Calendar.current
+        var hourlyData: [ChartDataactivity] = []
 
-    for hour in 0..<24 {
-        let startOfHour = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: date)!
-        let endOfHour = calendar.date(bySettingHour: hour, minute: 59, second: 59, of: date)!
+        for hour in 0..<24 {
+            let startOfHour = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: date)!
+            let endOfHour = calendar.date(bySettingHour: hour, minute: 59, second: 59, of: date)!
 
-        var hourlyValue = 0.0
+            var hourlyValue = 0.0
 
-        // Loop through all the data and aggregate it for the current hour range
+            // Loop through all the data and aggregate it for the current hour range
+            for item in data {
+                let sampleStart = item.date
+                let sampleEnd = calendar.date(byAdding: .second, value: Int(item.value), to: sampleStart) ?? sampleStart
+
+                // Check if the sample overlaps with the current hour
+                if sampleStart <= endOfHour && sampleEnd >= startOfHour {
+                    // Calculate the overlap between this hour and the sample period
+                    let overlapStart = max(sampleStart, startOfHour)
+                    let overlapEnd = min(sampleEnd, endOfHour)
+
+                    let overlapDuration = overlapEnd.timeIntervalSince(overlapStart)
+                    let totalDuration = sampleEnd.timeIntervalSince(sampleStart)
+
+                    // Proportionally distribute the data based on the overlap
+                    let proportion = overlapDuration / totalDuration
+                    hourlyValue += item.value * proportion
+                }
+            }
+
+            // Append the data for this hour, showing the start and end of the hour
+            hourlyData.append(ChartDataactivity(date: startOfHour, value: hourlyValue))
+        }
+
+        return hourlyData
+    }
+
+    private func aggregateDataByDay(for date: Date, data: [ChartDataactivity]) -> ChartDataactivity {
+        let calendar = Calendar.current
+
+        // Define the start and end of the day
+        let startOfDay = calendar.startOfDay(for: date)
+        let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: date)!
+
+        var dailyValue = 0.0
+
+        // Loop through all the data to sum the values for the day
         for item in data {
             let sampleStart = item.date
             let sampleEnd = calendar.date(byAdding: .second, value: Int(item.value), to: sampleStart) ?? sampleStart
 
-            // Check if the sample overlaps with the current hour
-            if sampleStart <= endOfHour && sampleEnd >= startOfHour {
-                // Calculate the overlap between this hour and the sample period
-                let overlapStart = max(sampleStart, startOfHour)
-                let overlapEnd = min(sampleEnd, endOfHour)
+            // Check if the sample overlaps with the current day
+            if sampleStart <= endOfDay && sampleEnd >= startOfDay {
+                // Calculate the overlap between this day and the sample period
+                let overlapStart = max(sampleStart, startOfDay)
+                let overlapEnd = min(sampleEnd, endOfDay)
 
                 let overlapDuration = overlapEnd.timeIntervalSince(overlapStart)
                 let totalDuration = sampleEnd.timeIntervalSince(sampleStart)
 
                 // Proportionally distribute the data based on the overlap
                 let proportion = overlapDuration / totalDuration
-                hourlyValue += item.value * proportion
+                dailyValue += item.value * proportion
             }
         }
 
-        // Append the data for this hour, showing the start and end of the hour
-        hourlyData.append(ChartDataactivity(date: startOfHour, value: hourlyValue))
+        // Return the aggregated data for the entire day, even if there's no data (returning 0 in that case)
+        return ChartDataactivity(date: startOfDay, value: dailyValue)
     }
 
-    return hourlyData
-}
+    private func aggregateDataByWeek(for startDate: Date, data: [ChartDataactivity], weeks: Int) -> [ChartDataactivity] {
+        let calendar = Calendar.current
+        var weeklyData: [ChartDataactivity] = []
+        
+        for weekOffset in 0..<weeks {
+            // Get the start and end of each week
+            let currentWeekStart = calendar.date(byAdding: .weekOfYear, value: weekOffset, to: startDate)!
+            let currentWeekEnd = calendar.date(byAdding: .day, value: 6, to: currentWeekStart)!
+            
+            var weeklyValue = 0.0
 
+            // Loop through all the data to sum the values for the week
+            for item in data {
+                let sampleStart = item.date
+                let sampleEnd = calendar.date(byAdding: .second, value: Int(item.value), to: sampleStart) ?? sampleStart
 
+                // Check if the sample overlaps with the current week
+                if sampleStart <= currentWeekEnd && sampleEnd >= currentWeekStart {
+                    // Calculate the overlap between this week and the sample period
+                    let overlapStart = max(sampleStart, currentWeekStart)
+                    let overlapEnd = min(sampleEnd, currentWeekEnd)
 
-private func aggregateDataByDay(for date: Date, data: [ChartDataactivity]) -> ChartDataactivity {
-    let calendar = Calendar.current
+                    let overlapDuration = overlapEnd.timeIntervalSince(overlapStart)
+                    let totalDuration = sampleEnd.timeIntervalSince(sampleStart)
 
-    // Define the start and end of the day
-    let startOfDay = calendar.startOfDay(for: date)
-    let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: date)!
-
-    var dailyValue = 0.0
-
-    // Loop through all the data to sum the values for the day
-    for item in data {
-        let sampleStart = item.date
-        let sampleEnd = calendar.date(byAdding: .second, value: Int(item.value), to: sampleStart) ?? sampleStart
-
-        // Check if the sample overlaps with the current day
-        if sampleStart <= endOfDay && sampleEnd >= startOfDay {
-            // Calculate the overlap between this day and the sample period
-            let overlapStart = max(sampleStart, startOfDay)
-            let overlapEnd = min(sampleEnd, endOfDay)
-
-            let overlapDuration = overlapEnd.timeIntervalSince(overlapStart)
-            let totalDuration = sampleEnd.timeIntervalSince(sampleStart)
-
-            // Proportionally distribute the data based on the overlap
-            let proportion = overlapDuration / totalDuration
-            dailyValue += item.value * proportion
+                    // Proportionally distribute the data based on the overlap
+                    let proportion = overlapDuration / totalDuration
+                    weeklyValue += item.value * proportion
+                }
+            }
+            
+            // Append the aggregated data for the current week
+            weeklyData.append(ChartDataactivity(date: currentWeekStart, value: weeklyValue))
         }
+        
+        return weeklyData
     }
-
-    // Return the aggregated data for the entire day, even if there's no data (returning 0 in that case)
-    return ChartDataactivity(date: startOfDay, value: dailyValue)
-}
-
-
 
     // Aggregate data by month for 6-month and yearly time frames
-    private func aggregateDataByMonth(for date: Date, data: [ChartDataactivity], months: Int) -> [ChartDataactivity] {
+    private func aggregateDataByMonth(for startDate: Date, data: [ChartDataactivity], months: Int) -> [ChartDataactivity] {
         let calendar = Calendar.current
         var monthlyData: [ChartDataactivity] = []
         
         for monthOffset in 0..<months {
-            let startOfMonth = calendar.date(byAdding: .month, value: monthOffset, to: date)!
-            let endOfMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth)!.addingTimeInterval(-1)
-            let monthlyValue = data
-                .filter { $0.date >= startOfMonth && $0.date <= endOfMonth }
-                .map { $0.value }
-                .reduce(0, +)
+            // Get the start and end of each month
+            let currentMonthStart = calendar.date(byAdding: .month, value: monthOffset, to: startDate)!
+            let currentMonthEnd = calendar.date(byAdding: .month, value: 1, to: currentMonthStart)!.addingTimeInterval(-1)
             
-            monthlyData.append(ChartDataactivity(date: startOfMonth, value: monthlyValue))
+            var monthlyValue = 0.0
+
+            // Loop through all the data to sum the values for the month
+            for item in data {
+                let sampleStart = item.date
+                let sampleEnd = calendar.date(byAdding: .second, value: Int(item.value), to: sampleStart) ?? sampleStart
+
+                // Check if the sample overlaps with the current month
+                if sampleStart <= currentMonthEnd && sampleEnd >= currentMonthStart {
+                    // Calculate the overlap between this month and the sample period
+                    let overlapStart = max(sampleStart, currentMonthStart)
+                    let overlapEnd = min(sampleEnd, currentMonthEnd)
+
+                    let overlapDuration = overlapEnd.timeIntervalSince(overlapStart)
+                    let totalDuration = sampleEnd.timeIntervalSince(sampleStart)
+
+                    // Proportionally distribute the data based on the overlap
+                    let proportion = overlapDuration / totalDuration
+                    monthlyValue += item.value * proportion
+                }
+            }
+            
+            // Append the aggregated data for the current month
+            monthlyData.append(ChartDataactivity(date: currentMonthStart, value: monthlyValue))
         }
         
         return monthlyData
     }
-    
+
     // Function to get the title for the current page based on the time frame
     private func getTitleForCurrentPage(timeFrame: TimeFrame, page: Int) -> String {
         let calendar = Calendar.current
@@ -786,24 +846,33 @@ struct BoxChartViewActivity: View {
 
         switch timeFrame {
         case .daily:
-                // Format as "HH-HH Hours" for daily view
+            // Format as "HH-HH Hours" for daily view
             formatter.dateFormat = "HH"
             let startHour = formatter.string(from: date)
             let endHour = formatter.string(from: calendar.date(byAdding: .hour, value: 1, to: date) ?? date)
             return "\(startHour)-\(endHour)"
-
+        
         case .weekly:
             // Format as day of the week (e.g., Monday, Tuesday)
             formatter.dateFormat = "EEEE"
             return formatter.string(from: date)
-
+        
         case .monthly:
             // Format as day of the month (e.g., 1st, 2nd, etc.)
             formatter.dateFormat = "d"
             let day = formatter.string(from: date)
             return day + ordinalSuffix(for: day)
-
-        case .sixMonths, .yearly:
+        
+        case .sixMonths:
+            // Display the week span (start and end dates of the week)
+            let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: date)?.start ?? date
+            let endOfWeek = calendar.date(byAdding: .day, value: 13, to: startOfWeek) ?? date
+            formatter.dateFormat = "MMM dd"
+            let startDate = formatter.string(from: date)
+            let endDate = formatter.string(from: endOfWeek)
+            return "\(startDate) - \(endDate)"
+        
+        case .yearly:
             // Format as month (e.g., Jan, Feb)
             formatter.dateFormat = "MMM"
             return formatter.string(from: date)
