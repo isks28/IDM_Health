@@ -323,24 +323,25 @@ struct ChartWithTimeFramePicker: View {
     
     private func calculateSumAndAverage(for timeFrame: TimeFrame, data: [ChartDataactivity]) -> (sum: Double, average: Double) {
         let totalSum = data.map { $0.value }.reduce(0, +)
+        
+        // Count only the data points that have a value greater than 0
+        let nonZeroDataCount = data.filter { $0.value > 0 }.count
+        
         let count: Int
         
         switch timeFrame {
         case .daily:
-            count = 1
-        case .weekly:
-            count = 7
-        case .monthly:
-            let calendar = Calendar.current
-            let range = calendar.range(of: .day, in: .month, for: Date())!
-            count = range.count
-        case .sixMonths:
-            count = data.count
-        case .yearly:
-            count = 12 // Assuming non-leap year
+            // If it's a daily view, the count is either 1 or 0, depending on whether data exists
+            count = nonZeroDataCount > 0 ? 1 : 0
+            
+        case .weekly, .monthly, .sixMonths, .yearly:
+            // For all other views, use the count of non-zero data points
+            count = nonZeroDataCount > 0 ? nonZeroDataCount : 1  // Avoid division by zero
+        
         }
         
-        let average = totalSum / Double(count)
+        // Calculate the average only if we have valid data points
+        let average = count > 0 ? totalSum / Double(count) : 0.0
         return (sum: totalSum, average: average)
     }
     
