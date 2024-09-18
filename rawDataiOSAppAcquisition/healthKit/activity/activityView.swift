@@ -596,10 +596,10 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
     private func aggregateDataByWeek(for startDate: Date, data: [ChartDataactivity], weeks: Int) -> [ChartDataactivity] {
         let calendar = Calendar.current
         var weeklyData: [ChartDataactivity] = []
-        
+
         for weekOffset in 0..<weeks {
             // Get the start and end of each week
-            let currentWeekStart = calendar.date(byAdding: .weekOfYear, value: weekOffset, to: startDate)!
+            let currentWeekStart = calendar.dateInterval(of: .weekOfYear, for: calendar.date(byAdding: .weekOfYear, value: weekOffset, to: startDate)!)?.start ?? startDate
             let currentWeekEnd = calendar.date(byAdding: .day, value: 6, to: currentWeekStart)!
             
             var weeklyValue = 0.0
@@ -623,7 +623,7 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
                     weeklyValue += item.value * proportion
                 }
             }
-            
+
             // Append the aggregated data for the current week
             weeklyData.append(ChartDataactivity(date: currentWeekStart, value: weeklyValue))
         }
@@ -866,10 +866,14 @@ struct BoxChartViewActivity: View {
         case .sixMonths:
             // Display the week span (start and end dates of the week)
             let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: date)?.start ?? date
-            let endOfWeek = calendar.date(byAdding: .day, value: 13, to: startOfWeek) ?? date
+            let endOfWeek = calendar.date(byAdding: .day, value: 6, to: startOfWeek) ?? date  // Change 13 to 6
             formatter.dateFormat = "MMM dd"
-            let startDate = formatter.string(from: date)
+
+            // Format start and end dates correctly
+            let startDate = formatter.string(from: startOfWeek)
             let endDate = formatter.string(from: endOfWeek)
+
+            // Return the correct week span
             return "\(startDate) - \(endDate)"
         
         case .yearly:
