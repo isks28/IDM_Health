@@ -9,10 +9,18 @@ import HealthKit
 import Foundation
 import SwiftUI
 
+// Define a struct to store min, max, and average values with the date
+struct VitalStatistics {
+    let date: Date
+    let minValue: Double
+    let maxValue: Double
+    let averageValue: Double
+}
+
 class VitalManager: ObservableObject {
     let healthStore = HKHealthStore()
     
-    @Published var heartRateData: [HKQuantitySample] = []  // Heart rate data storage
+    @Published var heartRateData: [VitalStatistics] = []  // Heart rate data storage for min, max, average
     @Published var savedFilePath: String?
     
     @Published var startDate: Date
@@ -47,14 +55,17 @@ class VitalManager: ObservableObject {
         }
     }
     
-    private func fetchAggregatedData(for identifier: HKQuantityTypeIdentifier, startDate: Date, endDate: Date, interval: DateComponents, completion: @escaping ([HKQuantitySample]) -> Void) {
+    // Fetch and store min, max, and average values
+    private func fetchAggregatedData(for identifier: HKQuantityTypeIdentifier, startDate: Date, endDate: Date, interval: DateComponents, completion: @escaping ([VitalStatistics]) -> Void) {
         guard let quantityType = HKQuantityType.quantityType(forIdentifier: identifier) else {
             print("\(identifier.rawValue) Type is unavailable")
             return
         }
         
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
-        let query = HKStatisticsCollectionQuery(quantityType: quantityType, quantitySamplePredicate: predicate, options: .discreteAverage, anchorDate: startDate, intervalComponents: interval)
+        
+        // Fetching min, max, and average values
+        let query = HKStatisticsCollectionQuery(quantityType: quantityType, quantitySamplePredicate: predicate, options: [.discreteMin, .discreteMax, .discreteAverage], anchorDate: startDate, intervalComponents: interval)
         
         query.initialResultsHandler = { _, results, error in
             if let error = error {
@@ -62,17 +73,27 @@ class VitalManager: ObservableObject {
                 return
             }
             
-            var aggregatedData: [HKQuantitySample] = []
+            var aggregatedData: [VitalStatistics] = []
+            
             results?.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
-                if let avgQuantity = statistics.averageQuantity() {
-                    let sample = HKQuantitySample(type: quantityType, quantity: avgQuantity, start: statistics.startDate, end: statistics.endDate)
-                    aggregatedData.append(sample)
+                if let avgQuantity = statistics.averageQuantity(),
+                   let minQuantity = statistics.minimumQuantity(),
+                   let maxQuantity = statistics.maximumQuantity() {
+                    
+                    let avgValue = avgQuantity.doubleValue(for: HKUnit(from: "count/min"))
+                    let minValue = minQuantity.doubleValue(for: HKUnit(from: "count/min"))
+                    let maxValue = maxQuantity.doubleValue(for: HKUnit(from: "count/min"))
+                    
+                    // Store the min, max, and average values along with the date
+                    let vitalStat = VitalStatistics(date: statistics.startDate, minValue: minValue, maxValue: maxValue, averageValue: avgValue)
+                    
+                    aggregatedData.append(vitalStat)
                 }
             }
             
             DispatchQueue.main.async {
                 completion(aggregatedData)
-                print("Fetched \(aggregatedData.count) hourly samples for \(identifier.rawValue)")
+                print("Fetched \(aggregatedData.count) samples (min, max, avg) for \(identifier.rawValue)")
             }
         }
         
@@ -80,19 +101,17 @@ class VitalManager: ObservableObject {
     }
     
     func saveDataAsCSV() {
-        saveCSV(for: heartRateData, fileName: "heart_rate_data.csv", valueUnit: HKUnit(from: "count/min"), unitLabel: "BPM")
+        saveCSV(for: heartRateData, fileName: "heart_rate_data.csv", unitLabel: "BPM")
     }
     
-    private func saveCSV(for samples: [HKQuantitySample], fileName: String, valueUnit: HKUnit, multiplier: Double = 1.0, unitLabel: String) {
-        var csvString = "Date,Value (\(unitLabel))\n"
+    private func saveCSV(for samples: [VitalStatistics], fileName: String, unitLabel: String) {
+        var csvString = "Date,Min Value (\(unitLabel)),Max Value (\(unitLabel)),Average Value (\(unitLabel))\n"
         
         let dateFormatter = ISO8601DateFormatter()
         
         for sample in samples {
-            let value = sample.quantity.doubleValue(for: valueUnit) * multiplier
-            let date = sample.startDate
-            let dateString = dateFormatter.string(from: date)
-            csvString += "\(dateString),\(value)\n"
+            let dateString = dateFormatter.string(from: sample.date)
+            csvString += "\(dateString),\(sample.minValue),\(sample.maxValue),\(sample.averageValue)\n"
         }
         
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
