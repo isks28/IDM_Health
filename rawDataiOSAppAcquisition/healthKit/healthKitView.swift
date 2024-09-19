@@ -46,6 +46,17 @@ struct healthKitView: View {
                         .font(.title)
                 }
                         .tag("Mobility")
+                HStack{
+                    Image(systemName: "heart.circle.fill")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 100, height: 50)
+                        .foregroundStyle(Color.pink)
+                    Text("Vital Data")
+                        .foregroundStyle(Color.gray)
+                        .font(.title)
+                }
+                        .tag("Vital")
         
             }
             .navigationTitle("HealthKit Data")
@@ -54,6 +65,8 @@ struct healthKitView: View {
                 activityView()
             } else if selectedView == "Mobility" {
                 mobilityView()
+            } else if selectedView == "Vital" {
+                vitalView()
             } else {
                 Text("Select a view")
                     .font(.largeTitle)
