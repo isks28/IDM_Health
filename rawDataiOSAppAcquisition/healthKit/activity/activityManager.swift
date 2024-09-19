@@ -16,6 +16,8 @@ class ActivityManager: ObservableObject {
     @Published var activeEnergyBurnedData: [HKQuantitySample] = []
     @Published var appleMoveTimeData: [HKQuantitySample] = []
     @Published var appleStandTimeData: [HKQuantitySample] = []
+    @Published var distanceWalkingRunningData: [HKQuantitySample] = []   // Added distanceWalkingRunning
+    @Published var appleExerciseTimeData: [HKQuantitySample] = []        // Added appleExerciseTime
     @Published var savedFilePath: String?
     
     @Published var startDate: Date
@@ -31,12 +33,15 @@ class ActivityManager: ObservableObject {
         guard let stepCount = HKQuantityType.quantityType(forIdentifier: .stepCount),
               let activeEnergyBurned = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned),
               let appleMoveTime = HKQuantityType.quantityType(forIdentifier: .appleMoveTime),
-              let appleStandTime = HKQuantityType.quantityType(forIdentifier: .appleStandTime) else {
+              let appleStandTime = HKQuantityType.quantityType(forIdentifier: .appleStandTime),
+              let distanceWalkingRunning = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning),  // Added distanceWalkingRunning
+              let appleExerciseTime = HKQuantityType.quantityType(forIdentifier: .appleExerciseTime)  // Added appleExerciseTime
+        else {
             print("One or more Health Activity Data is not available")
             return
         }
         
-        let typesToRead: Set = [stepCount, activeEnergyBurned, appleMoveTime, appleStandTime]
+        let typesToRead: Set = [stepCount, activeEnergyBurned, appleMoveTime, appleStandTime, distanceWalkingRunning, appleExerciseTime]  // Added new types
         
         healthStore.requestAuthorization(toShare: nil, read: typesToRead) { success, error in
             if !success {
@@ -59,6 +64,12 @@ class ActivityManager: ObservableObject {
         }
         fetchAggregatedData(for: .appleStandTime, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in
             self.appleStandTimeData = result
+        }
+        fetchAggregatedData(for: .distanceWalkingRunning, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in   // Added fetching for distanceWalkingRunning
+            self.distanceWalkingRunningData = result
+        }
+        fetchAggregatedData(for: .appleExerciseTime, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in   // Added fetching for appleExerciseTime
+            self.appleExerciseTimeData = result
         }
     }
     
@@ -99,6 +110,8 @@ class ActivityManager: ObservableObject {
         saveCSV(for: activeEnergyBurnedData, fileName: "active_energy_burned_data.csv", valueUnit: HKUnit.largeCalorie(), multiplier: 1.0, unitLabel: "Kilo Calories")
         saveCSV(for: appleMoveTimeData, fileName: "move_time_data.csv", valueUnit: HKUnit.second(), unitLabel: "Seconds")
         saveCSV(for: appleStandTimeData, fileName: "apple_stand_time_data.csv", valueUnit: HKUnit.second(), unitLabel: "Seconds")
+        saveCSV(for: distanceWalkingRunningData, fileName: "distance_walking_running_data.csv", valueUnit: HKUnit.meter(), unitLabel: "Meters")  // Added CSV for distanceWalkingRunning
+        saveCSV(for: appleExerciseTimeData, fileName: "exercise_time_data.csv", valueUnit: HKUnit.second(), unitLabel: "Seconds")  // Added CSV for appleExerciseTime
     }
     
     private func saveCSV(for samples: [HKQuantitySample], fileName: String, valueUnit: HKUnit, multiplier: Double = 1.0, unitLabel: String) {

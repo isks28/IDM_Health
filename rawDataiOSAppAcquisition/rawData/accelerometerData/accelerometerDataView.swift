@@ -102,7 +102,7 @@ struct accelerometerDataView: View {
                 }
                 
                 if showingAuthenticationError && !isRecording && !isRecordingInterval && !isRecordingRealTime {
-                    Text("Authentication Failed. Unable to enable sampling rate control.")
+                    Text("Authentication Failed. Unable to control sampling rate.")
                         .foregroundColor(.red)
                         .font(.caption2)
                 }

@@ -30,6 +30,8 @@ struct activityView: View {
     @State private var showingActiveEnergyChart = false
     @State private var showingMoveTimeChart = false
     @State private var showingStandTimeChart = false
+    @State private var showingDistanceWalkingRunningChart = false
+    @State private var showingExerciseTimeChart = false
     
     init() {
         let calendar = Calendar.current
@@ -152,6 +154,46 @@ struct activityView: View {
                         }
                         .padding(.bottom, 10)
                     }
+                    // Distance Walking Running Section with info button
+                    Section(header: Text("Distance Walking/Running")) {
+                        HStack {
+                            if !healthKitManager.activeEnergyBurnedData.isEmpty{
+                                Text("Distance Walking/Running Data is Available")
+                                    .foregroundStyle(Color.mint)
+                                    .multilineTextAlignment(.center)
+                            }
+                            Button(action: {
+                                showingDistanceWalkingRunningChart = true
+                            }) {
+                                Image(systemName: "info.circle")
+                                    .foregroundStyle(Color.pink)
+                            }
+                            .sheet(isPresented: $showingDistanceWalkingRunningChart) {
+                                ChartWithTimeFramePicker(title: "Distance Walking/Running (m)", data: healthKitManager.distanceWalkingRunningData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.meter())) })
+                            }
+                        }
+                        .padding(.bottom, 10)
+                    }
+                    // Exercise Time Section with info button
+                    Section(header: Text("Exercise Time")) {
+                        HStack {
+                            if !healthKitManager.activeEnergyBurnedData.isEmpty{
+                                Text("Exercise Time Data is Available")
+                                    .foregroundStyle(Color.mint)
+                                    .multilineTextAlignment(.center)
+                            }
+                            Button(action: {
+                                showingExerciseTimeChart = true
+                            }) {
+                                Image(systemName: "info.circle")
+                                    .foregroundStyle(Color.pink)
+                            }
+                            .sheet(isPresented: $showingExerciseTimeChart) {
+                                ChartWithTimeFramePicker(title: "Exercise Time (s)", data: healthKitManager.appleExerciseTimeData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.second())) })
+                            }
+                        }
+                        .padding(.bottom, 10)
+                    }
                 }
                 .padding(.horizontal)
             }
@@ -241,8 +283,6 @@ struct ChartWithTimeFramePicker: View {
                         Text(useCase())
                             .font(.body)
                             .padding(.bottom, 3)
-                        Text(normalRange())
-                            .font(.body)
                     }
                     .frame(width: 300, height: 400) // Customize popover size
                 }
@@ -359,6 +399,10 @@ struct ChartWithTimeFramePicker: View {
             dataType = "Move Time in seconds"
         case "Stand Time (s)":
             dataType = "Stand Time in seconds"
+        case "Distance Walking/Running (m)":
+            dataType = "Distance Walking/Running in meters"
+        case "Exercise Time (s)":
+            dataType = "Exercise Time in seconds"
         default:
             dataType = "Data"
         }
@@ -391,6 +435,10 @@ struct ChartWithTimeFramePicker: View {
             return "Amount of time spent performing activities that involve full-body movements during the specified day."
         case "Stand Time (s)":
             return "Amount of time has spent standing"
+        case "Distance Walking/Running (m)":
+            return "Distance Walking/Running in meters"
+        case "Exercise Time (s)":
+            return "Exercise Time in seconds"
         default:
             return "Data not available."
         }
@@ -407,6 +455,10 @@ struct ChartWithTimeFramePicker: View {
             return "Move time represents the time during which physical activity was recorded. It's measured in seconds."
         case "Stand Time (s)":
             return "Stand time is the total duration in which the user stood up and moved around during the day, measured in seconds."
+        case "Distance Walking/Running (m)":
+            return "Distance Walking/Running in meters"
+        case "Exercise Time (s)":
+            return "Exercise Time in seconds"
         default:
             return "More information about this section is not available."
         }
@@ -421,6 +473,10 @@ struct ChartWithTimeFramePicker: View {
             return "Move time represents the time during which physical activity was recorded. It's measured in seconds."
         case "Stand Time (s)":
             return "Stand time is the total duration in which the user stood up and moved around during the day, measured in seconds."
+        case "Distance Walking/Running (m)":
+            return "Distance Walking/Running in meters"
+        case "Exercise Time (s)":
+            return "Exercise Time in seconds"
         default:
             return "More information about this section is not available."
         }
@@ -435,6 +491,10 @@ struct ChartWithTimeFramePicker: View {
             return "Move time represents the time during which physical activity was recorded. It's measured in seconds."
         case "Stand Time (s)":
             return "Stand time is the total duration in which the user stood up and moved around during the day, measured in seconds."
+        case "Distance Walking/Running (m)":
+            return "Distance Walking/Running in meters"
+        case "Exercise Time (s)":
+            return "Exercise Time in seconds"
         default:
             return "More information about this section is not available."
         }
