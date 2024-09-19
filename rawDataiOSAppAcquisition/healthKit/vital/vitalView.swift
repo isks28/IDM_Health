@@ -192,14 +192,14 @@ struct VitalChartWithTimeFramePicker: View {
             let filteredData = filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0)
 
             // Calculate sum and average
-            let (sum, average) = calculateSumAndAverage(for: selectedTimeFrame, data: filteredData)
+            let (sum, average) = calculateAverage(for: selectedTimeFrame, data: filteredData)
 
             // Display correct title for total or average
-            Text("Heart Rate in BPM")
+            Text("Average Heart Rate in BPM")
                 .font(.headline)
 
             // Show total for daily view, average for others
-            Text(sum == 0 ? "--" : "\(String(format: "%.0f", selectedTimeFrame == .daily ? sum : average)) BPM")
+            Text(sum == 0 ? "--" : "\(String(format: "%.0f", selectedTimeFrame == .daily ? average : average)) BPM")
                 .font(.headline)
                 .foregroundStyle(Color.mint)
             
@@ -228,13 +228,18 @@ struct VitalChartWithTimeFramePicker: View {
         .padding()
     }
     
-    // Helper functions (mimic from activityView implementation)
-    
-    private func calculateSumAndAverage(for timeFrame: VitalTimeFrame, data: [ChartDataVital]) -> (sum: Double, average: Double) {
+    private func calculateAverage(for timeFrame: VitalTimeFrame, data: [ChartDataVital]) -> (sum: Double, average: Double) {
         let totalSum = data.map { $0.value }.reduce(0, +)
-        let count = max(data.count, 1)  // Prevent division by zero
-        let average = totalSum / Double(count)
-        return (totalSum, average)
+        
+        // Count only the data points that have a value greater than 0
+        let nonZeroDataCount = data.filter { $0.value > 0 }.count
+        
+        let count: Int
+        count = nonZeroDataCount > 0 ? nonZeroDataCount : 1  // Avoid division by zero
+        
+        // Calculate the average only if we have valid data points
+        let average = count > 0 ? totalSum / Double(count) : 0.0
+        return (sum: totalSum, average: average)
     }
     
     // Function to dynamically adjust the number of pages based on time frame

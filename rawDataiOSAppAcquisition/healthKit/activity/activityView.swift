@@ -48,22 +48,9 @@ struct activityView: View {
     
     var body: some View {
         VStack {
+            
             Text("Activity Health Data")
                 .font(.largeTitle)
-            
-            Text("Set Start and End-Date of Data to be fetched:")
-                .font(.headline)
-                .padding(.top, 50)
-            
-            DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
-                .onChange(of: startDate) {
-                    healthKitManager.startDate = startDate
-                }
-            
-            DatePicker("End Date", selection: $endDate, displayedComponents: .date)
-                .onChange(of: endDate) {
-                    healthKitManager.endDate = endDate
-                }
                 
             Text("To be fetched Data:")
                 .font(.headline)
@@ -197,6 +184,19 @@ struct activityView: View {
                 }
                 .padding(.horizontal)
             }
+            Text("Set Start and End-Date of Data to be fetched:")
+                .font(.headline)
+                .padding(.top, 50)
+            
+            DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
+                .onChange(of: startDate) {
+                    healthKitManager.startDate = startDate
+                }
+            
+            DatePicker("End Date", selection: $endDate, displayedComponents: .date)
+                .onChange(of: endDate) {
+                    healthKitManager.endDate = endDate
+                }
 
             Spacer()
 
