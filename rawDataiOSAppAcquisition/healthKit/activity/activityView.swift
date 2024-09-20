@@ -505,13 +505,13 @@ struct ChartWithTimeFramePicker: View {
         private func getPageCount(for timeFrame: TimeFrame) -> Int {
             switch timeFrame {
             case .daily:
-                return 21  // 21 pages for daily (three week)
+                return 14  // 14 pages for daily (two week)
             case .weekly:
-                return 16  // 16 pages for weekly (four month)
+                return 12  // 12 pages for weekly (three month)
             case .monthly:
                 return 12 // 12 pages for monthly (one year)
             case .sixMonths:
-                return 6  // 6 pages for six months
+                return 4  // 6 pages for 2 years
             case .yearly:
                 return 1  // 1 years
             }
@@ -809,6 +809,7 @@ struct BoxChartViewActivity: View {
                         .offset(x: getOffsetForTimeFrame(timeFrame))
                     }
                 }
+                .foregroundStyle(Color.pink)
                 .chartXScale(domain: getXScaleDomain())
                 .chartXAxis {
                     switch timeFrame {

@@ -246,15 +246,15 @@ struct VitalChartWithTimeFramePicker: View {
     private func getPageCount(for timeFrame: VitalTimeFrame) -> Int {
         switch timeFrame {
         case .hourly:
-            return 24
+            return 24 // 24 pages for 1 full day
         case .daily:
-            return 21  // 21 pages for daily (three week)
+            return 14  // 14 pages for daily (two week)
         case .weekly:
-            return 16  // 16 pages for weekly (four month)
+            return 12  // 12 pages for weekly (three month)
         case .monthly:
             return 12 // 12 pages for monthly (one year)
         case .sixMonths:
-            return 6  // 6 pages for six months
+            return 4  // 6 pages for 2 years
         case .yearly:
             return 1  // 1 years
         }
@@ -329,9 +329,6 @@ struct VitalChartWithTimeFramePicker: View {
         
         switch timeFrame {
         case .hourly:
-            // Get the current time
-            let now = Date()
-            
             // Calculate the next full hour from the current time (e.g., if now is 15:43, this will return 16:00)
             let nextFullHour = calendar.date(bySettingHour: calendar.component(.hour, from: now), minute: 0, second: 0, of: now) ?? now
             
@@ -514,6 +511,11 @@ struct BoxChartViewVital: View {
                     ForEach(data) { item in
                         if timeFrame == .hourly {
                             // For hourly view, plot raw data points directly
+                            PointMark(
+                                x: .value("Time", item.date),
+                                y: .value("Heart Rate", item.averageValue)  // raw heart rate value
+                            )
+                            .symbolSize(10)
                             LineMark(
                                 x: .value("Time", item.date),
                                 y: .value("Heart Rate", item.averageValue)  // raw heart rate value
@@ -528,12 +530,13 @@ struct BoxChartViewVital: View {
                         }
                     }
                 }
+                .foregroundStyle(Color.pink)
                 .chartXScale(domain: getXScaleDomain())
                 .chartXAxis {
                     switch timeFrame {
                     case .hourly:
                         AxisMarks(values: .stride(by: .minute, count: 15)) { value in
-                            AxisValueLabel(format: .dateTime.minute())
+                            AxisValueLabel(format: .dateTime.hour().minute())
                             AxisGridLine()
                         }
                     case .daily:
@@ -605,7 +608,7 @@ struct BoxChartViewVital: View {
     private func getOffsetForTimeFrame(_ timeFrame: VitalTimeFrame) -> CGFloat {
         switch timeFrame {
         case .hourly:
-            return 5
+            return 8
         case .daily:
             return 6
         case .weekly:
@@ -666,13 +669,51 @@ struct BoxChartViewVital: View {
             return "th"
         }
     }
+    
+    // Function to round the date down to the nearest hour
+    private func floorDateToHour(_ date: Date) -> Date {
+        let calendar = Calendar.current
+        // Round down the date to the nearest full hour (setting minutes and seconds to 0)
+        return calendar.date(bySettingHour: calendar.component(.hour, from: date), minute: 0, second: 0, of: date) ?? date
+    }
+
+    // Function to round the date up to the next full hour
+    private func ceilDateToHour(_ date: Date) -> Date {
+        let calendar = Calendar.current
+        // Round the date up to the next full hour
+        let flooredDate = floorDateToHour(date)
+        if date > flooredDate {
+            return calendar.date(byAdding: .hour, value: 1, to: flooredDate) ?? date
+        }
+        return flooredDate
+    }
 
     private func getXScaleDomain() -> ClosedRange<Date> {
         let calendar = Calendar.current
         guard let firstDate = data.first?.date, let lastDate = data.last?.date else {
-            return Date()...Date()
+            // No data case, default to showing the current hour
+            let now = Date()
+            let startOfCurrentHour = floorDateToHour(now)
+            let endOfCurrentHour = calendar.date(byAdding: .hour, value: 1, to: startOfCurrentHour)!
+            return startOfCurrentHour...endOfCurrentHour
         }
 
+        if timeFrame == .hourly {
+            // Get the start and end times in a manner similar to your example
+            let now = Date()
+            
+            // Calculate the next full hour from the current time (e.g., if now is 15:43, this will return 16:00)
+            let nextFullHour = calendar.date(bySettingHour: calendar.component(.hour, from: now) + 1, minute: 0, second: 0, of: now) ?? now
+            
+            // Calculate the specific hour to start at the earliest data point
+            let startHour = floorDateToHour(firstDate)
+            
+            // Calculate the end hour as 1 hour after the last data point
+            let endHour = ceilDateToHour(lastDate)
+            
+            // Return the startHour...endHour for the X-axis domain
+            return startHour...endHour
+        }
         if timeFrame == .monthly {
             let adjustedLastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
             return firstDate...adjustedLastDate
