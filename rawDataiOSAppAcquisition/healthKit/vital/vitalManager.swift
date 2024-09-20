@@ -49,51 +49,34 @@ class VitalManager: ObservableObject {
         }
     }
     
-    func fetchHeartRateData(startDate: Date, endDate: Date) {
-        fetchAggregatedData(for: .heartRate, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in
-            self.heartRateData = result
-        }
-    }
-    
-    // Fetch and store min, max, and average values
-    private func fetchAggregatedData(for identifier: HKQuantityTypeIdentifier, startDate: Date, endDate: Date, interval: DateComponents, completion: @escaping ([VitalStatistics]) -> Void) {
-        guard let quantityType = HKQuantityType.quantityType(forIdentifier: identifier) else {
-            print("\(identifier.rawValue) Type is unavailable")
+    func fetchRawHeartRateData(startDate: Date, endDate: Date) {
+        guard let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate) else {
+            print("Heart rate data unavailable")
             return
         }
         
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
         
-        // Fetching min, max, and average values
-        let query = HKStatisticsCollectionQuery(quantityType: quantityType, quantitySamplePredicate: predicate, options: [.discreteMin, .discreteMax, .discreteAverage], anchorDate: startDate, intervalComponents: interval)
-        
-        query.initialResultsHandler = { _, results, error in
+        let query = HKSampleQuery(sampleType: heartRateType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)]) { [weak self] query, results, error in
             if let error = error {
-                print("Failed to fetch \(identifier.rawValue) data: \(error.localizedDescription)")
+                print("Error fetching heart rate data: \(error.localizedDescription)")
                 return
             }
             
-            var aggregatedData: [VitalStatistics] = []
+            var rawData: [VitalStatistics] = []
             
-            results?.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
-                if let avgQuantity = statistics.averageQuantity(),
-                   let minQuantity = statistics.minimumQuantity(),
-                   let maxQuantity = statistics.maximumQuantity() {
-                    
-                    let avgValue = avgQuantity.doubleValue(for: HKUnit(from: "count/min"))
-                    let minValue = minQuantity.doubleValue(for: HKUnit(from: "count/min"))
-                    let maxValue = maxQuantity.doubleValue(for: HKUnit(from: "count/min"))
-                    
-                    // Store the min, max, and average values along with the date
-                    let vitalStat = VitalStatistics(date: statistics.startDate, minValue: minValue, maxValue: maxValue, averageValue: avgValue)
-                    
-                    aggregatedData.append(vitalStat)
+            if let samples = results as? [HKQuantitySample] {
+                for sample in samples {
+                    let heartRate = sample.quantity.doubleValue(for: HKUnit(from: "count/min"))
+                    let date = sample.startDate
+                    // For raw data, min, max, avg are the same because it's a single point.
+                    let stat = VitalStatistics(date: date, minValue: heartRate, maxValue: heartRate, averageValue: heartRate)
+                    rawData.append(stat)
                 }
             }
             
             DispatchQueue.main.async {
-                completion(aggregatedData)
-                print("Fetched \(aggregatedData.count) samples (min, max, avg) for \(identifier.rawValue)")
+                self?.heartRateData = rawData
             }
         }
         

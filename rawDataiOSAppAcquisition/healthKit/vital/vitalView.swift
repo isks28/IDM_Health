@@ -97,7 +97,7 @@ struct vitalView: View {
                     if isRecording {
                         vitalManager.saveDataAsCSV()
                     } else {
-                        vitalManager.fetchHeartRateData(startDate: startDate, endDate: endDate)
+                        vitalManager.fetchRawHeartRateData(startDate: startDate, endDate: endDate)
                     }
                     isRecording.toggle()
                 }) {
@@ -246,7 +246,7 @@ struct VitalChartWithTimeFramePicker: View {
     private func getPageCount(for timeFrame: VitalTimeFrame) -> Int {
         switch timeFrame {
         case .hourly:
-            return 30
+            return 24
         case .daily:
             return 21  // 21 pages for daily (three week)
         case .weekly:
@@ -269,10 +269,29 @@ struct VitalChartWithTimeFramePicker: View {
         
         switch timeFrame {
         case .hourly:
-            let pageDate = calendar.date(byAdding: .hour, value: -page, to: now) ?? now
+            // Get the current time
+            let now = Date()
+            
+            // Calculate the next full hour from the current time (e.g., if now is 15:43, this will return 16:00)
+            let nextFullHour = calendar.date(bySettingHour: calendar.component(.hour, from: now) + 1, minute: 0, second: 0, of: now) ?? now
+            
+            // Calculate the specific hour by adding 'page' to the next full hour
+            let startHour = calendar.date(byAdding: .hour, value: -page, to: nextFullHour) ?? nextFullHour
+            
+            // Calculate the end of the hour (1 hour after the startHour)
+            let endHour = calendar.date(byAdding: .hour, value: -1, to: startHour) ?? startHour
+            
+            // Format the date and time range for the title
             dateFormatter.dateStyle = .medium
-            dateFormatter.timeStyle = .short
-            title = dateFormatter.string(from: pageDate)
+            let formattedDate = dateFormatter.string(from: startHour)
+            
+            // Format the hour range (HH:mm - HH:mm)
+            dateFormatter.dateFormat = "HH:mm"
+            let startTime = dateFormatter.string(from: startHour)
+            let endTime = dateFormatter.string(from: endHour)
+            
+            // Set the title to display the correct time range and date
+            title = "\(formattedDate), \(endTime) - \(startTime)"
         case .daily:
             let pageDate = calendar.date(byAdding: .day, value: -page, to: now) ?? now
             dateFormatter.dateStyle = .full
@@ -310,8 +329,20 @@ struct VitalChartWithTimeFramePicker: View {
         
         switch timeFrame {
         case .hourly:
-            let pageDate = calendar.date(byAdding: .hour, value: -page, to: now) ?? now
-            filteredData = aggregateDataByMinute(for: pageDate, data: data)
+            // Get the current time
+            let now = Date()
+            
+            // Calculate the next full hour from the current time (e.g., if now is 15:43, this will return 16:00)
+            let nextFullHour = calendar.date(bySettingHour: calendar.component(.hour, from: now), minute: 0, second: 0, of: now) ?? now
+            
+            // Calculate the start hour for the current page by moving backward in time
+            let hourStart = calendar.date(byAdding: .hour, value: -page, to: nextFullHour) ?? nextFullHour
+            
+            // Calculate the end of the hour (1 hour after the start hour)
+            let hourEnd = calendar.date(byAdding: .hour, value: 1, to: hourStart) ?? hourStart
+            
+            // Filter raw data points for this hour
+            filteredData = data.filter { $0.date >= hourStart && $0.date < hourEnd }
         case .daily:
             let pageDate = calendar.date(byAdding: .day, value: -page, to: now) ?? now
             let hourlyData = aggregateDataByHour(for: pageDate, data: data)
@@ -481,19 +512,27 @@ struct BoxChartViewVital: View {
             } else {
                 Chart {
                     ForEach(data) { item in
-                        BarMark(
-                            x: .value("Date", item.date),
-                            yStart: .value("Min", item.minValue),
-                            yEnd: .value("Max", item.maxValue)
-                        )
-                        .offset(x: getOffsetForTimeFrame(timeFrame))
+                        if timeFrame == .hourly {
+                            // For hourly view, plot raw data points directly
+                            LineMark(
+                                x: .value("Time", item.date),
+                                y: .value("Heart Rate", item.averageValue)  // raw heart rate value
+                            )
+                        } else {
+                            // Existing logic for other views
+                            BarMark(
+                                x: .value("Date", item.date),
+                                yStart: .value("Min", item.minValue),
+                                yEnd: .value("Max", item.maxValue)
+                            )
+                        }
                     }
                 }
                 .chartXScale(domain: getXScaleDomain())
                 .chartXAxis {
                     switch timeFrame {
                     case .hourly:
-                        AxisMarks(values: .automatic(desiredCount: 30)) { value in
+                        AxisMarks(values: .stride(by: .minute, count: 15)) { value in
                             AxisValueLabel(format: .dateTime.minute())
                             AxisGridLine()
                         }
@@ -535,10 +574,16 @@ struct BoxChartViewVital: View {
                         HStack {
                             Text(formatDateForTimeFrame(item.date))
                             Spacer()
-                            if item.minValue == 0 && item.maxValue == 0 {
-                                Text("-- BPM")
+                            if timeFrame == .hourly {
+                                // For the hourly view, display the raw heart rate value
+                                Text("\(String(format: "%.0f", item.averageValue)) BPM")  // Display the raw heart rate value
                             } else {
-                                Text("\(String(format: "%.0f", item.minValue)) - \(String(format: "%.0f", item.maxValue)) BPM")
+                                // For other views, show min-max range
+                                if item.minValue == 0 && item.maxValue == 0 {
+                                    Text("-- BPM")
+                                } else {
+                                    Text("\(String(format: "%.0f", item.minValue)) - \(String(format: "%.0f", item.maxValue)) BPM")
+                                }
                             }
                         }
                         .padding()
@@ -580,10 +625,9 @@ struct BoxChartViewVital: View {
 
         switch timeFrame {
         case .hourly:
+            // For hourly, display the actual recorded time in "HH:mm" format
             formatter.dateFormat = "HH:mm"
-            let startHour = formatter.string(from: date)
-            let endHour = formatter.string(from: calendar.date(byAdding: .hour, value: 1, to: date) ?? date)
-            return "\(startHour) - \(endHour)"
+            return formatter.string(from: date)
         case .daily:
             formatter.dateFormat = "HH"
             let startHour = formatter.string(from: date)
