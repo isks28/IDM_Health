@@ -35,20 +35,7 @@ struct mobilityView: View {
         VStack {
             Text("Mobility Health Data")
                 .font(.largeTitle)
-            Text("Set Start and End-Date of Data to be fetched:")
-                .font(.headline)
-                .padding(.top, 50)
             
-            DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
-                .onChange(of: startDate) {
-                        healthKitManager.startDate = startDate
-                    }
-            
-            DatePicker("End Date", selection: $endDate, displayedComponents: .date)
-                .onChange(of: endDate) {
-                        healthKitManager.endDate = endDate
-                    }
-                
             Text("To be fetched Data:")
                 .font(.headline)
                 .padding(.top)
@@ -91,10 +78,19 @@ struct mobilityView: View {
                 }
                 .padding(.horizontal)
             }
-            .padding(.bottom, 80) // Add padding to avoid overlapping with buttons
-
-            Spacer()
-
+            Text("Set Start and End-Date of Data to be fetched:")
+                .font(.headline)
+                .padding(.top, 50)
+            
+            DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
+                .onChange(of: startDate) {
+                        healthKitManager.startDate = startDate
+                    }
+            
+            DatePicker("End Date", selection: $endDate, displayedComponents: .date)
+                .onChange(of: endDate) {
+                        healthKitManager.endDate = endDate
+                    }
             HStack{
                 Button(action: {
                     if isRecording {

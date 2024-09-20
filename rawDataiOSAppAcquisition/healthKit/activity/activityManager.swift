@@ -53,52 +53,47 @@ class ActivityManager: ObservableObject {
     }
     
     func fetchActivityData(startDate: Date, endDate: Date) {
-        fetchAggregatedData(for: .stepCount, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in
+        fetchRawData(for: .stepCount, startDate: startDate, endDate: endDate) { result in
             self.stepCountData = result
         }
-        fetchAggregatedData(for: .activeEnergyBurned, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in
+        fetchRawData(for: .activeEnergyBurned, startDate: startDate, endDate: endDate) { result in
             self.activeEnergyBurnedData = result
         }
-        fetchAggregatedData(for: .appleMoveTime, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in
+        fetchRawData(for: .appleMoveTime, startDate: startDate, endDate: endDate) { result in
             self.appleMoveTimeData = result
         }
-        fetchAggregatedData(for: .appleStandTime, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in
+        fetchRawData(for: .appleStandTime, startDate: startDate, endDate: endDate) { result in
             self.appleStandTimeData = result
         }
-        fetchAggregatedData(for: .distanceWalkingRunning, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in   // Added fetching for distanceWalkingRunning
+        fetchRawData(for: .distanceWalkingRunning, startDate: startDate, endDate: endDate) { result in
             self.distanceWalkingRunningData = result
         }
-        fetchAggregatedData(for: .appleExerciseTime, startDate: startDate, endDate: endDate, interval: DateComponents(hour: 1)) { result in   // Added fetching for appleExerciseTime
+        fetchRawData(for: .appleExerciseTime, startDate: startDate, endDate: endDate) { result in
             self.appleExerciseTimeData = result
         }
     }
     
-    private func fetchAggregatedData(for identifier: HKQuantityTypeIdentifier, startDate: Date, endDate: Date, interval: DateComponents, completion: @escaping ([HKQuantitySample]) -> Void) {
+    private func fetchRawData(for identifier: HKQuantityTypeIdentifier, startDate: Date, endDate: Date, completion: @escaping ([HKQuantitySample]) -> Void) {
         guard let quantityType = HKQuantityType.quantityType(forIdentifier: identifier) else {
             print("\(identifier.rawValue) Type is unavailable")
             return
         }
         
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
-        let query = HKStatisticsCollectionQuery(quantityType: quantityType, quantitySamplePredicate: predicate, options: .cumulativeSum, anchorDate: startDate, intervalComponents: interval)
-        
-        query.initialResultsHandler = { _, results, error in
+        let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { query, samples, error in
             if let error = error {
                 print("Failed to fetch \(identifier.rawValue) data: \(error.localizedDescription)")
                 return
             }
             
-            var aggregatedData: [HKQuantitySample] = []
-            results?.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
-                if let sumQuantity = statistics.sumQuantity() {
-                    let sample = HKQuantitySample(type: quantityType, quantity: sumQuantity, start: statistics.startDate, end: statistics.endDate)
-                    aggregatedData.append(sample)
-                }
+            guard let quantitySamples = samples as? [HKQuantitySample] else {
+                completion([])
+                return
             }
             
             DispatchQueue.main.async {
-                completion(aggregatedData)
-                print("Fetched \(aggregatedData.count) hourly samples for \(identifier.rawValue)")
+                completion(quantitySamples)
+                print("Fetched \(quantitySamples.count) raw samples for \(identifier.rawValue)")
             }
         }
         
