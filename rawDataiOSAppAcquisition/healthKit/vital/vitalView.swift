@@ -38,7 +38,7 @@ struct vitalView: View {
         let customStartDate = calendar.date(from: components) ?? Date()
         
         _vitalManager = StateObject(wrappedValue: VitalManager(startDate: Date(), endDate: Date()))
-        _startDate = State(initialValue: customStartDate)
+        _startDate = State(initialValue: Date())
         _endDate = State(initialValue: Date())
     }
     
@@ -131,10 +131,7 @@ struct VitalChartWithTimeFramePicker: View {
     var startDate: Date
     var endDate: Date
     
-    // State to control the selected time frame
     @State private var selectedTimeFrame: VitalTimeFrame = .daily
-    
-    // Dictionary to track the current page for each time frame independently
     @State private var currentPageForTimeFrames: [VitalTimeFrame: Int] = [
         .hourly: 0,
         .daily: 0,
@@ -143,20 +140,18 @@ struct VitalChartWithTimeFramePicker: View {
         .sixMonths: 0,
         .yearly: 0
     ]
-    
-    // State for showing the popover
     @State private var showInfoPopover: Bool = false
-    
+    @State private var showDatePicker: Bool = false
+    @State private var selectedDate: Date = Date()
+
     var body: some View {
         VStack {
-            // Display additional information based on the selected section
             HStack {
                 Text(getInformationText())
                     .font(.subheadline)
                     .padding(.top)
                     .multilineTextAlignment(.center)
-                
-                // Information button with popover
+
                 Button(action: {
                     showInfoPopover.toggle()
                 }) {
@@ -165,7 +160,6 @@ struct VitalChartWithTimeFramePicker: View {
                         .padding(.top)
                 }
                 .popover(isPresented: $showInfoPopover) {
-                    // Popover content
                     VStack(alignment: .leading) {
                         Text("Additional Information")
                             .font(.title)
@@ -182,8 +176,7 @@ struct VitalChartWithTimeFramePicker: View {
                 }
             }
             .padding(.horizontal)
-            
-            // Picker for selecting the time frame
+
             Picker("Time Frame", selection: $selectedTimeFrame) {
                 ForEach(VitalTimeFrame.allCases, id: \.self) { timeFrame in
                     Text(timeFrame.rawValue).tag(timeFrame)
@@ -191,13 +184,29 @@ struct VitalChartWithTimeFramePicker: View {
             }
             .pickerStyle(SegmentedPickerStyle())
             .padding()
-            
-            // Display date title for each time frame and page
-            Text(getTitleForCurrentPage(timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0, startDate: startDate, endDate: endDate))
-                .font(.title2)
-                .padding(.bottom, 8)
-            
-            // Filter the data for the current page and time frame
+
+            // Title with clickable functionality to show date picker
+            Button(action: {
+                showDatePicker = true
+            }) {
+                Text(getTitleForCurrentPage(timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0, startDate: startDate, endDate: endDate))
+                    .font(.title2)
+                    .padding(.bottom, 8)
+            }
+            .sheet(isPresented: $showDatePicker) {
+                DatePicker(
+                    "Select Date",
+                    selection: $selectedDate,
+                    in: startDate...endDate,
+                    displayedComponents: [.date]
+                )
+                .datePickerStyle(GraphicalDatePickerStyle())
+                .onChange(of: selectedDate) { _, newDate in
+                    jumpToPage(for: selectedDate)
+                }
+                .padding()
+            }
+
             let filteredData = filterAndAggregateDataForPage(
                 data,
                 timeFrame: selectedTimeFrame,
@@ -206,19 +215,15 @@ struct VitalChartWithTimeFramePicker: View {
                 endDate: endDate
             )
 
-            // Calculate sum and average
             let (sum, average) = calculateAverage(for: selectedTimeFrame, data: filteredData)
 
-            // Display correct title for total or average
             Text("Average Heart Rate in BPM")
                 .font(.headline)
 
-            // Show total for daily view, average for others
             Text(sum == 0 ? "--" : "\(String(format: "%.0f", selectedTimeFrame == .daily ? average : average)) BPM")
                 .font(.headline)
                 .foregroundStyle(Color.mint)
-            
-            // Display the chart with horizontal paging
+
             TabView(selection: Binding(
                 get: { currentPageForTimeFrames[selectedTimeFrame] ?? 0 },
                 set: { newValue in currentPageForTimeFrames[selectedTimeFrame] = newValue }
@@ -235,10 +240,34 @@ struct VitalChartWithTimeFramePicker: View {
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .padding(.bottom)
-            
+
             Spacer()
         }
         .padding()
+    }
+
+    private func jumpToPage(for date: Date) {
+        let calendar = Calendar.current
+        switch selectedTimeFrame {
+        case .hourly:
+            let hoursDifference = calendar.dateComponents([.hour], from: startDate, to: date).hour ?? 0
+            currentPageForTimeFrames[selectedTimeFrame] = max(hoursDifference, 0)
+        case .daily:
+            let daysDifference = calendar.dateComponents([.day], from: startDate, to: date).day ?? 0
+            currentPageForTimeFrames[selectedTimeFrame] = max(daysDifference, 0)
+        case .weekly:
+            let weeksDifference = calendar.dateComponents([.weekOfYear], from: startDate, to: date).weekOfYear ?? 0
+            currentPageForTimeFrames[selectedTimeFrame] = max(weeksDifference, 0)
+        case .monthly:
+            let monthsDifference = calendar.dateComponents([.month], from: startDate, to: date).month ?? 0
+            currentPageForTimeFrames[selectedTimeFrame] = max(monthsDifference, 0)
+        case .sixMonths:
+            let monthsDifference = calendar.dateComponents([.month], from: startDate, to: date).month ?? 0
+            currentPageForTimeFrames[selectedTimeFrame] = max(monthsDifference / 6, 0)
+        case .yearly:
+            let yearsDifference = calendar.dateComponents([.year], from: startDate, to: date).year ?? 0
+            currentPageForTimeFrames[selectedTimeFrame] = max(yearsDifference, 0)
+        }
     }
     
     private func calculateAverage(for timeFrame: VitalTimeFrame, data: [ChartDataVital]) -> (sum: Double, average: Double) {
@@ -378,7 +407,7 @@ struct VitalChartWithTimeFramePicker: View {
             
             // Ensure startOfWeek is within the date range
             if startOfWeek <= endDate {
-                let endOfWeek = calendar.date(byAdding: .day, value: 6, to: startOfWeek) ?? startOfWeek
+                _ = calendar.date(byAdding: .day, value: 6, to: startOfWeek) ?? startOfWeek
                 let dailyData = (0..<7).map { offset -> ChartDataVital in
                     let date = calendar.date(byAdding: .day, value: offset, to: startOfWeek)!
                     return aggregateDataByDay(for: date, data: data, endDate: endDate)
@@ -634,7 +663,7 @@ struct BoxChartViewVital: View {
                             AxisGridLine()
                         }
                     case .yearly:
-                        AxisMarks(values: .automatic(desiredCount: 12)) { value in
+                        AxisMarks(values: .automatic()) { value in
                             AxisValueLabel(format: .dateTime.month(.narrow))
                             .offset(x: 2.5)
                             AxisGridLine()
@@ -770,9 +799,6 @@ struct BoxChartViewVital: View {
         }
 
         if timeFrame == .hourly {
-            // Get the start and end times in a manner similar to your example
-            let now = Date()
-            
             // Calculate the specific hour to start at the earliest data point
             let startHour = floorDateToHour(firstDate)
             
