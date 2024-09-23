@@ -38,7 +38,7 @@ struct vitalView: View {
         let customStartDate = calendar.date(from: components) ?? Date()
         
         _vitalManager = StateObject(wrappedValue: VitalManager(startDate: Date(), endDate: Date()))
-        _startDate = State(initialValue: Date())
+        _startDate = State(initialValue: customStartDate)
         _endDate = State(initialValue: Date())
     }
     
