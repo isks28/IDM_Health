@@ -30,11 +30,6 @@ struct vitalView: View {
     @State private var showingHeartRateChart = false
     
     init() {
-        let calendar = Calendar.current
-        var components = DateComponents()
-        components.year = 2024
-        components.month = 1
-        components.day = 1
         _vitalManager = StateObject(wrappedValue: VitalManager(startDate: Date(), endDate: Date()))
         _startDate = State(initialValue: Date())
         _endDate = State(initialValue: Date())
@@ -604,11 +599,12 @@ struct BoxChartViewVital: View {
                                 x: .value("Time", item.date),
                                 y: .value("Heart Rate", item.averageValue)  // raw heart rate value
                             )
-                            .symbolSize(10)
+                            .symbolSize(15)
                             LineMark(
                                 x: .value("Time", item.date),
                                 y: .value("Heart Rate", item.averageValue)  // raw heart rate value
                             )
+                            .symbolSize(1)
                         } else {
                             // Existing logic for other views
                             BarMark(

@@ -88,13 +88,14 @@ class VitalManager: ObservableObject {
     }
     
     private func saveCSV(for samples: [VitalStatistics], fileName: String, unitLabel: String) {
-        var csvString = "Date,Min Value (\(unitLabel)),Max Value (\(unitLabel)),Average Value (\(unitLabel))\n"
+        var csvString = "Date,Value (\(unitLabel))\n"
         
         let dateFormatter = ISO8601DateFormatter()
         
         for sample in samples {
             let dateString = dateFormatter.string(from: sample.date)
-            csvString += "\(dateString),\(sample.minValue),\(sample.maxValue),\(sample.averageValue)\n"
+            let roundedValue = String(format: "%.0f", sample.averageValue)  // Rounding the value to 0 decimal places
+            csvString += "\(dateString),\(roundedValue)\n"
         }
         
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
