@@ -35,10 +35,8 @@ struct vitalView: View {
         components.year = 2024
         components.month = 1
         components.day = 1
-        let customStartDate = calendar.date(from: components) ?? Date()
-        
         _vitalManager = StateObject(wrappedValue: VitalManager(startDate: Date(), endDate: Date()))
-        _startDate = State(initialValue: customStartDate)
+        _startDate = State(initialValue: Date())
         _endDate = State(initialValue: Date())
     }
     
@@ -313,7 +311,23 @@ struct VitalChartWithTimeFramePicker: View {
             return max(yearDifference, 1) // Ensure at least 1 page
         }
     }
-    
+
+    // Function to round the date down to the nearest hour
+    private func floorDateToHour(_ date: Date) -> Date {
+        let calendar = Calendar.current
+        return calendar.date(bySettingHour: calendar.component(.hour, from: date), minute: 0, second: 0, of: date) ?? date
+    }
+
+    // Function to round the date up to the next full hour
+    private func ceilDateToHour(_ date: Date) -> Date {
+        let calendar = Calendar.current
+        let flooredDate = floorDateToHour(date)
+        if date > flooredDate {
+            return calendar.date(byAdding: .hour, value: 1, to: flooredDate) ?? date
+        }
+        return flooredDate
+    }
+
     // Function to get the title for the current page based on the time frame
     private func getTitleForCurrentPage(timeFrame: VitalTimeFrame, page: Int, startDate: Date, endDate: Date) -> String {
         let calendar = Calendar.current
@@ -322,8 +336,8 @@ struct VitalChartWithTimeFramePicker: View {
         
         switch timeFrame {
         case .hourly:
-            // Calculate the start hour based on the page number and startDate
-            let startHour = calendar.date(byAdding: .hour, value: page, to: startDate) ?? startDate
+            // Round the start date to the nearest full hour
+            let startHour = calendar.date(byAdding: .hour, value: page, to: floorDateToHour(startDate)) ?? startDate
             let endHour = calendar.date(byAdding: .hour, value: 1, to: startHour) ?? startHour
             
             // Format the date and time range for the title
@@ -337,36 +351,28 @@ struct VitalChartWithTimeFramePicker: View {
             title = "\(formattedDate), \(startTime) - \(endTime)"
             
         case .daily:
-            // Calculate the start date based on the page number and startDate
             let pageDate = calendar.date(byAdding: .day, value: page, to: startDate) ?? startDate
             dateFormatter.dateStyle = .full
             title = dateFormatter.string(from: pageDate)
             
         case .weekly:
-            // Calculate the Monday of the week for the current page
             let startOfWeek = calendar.date(byAdding: .weekOfYear, value: page, to: startDate) ?? startDate
             let endOfWeek = calendar.date(byAdding: .day, value: 6, to: startOfWeek) ?? startOfWeek
-            
-            // Format the range from the Monday to Sunday
             dateFormatter.dateFormat = "MMM dd"
             title = "\(dateFormatter.string(from: startOfWeek)) - \(dateFormatter.string(from: endOfWeek))"
             
         case .monthly:
-            // Calculate the start of the month based on the page number and startDate
             let pageDate = calendar.date(byAdding: .month, value: page, to: startDate) ?? startDate
             dateFormatter.dateFormat = "MMMM yyyy"
             title = dateFormatter.string(from: pageDate)
             
         case .sixMonths:
-            // Calculate the start and end of the 6-month interval
             let startOfSixMonths = calendar.date(byAdding: .month, value: page * 6, to: startDate) ?? startDate
             let endOfSixMonths = calendar.date(byAdding: .month, value: 5, to: startOfSixMonths) ?? startOfSixMonths
-            
             dateFormatter.dateFormat = "MMM yyyy"
             title = "\(dateFormatter.string(from: startOfSixMonths)) - \(dateFormatter.string(from: endOfSixMonths))"
             
         case .yearly:
-            // Calculate the year based on the page number
             let pageDate = calendar.date(byAdding: .year, value: page, to: startDate) ?? startDate
             dateFormatter.dateFormat = "yyyy"
             title = dateFormatter.string(from: pageDate)
@@ -374,7 +380,7 @@ struct VitalChartWithTimeFramePicker: View {
         
         return title
     }
-    
+
     // Function to filter and aggregate data based on the current page and time frame
     private func filterAndAggregateDataForPage(_ data: [ChartDataVital], timeFrame: VitalTimeFrame, page: Int, startDate: Date, endDate: Date) -> [ChartDataVital] {
         let calendar = Calendar.current
@@ -382,33 +388,25 @@ struct VitalChartWithTimeFramePicker: View {
         
         switch timeFrame {
         case .hourly:
-            // Calculate the start hour for the current page based on the startDate
-            let hourStart = calendar.date(byAdding: .hour, value: page, to: startDate) ?? startDate
+            // Round startDate to the nearest full hour
+            let hourStart = calendar.date(byAdding: .hour, value: page, to: floorDateToHour(startDate)) ?? startDate
             
-            // Ensure hourStart is within the date range
             if hourStart <= endDate {
                 let hourEnd = calendar.date(byAdding: .hour, value: 1, to: hourStart) ?? hourStart
                 filteredData = data.filter { $0.date >= hourStart && $0.date < hourEnd }
             }
             
         case .daily:
-            // Calculate the date for the current page based on the startDate
             let pageDate = calendar.date(byAdding: .day, value: page, to: startDate) ?? startDate
-            
-            // Ensure pageDate is within the date range
             if pageDate <= endDate {
                 let hourlyData = aggregateDataByHour(for: pageDate, data: data, endDate: endDate)
                 filteredData = hourlyData
             }
             
         case .weekly:
-            // Calculate the start of the week for the current page based on the startDate
             let startOfWeek = calendar.date(byAdding: .weekOfYear, value: page, to: startDate) ?? startDate
-            
-            // Ensure startOfWeek is within the date range
             if startOfWeek <= endDate {
-                _ = calendar.date(byAdding: .day, value: 6, to: startOfWeek) ?? startOfWeek
-                let dailyData = (0..<7).map { offset -> ChartDataVital in
+                let dailyData = (0..<7).compactMap { offset -> ChartDataVital? in
                     let date = calendar.date(byAdding: .day, value: offset, to: startOfWeek)!
                     return aggregateDataByDay(for: date, data: data, endDate: endDate)
                 }
@@ -416,14 +414,11 @@ struct VitalChartWithTimeFramePicker: View {
             }
             
         case .monthly:
-            // Calculate the start of the month for the current page based on the startDate
             let startOfMonth = calendar.date(byAdding: .month, value: page, to: startDate) ?? startDate
-            
-            // Ensure startOfMonth is within the date range
             if startOfMonth <= endDate {
                 let range = calendar.range(of: .day, in: .month, for: startOfMonth)!
                 let numberOfDaysInMonth = range.count
-                let dailyData = (0..<numberOfDaysInMonth).map { offset -> ChartDataVital in
+                let dailyData = (0..<numberOfDaysInMonth).compactMap { offset -> ChartDataVital? in
                     let date = calendar.date(byAdding: .day, value: offset, to: startOfMonth)!
                     return aggregateDataByDay(for: date, data: data, endDate: endDate)
                 }
@@ -431,20 +426,14 @@ struct VitalChartWithTimeFramePicker: View {
             }
             
         case .sixMonths:
-            // Calculate the start of the 6-month interval for the current page based on the startDate
             let startOfSixMonths = calendar.date(byAdding: .month, value: page * 6, to: startDate) ?? startDate
-            
-            // Ensure startOfSixMonths is within the date range
             if startOfSixMonths <= endDate {
                 let sixMonthsData = aggregateDataByWeek(for: startOfSixMonths, data: data, weeks: 26, endDate: endDate)
                 filteredData = sixMonthsData
             }
             
         case .yearly:
-            // Calculate the start of the year for the current page based on the startDate
             let startOfYear = calendar.date(byAdding: .year, value: page, to: startDate) ?? startDate
-            
-            // Ensure startOfYear is within the date range
             if startOfYear <= endDate {
                 let yearlyData = aggregateDataByMonth(for: startOfYear, data: data, months: 12, endDate: endDate)
                 filteredData = yearlyData
