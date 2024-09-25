@@ -603,7 +603,7 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
             }
             
         case .weekly:
-            let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: calendar.date(byAdding: .weekOfYear, value: -page, to: startDate)!)
+            let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: calendar.date(byAdding: .weekOfYear, value: page, to: startDate)!)
             let mondayOfWeek = calendar.date(from: components) ?? startDate
             
             let dailyData = (0..<8).map { offset -> ChartDataactivity in
