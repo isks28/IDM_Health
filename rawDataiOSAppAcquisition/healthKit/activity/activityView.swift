@@ -34,15 +34,8 @@ struct activityView: View {
     @State private var showingExerciseTimeChart = false
     
     init() {
-        let calendar = Calendar.current
-        var components = DateComponents()
-        components.year = 2024
-        components.month = 1
-        components.day = 1
-        let customStartDate = calendar.date(from: components) ?? Date()
-
         _healthKitManager = StateObject(wrappedValue: ActivityManager(startDate: Date(), endDate: Date()))
-        _startDate = State(initialValue: customStartDate)
+        _startDate = State(initialValue: Date())
         _endDate = State(initialValue: Date())
     }
     
@@ -73,7 +66,11 @@ struct activityView: View {
                                     .foregroundStyle(Color.pink)
                             }
                             .sheet(isPresented: $showingStepCountChart) {
-                                ChartWithTimeFramePicker(title: "Step Count", data: healthKitManager.stepCountData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.count())) })
+                                ChartWithTimeFramePicker(title: "Step Count", data: healthKitManager.stepCountData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.count()))
+                                },
+                                 startDate: healthKitManager.startDate,
+                                 endDate: healthKitManager.endDate
+                                )
                             }
                         }
                         .padding(.bottom, 10)
@@ -94,7 +91,11 @@ struct activityView: View {
                                     .foregroundStyle(Color.pink)
                             }
                             .sheet(isPresented: $showingActiveEnergyChart) {
-                                ChartWithTimeFramePicker(title: "Active Energy Burned in KiloCalorie", data: healthKitManager.activeEnergyBurnedData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.smallCalorie())) })
+                                ChartWithTimeFramePicker(title: "Active Energy Burned in KiloCalorie", data: healthKitManager.activeEnergyBurnedData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.smallCalorie()))
+                                },
+                                 startDate: healthKitManager.startDate,
+                                 endDate: healthKitManager.endDate
+                                )
                             }
                         }
                         .padding(.bottom, 10)
@@ -115,7 +116,11 @@ struct activityView: View {
                                     .foregroundStyle(Color.pink)
                             }
                             .sheet(isPresented: $showingMoveTimeChart) {
-                                ChartWithTimeFramePicker(title: "Move Time (s)", data: healthKitManager.appleMoveTimeData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.second())) })
+                                ChartWithTimeFramePicker(title: "Move Time (s)", data: healthKitManager.appleMoveTimeData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.second()))
+                                },
+                                 startDate: healthKitManager.startDate,
+                                 endDate: healthKitManager.endDate
+                                )
                             }
                         }
                         .padding(.bottom, 10)
@@ -136,7 +141,11 @@ struct activityView: View {
                                     .foregroundStyle(Color.pink)
                             }
                             .sheet(isPresented: $showingStandTimeChart) {
-                                ChartWithTimeFramePicker(title: "Stand Time (s)", data: healthKitManager.appleStandTimeData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.second())) })
+                                ChartWithTimeFramePicker(title: "Stand Time (s)", data: healthKitManager.appleStandTimeData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.second()))
+                                },
+                                 startDate: healthKitManager.startDate,
+                                 endDate: healthKitManager.endDate
+                                )
                             }
                         }
                         .padding(.bottom, 10)
@@ -156,7 +165,11 @@ struct activityView: View {
                                     .foregroundStyle(Color.pink)
                             }
                             .sheet(isPresented: $showingDistanceWalkingRunningChart) {
-                                ChartWithTimeFramePicker(title: "Distance Walking/Running (m)", data: healthKitManager.distanceWalkingRunningData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.meter())) })
+                                ChartWithTimeFramePicker(title: "Distance Walking/Running (m)", data: healthKitManager.distanceWalkingRunningData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.meter()))
+                                },
+                                 startDate: healthKitManager.startDate,
+                                 endDate: healthKitManager.endDate
+                                )
                             }
                         }
                         .padding(.bottom, 10)
@@ -176,7 +189,11 @@ struct activityView: View {
                                     .foregroundStyle(Color.pink)
                             }
                             .sheet(isPresented: $showingExerciseTimeChart) {
-                                ChartWithTimeFramePicker(title: "Exercise Time (s)", data: healthKitManager.appleExerciseTimeData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.second())) })
+                                ChartWithTimeFramePicker(title: "Exercise Time (s)", data: healthKitManager.appleExerciseTimeData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.second()))
+                                },
+                                 startDate: healthKitManager.startDate,
+                                 endDate: healthKitManager.endDate
+                                )
                             }
                         }
                         .padding(.bottom, 10)
@@ -236,6 +253,8 @@ struct activityView: View {
 struct ChartWithTimeFramePicker: View {
     var title: String
     var data: [ChartDataactivity]
+    var startDate: Date
+    var endDate: Date
     
     // State to control the selected time frame
     @State private var selectedTimeFrame: TimeFrame = .daily
@@ -251,6 +270,8 @@ struct ChartWithTimeFramePicker: View {
     
     // State for showing the popover
     @State private var showInfoPopover: Bool = false
+    @State private var showDatePicker: Bool = false
+    @State private var selectedDate: Date = Date()
     
     var body: some View {
         VStack {
@@ -298,14 +319,35 @@ struct ChartWithTimeFramePicker: View {
             .pickerStyle(SegmentedPickerStyle())
             .padding()
             
-            // Display date title for each time frame and page
-            Text(getTitleForCurrentPage(timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0))
-                .font(.title2)
-                .padding(.bottom, 8)
-            
-            // Filter the data for the current page and time frame
-            let filteredData = filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0)
+            // Title with clickable functionality to show date picker
+            Button(action: {
+                showDatePicker = true
+            }) {
+                Text(getTitleForCurrentPage(timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0, startDate: startDate, endDate: endDate))
+                    .font(.title2)
+                    .padding(.bottom, 8)
+            }
+            .sheet(isPresented: $showDatePicker) {
+                DatePicker(
+                    "Select Date",
+                    selection: $selectedDate,
+                    in: startDate...endDate,
+                    displayedComponents: [.date]
+                )
+                .datePickerStyle(GraphicalDatePickerStyle())
+                .onChange(of: selectedDate) { _, newDate in
+                    jumpToPage(for: selectedDate)
+                }
+                .padding()
+            }
 
+            let filteredData = filterAndAggregateDataForPage(
+                data,
+                timeFrame: selectedTimeFrame,
+                page: currentPageForTimeFrames[selectedTimeFrame] ?? 0,
+                startDate: startDate,
+                endDate: endDate
+            )
             
             // Calculate sum and average
             let (sum, average) = calculateSumAndAverage(for: selectedTimeFrame, data: filteredData)
@@ -339,13 +381,12 @@ struct ChartWithTimeFramePicker: View {
             // Display the chart with horizontal paging
             TabView(selection: Binding(
                 get: { currentPageForTimeFrames[selectedTimeFrame] ?? 0 },
-                set: { newValue in
-                    currentPageForTimeFrames[selectedTimeFrame] = newValue
+                set: { newValue in currentPageForTimeFrames[selectedTimeFrame] = newValue
                 }
             )) {
                 if !data.isEmpty {
-                    ForEach((0..<getPageCount(for: selectedTimeFrame)).reversed(), id: \.self) { page in
-                        BoxChartViewActivity(data: filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrame, page: page), timeFrame: selectedTimeFrame, title: title)
+                    ForEach((0..<getPageCount(for: selectedTimeFrame, startDate: startDate, endDate: endDate)), id: \.self) { page in
+                        BoxChartViewActivity(data: filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrame, page: page, startDate: startDate, endDate: endDate), timeFrame: selectedTimeFrame, title: title)
                             .tag(page)
                             .padding(.horizontal)
                     }
@@ -359,6 +400,27 @@ struct ChartWithTimeFramePicker: View {
             Spacer()
         }
         .padding()
+    }
+    
+    private func jumpToPage(for date: Date) {
+        let calendar = Calendar.current
+        switch selectedTimeFrame {
+        case .daily:
+            let daysDifference = calendar.dateComponents([.day], from: startDate, to: date).day ?? 0
+            currentPageForTimeFrames[selectedTimeFrame] = max(daysDifference, 0)
+        case .weekly:
+            let weeksDifference = calendar.dateComponents([.weekOfYear], from: startDate, to: date).weekOfYear ?? 0
+            currentPageForTimeFrames[selectedTimeFrame] = max(weeksDifference, 0)
+        case .monthly:
+            let monthsDifference = calendar.dateComponents([.month], from: startDate, to: date).month ?? 0
+            currentPageForTimeFrames[selectedTimeFrame] = max(monthsDifference, 0)
+        case .sixMonths:
+            let monthsDifference = calendar.dateComponents([.month], from: startDate, to: date).month ?? 0
+            currentPageForTimeFrames[selectedTimeFrame] = max(monthsDifference / 6, 0)
+        case .yearly:
+            let yearsDifference = calendar.dateComponents([.year], from: startDate, to: date).year ?? 0
+            currentPageForTimeFrames[selectedTimeFrame] = max(yearsDifference, 0)
+        }
     }
     
     private func calculateSumAndAverage(for timeFrame: TimeFrame, data: [ChartDataactivity]) -> (sum: Double, average: Double) {
@@ -484,7 +546,7 @@ struct ChartWithTimeFramePicker: View {
     private func normalRange() -> String {
         switch title {
         case "Step Count":
-            return "NORMAL RANGE: 10.000 per Day"
+            return "RECORDED FROM: iPhone and Apple Watch"
         case "Active Energy Burned in KiloCalorie":
             return "Measured using: Accelerometer, Gyroscope and GPS. Use Case: Managing weight, metabolic conditions, diabetes, cardiovascular diseases"
         case "Move Time (s)":
@@ -501,37 +563,48 @@ struct ChartWithTimeFramePicker: View {
     }
 }
     
-    // Function to dynamically adjust the number of pages based on time frame
-        private func getPageCount(for timeFrame: TimeFrame) -> Int {
-            switch timeFrame {
-            case .daily:
-                return 14  // 14 pages for daily (two week)
-            case .weekly:
-                return 12  // 12 pages for weekly (three month)
-            case .monthly:
-                return 12 // 12 pages for monthly (one year)
-            case .sixMonths:
-                return 4  // 6 pages for 2 years
-            case .yearly:
-                return 1  // 1 years
-            }
+    private func getPageCount(for timeFrame: TimeFrame, startDate: Date, endDate: Date) -> Int {
+        let calendar = Calendar.current
+        switch timeFrame {
+        case .daily:
+            // Calculate days between start and end dates
+            let dayDifference = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0
+            return max(dayDifference, 1) // Ensure at least 1 page
+        case .weekly:
+            // Calculate weeks between start and end dates
+            let weekDifference = calendar.dateComponents([.weekOfYear], from: startDate, to: endDate).weekOfYear ?? 0
+            return max(weekDifference, 1) // Ensure at least 1 page
+        case .monthly:
+            // Calculate months between start and end dates
+            let monthDifference = calendar.dateComponents([.month], from: startDate, to: endDate).month ?? 0
+            return max(monthDifference, 1) // Ensure at least 1 page
+        case .sixMonths:
+            // Calculate 6-month intervals between start and end dates
+            let monthDifference = calendar.dateComponents([.month], from: startDate, to: endDate).month ?? 0
+            return max(monthDifference / 6, 1) // Ensure at least 1 page
+        case .yearly:
+            // Calculate years between start and end dates
+            let yearDifference = calendar.dateComponents([.year], from: startDate, to: endDate).year ?? 0
+            return max(yearDifference, 1) // Ensure at least 1 page
         }
+    }
     
     // Function to filter and aggregate data based on the current page and time frame
-private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFrame: TimeFrame, page: Int) -> [ChartDataactivity] {
+private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFrame: TimeFrame, page: Int, startDate: Date, endDate: Date) -> [ChartDataactivity] {
         let calendar = Calendar.current
-        let now = Date()
         var filteredData: [ChartDataactivity] = []
         
         switch timeFrame {
         case .daily:
-            let pageDate = calendar.date(byAdding: .day, value: -page, to: now) ?? now
-            let hourlyData = aggregateDataByHour(for: pageDate, data: data)
-            filteredData = hourlyData
+            let pageDate = calendar.date(byAdding: .day, value: page, to: startDate) ?? startDate
+            if pageDate <= endDate {
+                let hourlyData = aggregateDataByHour(for: pageDate, data: data, endDate: endDate)
+                filteredData = hourlyData
+            }
             
         case .weekly:
-            let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: calendar.date(byAdding: .weekOfYear, value: -page, to: now)!)
-            let mondayOfWeek = calendar.date(from: components) ?? now
+            let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: calendar.date(byAdding: .weekOfYear, value: -page, to: startDate)!)
+            let mondayOfWeek = calendar.date(from: components) ?? startDate
             
             let dailyData = (0..<8).map { offset -> ChartDataactivity in
                 let date = calendar.date(byAdding: .day, value: offset, to: mondayOfWeek)!
@@ -543,7 +616,7 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
             filteredData = dailyData
             
         case .monthly:
-            let pageDate = calendar.date(byAdding: .month, value: -page, to: now) ?? now
+            let pageDate = calendar.date(byAdding: .month, value: page, to: startDate) ?? startDate
             
             // Get the first day of the month
             let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: pageDate))!
@@ -561,7 +634,7 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
             
         case .sixMonths:
             // Subtract the page number to get a 6-month period starting point
-            let startOfSixMonths = calendar.date(byAdding: .month, value: -(page * 6), to: now) ?? now
+            let startOfSixMonths = calendar.date(byAdding: .month, value: (page * 6), to: startDate) ?? startDate
             
             // Aggregate data by day and sum it by week for the 6-month view
             let sixMonthsData = aggregateDataByWeek(for: startOfSixMonths, data: data, weeks: 26)
@@ -569,7 +642,7 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
 
         case .yearly:
             // Subtract the page number to get a 1-year period starting point
-            let selectedYear = calendar.component(.year, from: now) - page
+            let selectedYear = calendar.component(.year, from: startDate) - page
             let startOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 1))!
             
             // Aggregate data by day and sum it by month for the yearly view
@@ -584,7 +657,7 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
     // Same helper functions as before for aggregating data
     // ...
 
-    private func aggregateDataByHour(for date: Date, data: [ChartDataactivity]) -> [ChartDataactivity] {
+private func aggregateDataByHour(for date: Date, data: [ChartDataactivity], endDate: Date) -> [ChartDataactivity] {
         let calendar = Calendar.current
         var hourlyData: [ChartDataactivity] = []
 
@@ -732,45 +805,36 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
     }
 
     // Function to get the title for the current page based on the time frame
-    private func getTitleForCurrentPage(timeFrame: TimeFrame, page: Int) -> String {
+    private func getTitleForCurrentPage(timeFrame: TimeFrame, page: Int, startDate: Date, endDate: Date) -> String {
         let calendar = Calendar.current
-        let now = Date()
         let dateFormatter = DateFormatter()
         var title: String = ""
         
         switch timeFrame {
         case .daily:
-            let pageDate = calendar.date(byAdding: .day, value: -page, to: now) ?? now
+            let pageDate = calendar.date(byAdding: .day, value: page, to: startDate) ?? startDate
             dateFormatter.dateStyle = .full
             title = dateFormatter.string(from: pageDate)
             
         case .weekly:
-                // Find the Monday of the current week
-                var components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: calendar.date(byAdding: .weekOfYear, value: -page, to: now)!)
-                components.weekday = 2 // Monday is the 2nd day of the week
-                
-                let mondayOfWeek = calendar.date(from: components) ?? now
-                let sundayOfWeek = calendar.date(byAdding: .day, value: 6, to: mondayOfWeek) ?? now
-                
-                dateFormatter.dateFormat = "MMM dd"
-                let mondayString = dateFormatter.string(from: mondayOfWeek)
-                let sundayString = dateFormatter.string(from: sundayOfWeek)
-                
-                title = "\(mondayString) - \(sundayString)" // Show Monday to Sunday
+            let startOfWeek = calendar.date(byAdding: .weekOfYear, value: page, to: startDate) ?? startDate
+            let endOfWeek = calendar.date(byAdding: .day, value: 6, to: startOfWeek) ?? startOfWeek
+            dateFormatter.dateFormat = "MMM dd"
+            title = "\(dateFormatter.string(from: startOfWeek)) - \(dateFormatter.string(from: endOfWeek))"
                 
         case .monthly:
-            let pageDate = calendar.date(byAdding: .month, value: -page, to: now) ?? now
+            let pageDate = calendar.date(byAdding: .month, value: page, to: startDate) ?? startDate
             dateFormatter.dateFormat = "MMMM yyyy"
             title = dateFormatter.string(from: pageDate)
             
         case .sixMonths:
-            let startDate = calendar.date(byAdding: .month, value: -(page * 6), to: now) ?? now
-            let endDate = calendar.date(byAdding: .month, value: 5, to: startDate) ?? now
+            let startOfSixMonths = calendar.date(byAdding: .month, value: page * 6, to: startDate) ?? startDate
+            let endOfSixMonths = calendar.date(byAdding: .month, value: 5, to: startOfSixMonths) ?? startOfSixMonths
             dateFormatter.dateFormat = "MMM yyyy"
-            title = "\(dateFormatter.string(from: startDate)) - \(dateFormatter.string(from: endDate))"
+            title = "\(dateFormatter.string(from: startOfSixMonths)) - \(dateFormatter.string(from: endOfSixMonths))"
             
         case .yearly:
-            let pageDate = calendar.date(byAdding: .year, value: -page, to: now) ?? now
+            let pageDate = calendar.date(byAdding: .year, value: page, to: startDate) ?? startDate
             dateFormatter.dateFormat = "yyyy"
             title = dateFormatter.string(from: pageDate)
         }
