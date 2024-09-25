@@ -113,10 +113,11 @@ class ActivityManager: ObservableObject {
         var csvString = "Date,Value (\(unitLabel))\n"
         
         let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.timeZone = TimeZone.current
         
         for sample in samples {
             let value = sample.quantity.doubleValue(for: valueUnit) * multiplier
-            let date = sample.startDate
+            let date = sample.endDate
             let dateString = dateFormatter.string(from: date)
             csvString += "\(dateString),\(value)\n"
         }

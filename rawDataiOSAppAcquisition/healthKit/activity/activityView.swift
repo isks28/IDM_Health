@@ -425,24 +425,45 @@ struct ChartWithTimeFramePicker: View {
     
     private func calculateSumAndAverage(for timeFrame: TimeFrame, data: [ChartDataactivity]) -> (sum: Double, average: Double) {
         let totalSum = data.map { $0.value }.reduce(0, +)
+
+        // For average calculation, we will count the number of unique days with non-zero data
+        let calendar = Calendar.current
+        let nonZeroData = data.filter { $0.value > 0 }
         
-        // Count only the data points that have a value greater than 0
-        let nonZeroDataCount = data.filter { $0.value > 0 }.count
+        // We need to collect days from weekly (for sixMonths) and monthly (for yearly) data
+        var uniqueDaysWithData = Set<Date>()
         
-        let count: Int
-        
-        switch timeFrame {
-        case .daily:
-            // If it's a daily view, the count is either 1 or 0, depending on whether data exists
-            count = nonZeroDataCount > 0 ? 1 : 0
-            
-        case .weekly, .monthly, .sixMonths, .yearly:
-            // For all other views, use the count of non-zero data points
-            count = nonZeroDataCount > 0 ? nonZeroDataCount : 1  // Avoid division by zero
-        
+        for entry in nonZeroData {
+            switch timeFrame {
+            case .sixMonths:
+                // For weekly totals, we'll expand each week into the 7 days
+                let startOfWeek = calendar.startOfDay(for: entry.date)
+                for dayOffset in 0..<7 {
+                    if let day = calendar.date(byAdding: .day, value: dayOffset, to: startOfWeek), day <= Date() {
+                        uniqueDaysWithData.insert(day)
+                    }
+                }
+                
+            case .yearly:
+                // For monthly totals, expand each month into its days
+                let startOfMonth = calendar.startOfDay(for: entry.date)
+                let range = calendar.range(of: .day, in: .month, for: startOfMonth) ?? 1..<31
+                for dayOffset in range {
+                    if let day = calendar.date(byAdding: .day, value: dayOffset - 1, to: startOfMonth), day <= Date() {
+                        uniqueDaysWithData.insert(day)
+                    }
+                }
+                
+            default:
+                // For other time frames, just take the days with non-zero data
+                uniqueDaysWithData.insert(calendar.startOfDay(for: entry.date))
+            }
         }
+
+        let daysWithDataCount = uniqueDaysWithData.count
+        let count = daysWithDataCount > 0 ? daysWithDataCount : 1 // Avoid division by zero
         
-        // Calculate the average only if we have valid data points
+        // Calculate the average based on the number of days with data
         let average = count > 0 ? totalSum / Double(count) : 0.0
         return (sum: totalSum, average: average)
     }
@@ -569,19 +590,19 @@ struct ChartWithTimeFramePicker: View {
         case .daily:
             // Calculate days between start and end dates
             let dayDifference = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0
-            return max(dayDifference, 1) // Ensure at least 1 page
+            return max(dayDifference + 1, 1) // Ensure at least 1 page
         case .weekly:
             // Calculate weeks between start and end dates
             let weekDifference = calendar.dateComponents([.weekOfYear], from: startDate, to: endDate).weekOfYear ?? 0
-            return max(weekDifference, 1) // Ensure at least 1 page
+            return max(weekDifference + 1, 1) // Ensure at least 1 page
         case .monthly:
             // Calculate months between start and end dates
             let monthDifference = calendar.dateComponents([.month], from: startDate, to: endDate).month ?? 0
-            return max(monthDifference, 1) // Ensure at least 1 page
+            return max(monthDifference + 1, 1) // Ensure at least 1 page
         case .sixMonths:
             // Calculate 6-month intervals between start and end dates
             let monthDifference = calendar.dateComponents([.month], from: startDate, to: endDate).month ?? 0
-            return max(monthDifference / 6, 1) // Ensure at least 1 page
+            return max((monthDifference / 6) + 1, 1) // Ensure at least 1 page
         case .yearly:
             // Calculate years between start and end dates
             let yearDifference = calendar.dateComponents([.year], from: startDate, to: endDate).year ?? 0
@@ -657,7 +678,7 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
     // Same helper functions as before for aggregating data
     // ...
 
-private func aggregateDataByHour(for date: Date, data: [ChartDataactivity], endDate: Date) -> [ChartDataactivity] {
+    private func aggregateDataByHour(for date: Date, data: [ChartDataactivity], endDate: Date) -> [ChartDataactivity] {
         let calendar = Calendar.current
         var hourlyData: [ChartDataactivity] = []
 
@@ -665,30 +686,19 @@ private func aggregateDataByHour(for date: Date, data: [ChartDataactivity], endD
             let startOfHour = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: date)!
             let endOfHour = calendar.date(bySettingHour: hour, minute: 59, second: 59, of: date)!
 
-            var hourlyValue = 0.0
-
-            // Loop through all the data and aggregate it for the current hour range
-            for item in data {
-                let sampleStart = item.date
-                let sampleEnd = calendar.date(byAdding: .second, value: Int(item.value), to: sampleStart) ?? sampleStart
-
-                // Check if the sample overlaps with the current hour
-                if sampleStart <= endOfHour && sampleEnd >= startOfHour {
-                    // Calculate the overlap between this hour and the sample period
-                    let overlapStart = max(sampleStart, startOfHour)
-                    let overlapEnd = min(sampleEnd, endOfHour)
-
-                    let overlapDuration = overlapEnd.timeIntervalSince(overlapStart)
-                    let totalDuration = sampleEnd.timeIntervalSince(sampleStart)
-
-                    // Proportionally distribute the data based on the overlap
-                    let proportion = overlapDuration / totalDuration
-                    hourlyValue += item.value * proportion
-                }
+            // Stop if the hour goes beyond the endDate
+            if startOfHour > endDate {
+                break
             }
 
-            // Append the data for this hour, showing the start and end of the hour
-            hourlyData.append(ChartDataactivity(date: startOfHour, value: hourlyValue))
+            // Filter data for the current hour
+            let filteredData = data.filter { $0.date >= startOfHour && $0.date <= endOfHour }
+
+            // Sum up the values for this hour
+            let hourlySum = filteredData.map { $0.value }.reduce(0, +)
+
+            // Append the hourly aggregated data
+            hourlyData.append(ChartDataactivity(date: startOfHour, value: hourlySum))
         }
 
         return hourlyData
