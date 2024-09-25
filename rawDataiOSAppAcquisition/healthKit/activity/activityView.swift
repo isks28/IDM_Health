@@ -350,7 +350,7 @@ struct ChartWithTimeFramePicker: View {
             )
             
             // Calculate sum and average
-            let (sum, average) = calculateSumAndAverage(for: selectedTimeFrame, data: filteredData)
+            let (sum, average) = calculateSumAndAverage(for: selectedTimeFrame, data: filteredData, startDate: startDate, endDate: endDate)
 
             // Display correct title for total or average
             Text(getTitleForMetric())
@@ -423,51 +423,62 @@ struct ChartWithTimeFramePicker: View {
         }
     }
     
-    private func calculateSumAndAverage(for timeFrame: TimeFrame, data: [ChartDataactivity]) -> (sum: Double, average: Double) {
-        let totalSum = data.map { $0.value }.reduce(0, +)
-
-        // For average calculation, we will count the number of unique days with non-zero data
+    private func calculateSumAndAverage(for timeFrame: TimeFrame, data: [ChartDataactivity], startDate: Date, endDate: Date) -> (sum: Double, average: Double) {
         let calendar = Calendar.current
-        let nonZeroData = data.filter { $0.value > 0 }
-        
-        // We need to collect days from weekly (for sixMonths) and monthly (for yearly) data
-        var uniqueDaysWithData = Set<Date>()
-        
-        for entry in nonZeroData {
-            switch timeFrame {
-            case .sixMonths:
-                // For weekly totals, we'll expand each week into the 7 days
-                let startOfWeek = calendar.startOfDay(for: entry.date)
-                for dayOffset in 0..<7 {
-                    if let day = calendar.date(byAdding: .day, value: dayOffset, to: startOfWeek), day <= Date() {
-                        uniqueDaysWithData.insert(day)
-                    }
+
+        var totalSum: Double
+        var daysWithDataCount: Int
+
+        switch timeFrame {
+        case .sixMonths:
+            var dailyData: [Date: Double] = [:]
+
+            for entry in data {
+                let entryDay = calendar.startOfDay(for: entry.date)
+                if let existingValue = dailyData[entryDay] {
+                    dailyData[entryDay] = existingValue + entry.value
+                } else {
+                    dailyData[entryDay] = entry.value
                 }
-                
-            case .yearly:
-                // For monthly totals, expand each month into its days
-                let startOfMonth = calendar.startOfDay(for: entry.date)
-                let range = calendar.range(of: .day, in: .month, for: startOfMonth) ?? 1..<31
-                for dayOffset in range {
-                    if let day = calendar.date(byAdding: .day, value: dayOffset - 1, to: startOfMonth), day <= Date() {
-                        uniqueDaysWithData.insert(day)
-                    }
-                }
-                
-            default:
-                // For other time frames, just take the days with non-zero data
-                uniqueDaysWithData.insert(calendar.startOfDay(for: entry.date))
             }
+
+            totalSum = dailyData.values.reduce(0, +)
+            daysWithDataCount = dailyData.count
+
+        case .yearly:
+            var dailyData: [Date: Double] = [:]
+
+            for entry in data {
+                let entryDay = calendar.startOfDay(for: entry.date)
+                if let existingValue = dailyData[entryDay] {
+                    dailyData[entryDay] = existingValue + entry.value
+                } else {
+                    dailyData[entryDay] = entry.value
+                }
+            }
+
+            totalSum = dailyData.values.reduce(0, +)
+            daysWithDataCount = dailyData.count * 2
+
+        default:
+            var uniqueDaysWithData = Set<Date>()
+            let nonZeroData = data.filter { $0.value > 0 }
+
+            for entry in nonZeroData {
+                let entryDay = calendar.startOfDay(for: entry.date)
+                uniqueDaysWithData.insert(entryDay)
+            }
+
+            totalSum = nonZeroData.map { $0.value }.reduce(0, +)
+            daysWithDataCount = uniqueDaysWithData.count
         }
 
-        let daysWithDataCount = uniqueDaysWithData.count
-        let count = daysWithDataCount > 0 ? daysWithDataCount : 1 // Avoid division by zero
-        
-        // Calculate the average based on the number of days with data
-        let average = count > 0 ? totalSum / Double(count) : 0.0
+        // Calculate the average based on the actual number of unique days with data
+        let average = totalSum / Double(daysWithDataCount)
+
         return (sum: totalSum, average: average)
     }
-    
+
     private func getTitleForMetric() -> String {
         let description: String
         let dataType: String
