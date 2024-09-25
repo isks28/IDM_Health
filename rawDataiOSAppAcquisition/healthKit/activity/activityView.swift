@@ -827,10 +827,10 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
             title = dateFormatter.string(from: pageDate)
             
         case .weekly:
-            let startOfWeek = calendar.date(byAdding: .weekOfYear, value: page, to: startDate) ?? startDate
-            let endOfWeek = calendar.date(byAdding: .day, value: 6, to: startOfWeek) ?? startOfWeek
+            let currentWeekStart = calendar.dateInterval(of: .weekOfYear, for: calendar.date(byAdding: .weekOfYear, value: page, to: startDate)!)?.start ?? startDate
+            let currentWeekEnd = calendar.date(byAdding: .day, value: 6, to: currentWeekStart)!
             dateFormatter.dateFormat = "MMM dd"
-            title = "\(dateFormatter.string(from: startOfWeek)) - \(dateFormatter.string(from: endOfWeek))"
+            title = "\(dateFormatter.string(from: currentWeekStart)) - \(dateFormatter.string(from: currentWeekEnd))"
                 
         case .monthly:
             let pageDate = calendar.date(byAdding: .month, value: page, to: startDate) ?? startDate
