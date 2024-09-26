@@ -350,7 +350,13 @@ struct ChartWithTimeFramePicker: View {
             )
             
             // Calculate sum and average
-            let (sum, average) = calculateSumAndAverage(for: selectedTimeFrame, data: filteredData, startDate: startDate, endDate: endDate)
+            let (sum, average) = calculateSumAndAverage(
+                for: selectedTimeFrame,
+                data: filteredData,
+                startDate: startDate,
+                endDate: endDate,
+                currentPage: currentPageForTimeFrames[selectedTimeFrame] ?? 0
+            )
 
             // Display correct title for total or average
             Text(getTitleForMetric())
@@ -423,46 +429,85 @@ struct ChartWithTimeFramePicker: View {
         }
     }
     
-    private func calculateSumAndAverage(for timeFrame: TimeFrame, data: [ChartDataactivity], startDate: Date, endDate: Date) -> (sum: Double, average: Double) {
+    private func calculateSumAndAverage(for timeFrame: TimeFrame, data: [ChartDataactivity], startDate: Date, endDate: Date, currentPage: Int) -> (sum: Double, average: Double) {
         let calendar = Calendar.current
+        
+        var intervalStartDate: Date = startDate
+        var intervalEndDate: Date = endDate
+        
+        // Calculate the date range for the currently viewed page in the TabView, but only for .sixMonths and .yearly
+        if timeFrame == .sixMonths || timeFrame == .yearly {
+            (intervalStartDate, intervalEndDate) = getDateRangeForCurrentPage(timeFrame: timeFrame, startDate: startDate, currentPage: currentPage)
+        }
 
-        var totalSum: Double
-        var daysWithDataCount: Int
+        var totalSum: Double = 0
+        var daysWithDataCount: Int = 0
+        var uniqueDaysWithData = Set<Date>()
 
         switch timeFrame {
         case .sixMonths:
-            var dailyData: [Date: Double] = [:]
+            // Filter data within the selected six-month interval
+            let filteredData = data.filter { $0.date >= intervalStartDate && $0.date <= intervalEndDate }
 
-            for entry in data {
-                let entryDay = calendar.startOfDay(for: entry.date)
-                if let existingValue = dailyData[entryDay] {
-                    dailyData[entryDay] = existingValue + entry.value
-                } else {
-                    dailyData[entryDay] = entry.value
+            // Aggregate data by week, then by day within each week
+            var weeklyData: [Date: [Date: Double]] = [:]
+            
+            for entry in filteredData {
+                let weekStartDate = calendar.dateInterval(of: .weekOfYear, for: entry.date)?.start ?? calendar.startOfDay(for: entry.date)
+                let dayStartDate = calendar.startOfDay(for: entry.date)
+                
+                if weeklyData[weekStartDate] == nil {
+                    weeklyData[weekStartDate] = [:]
                 }
+                
+                if let existingValue = weeklyData[weekStartDate]?[dayStartDate] {
+                    weeklyData[weekStartDate]?[dayStartDate] = existingValue + entry.value
+                } else {
+                    weeklyData[weekStartDate]?[dayStartDate] = entry.value
+                }
+                
+                // Add the day to the set of unique days with data
+                uniqueDaysWithData.insert(dayStartDate)
             }
-
-            totalSum = dailyData.values.reduce(0, +)
-            daysWithDataCount = dailyData.count
+            
+            // Sum all data
+            totalSum = weeklyData.values.flatMap { $0.values }.reduce(0, +)
+            daysWithDataCount = uniqueDaysWithData.count
+            print("Days with data count in 6 months: \(daysWithDataCount)")
 
         case .yearly:
-            var dailyData: [Date: Double] = [:]
+            // Filter data within the selected yearly interval
+            let filteredData = data.filter { $0.date >= intervalStartDate && $0.date <= intervalEndDate }
 
-            for entry in data {
-                let entryDay = calendar.startOfDay(for: entry.date)
-                if let existingValue = dailyData[entryDay] {
-                    dailyData[entryDay] = existingValue + entry.value
-                } else {
-                    dailyData[entryDay] = entry.value
+            // Aggregate data by month, then by day within each month
+            var monthlyData: [Date: [Date: Double]] = [:]
+            
+            for entry in filteredData {
+                let monthStartDate = calendar.date(from: calendar.dateComponents([.year, .month], from: entry.date)) ?? calendar.startOfDay(for: entry.date)
+                let dayStartDate = calendar.startOfDay(for: entry.date)
+                
+                if monthlyData[monthStartDate] == nil {
+                    monthlyData[monthStartDate] = [:]
                 }
+                
+                if let existingValue = monthlyData[monthStartDate]?[dayStartDate] {
+                    monthlyData[monthStartDate]?[dayStartDate] = existingValue + entry.value
+                } else {
+                    monthlyData[monthStartDate]?[dayStartDate] = entry.value
+                }
+                
+                // Add the day to the set of unique days with data
+                uniqueDaysWithData.insert(dayStartDate)
             }
-
-            totalSum = dailyData.values.reduce(0, +)
-            daysWithDataCount = dailyData.count * 2
+            
+            // Sum all data
+            totalSum = monthlyData.values.flatMap { $0.values }.reduce(0, +)
+            daysWithDataCount = uniqueDaysWithData.count
+            print("Days with data count in yearly: \(daysWithDataCount)")
 
         default:
-            var uniqueDaysWithData = Set<Date>()
-            let nonZeroData = data.filter { $0.value > 0 }
+            // For other time frames, use the existing logic
+            let nonZeroData = data.filter { $0.value > 0 && $0.date >= intervalStartDate && $0.date <= intervalEndDate }
 
             for entry in nonZeroData {
                 let entryDay = calendar.startOfDay(for: entry.date)
@@ -471,12 +516,39 @@ struct ChartWithTimeFramePicker: View {
 
             totalSum = nonZeroData.map { $0.value }.reduce(0, +)
             daysWithDataCount = uniqueDaysWithData.count
+            print("Days with data count: \(daysWithDataCount)")
         }
 
         // Calculate the average based on the actual number of unique days with data
-        let average = totalSum / Double(daysWithDataCount)
+        let average = daysWithDataCount > 0 ? totalSum / Double(daysWithDataCount) : 0
 
         return (sum: totalSum, average: average)
+    }
+
+    // Helper function to get the date range for the current page in the TabView
+    private func getDateRangeForCurrentPage(timeFrame: TimeFrame, startDate: Date, currentPage: Int) -> (Date, Date) {
+        let calendar = Calendar.current
+        var intervalStartDate: Date = startDate
+        var intervalEndDate: Date = startDate
+
+        switch timeFrame {
+        case .sixMonths:
+            // Get the start date for the 6-month period
+            intervalStartDate = calendar.date(byAdding: .month, value: currentPage * 6, to: startDate) ?? startDate
+            intervalEndDate = calendar.date(byAdding: .month, value: 5, to: intervalStartDate) ?? intervalStartDate
+            intervalEndDate = calendar.date(byAdding: .day, value: 30, to: intervalEndDate) ?? intervalEndDate
+
+        case .yearly:
+            // Get the start date for the 1-year period
+            intervalStartDate = calendar.date(byAdding: .year, value: currentPage, to: startDate) ?? startDate
+            intervalEndDate = calendar.date(byAdding: .year, value: 1, to: intervalStartDate) ?? intervalStartDate
+            intervalEndDate = calendar.date(byAdding: .day, value: -1, to: intervalEndDate) ?? intervalEndDate
+
+        default:
+            break
+        }
+
+        return (intervalStartDate, intervalEndDate)
     }
 
     private func getTitleForMetric() -> String {
