@@ -16,12 +16,15 @@ class ActivityManager: ObservableObject {
     @Published var activeEnergyBurnedData: [HKQuantitySample] = []
     @Published var appleMoveTimeData: [HKQuantitySample] = []
     @Published var appleStandTimeData: [HKQuantitySample] = []
-    @Published var distanceWalkingRunningData: [HKQuantitySample] = []   // Added distanceWalkingRunning
-    @Published var appleExerciseTimeData: [HKQuantitySample] = []        // Added appleExerciseTime
+    @Published var distanceWalkingRunningData: [HKQuantitySample] = []
+    @Published var appleExerciseTimeData: [HKQuantitySample] = []
     @Published var savedFilePath: String?
     
     @Published var startDate: Date
     @Published var endDate: Date
+    
+    private var dataCache: [HKQuantityTypeIdentifier: [HKQuantitySample]] = [:]
+    private let backgroundQueue = DispatchQueue(label: "com.activityManager.backgroundQueue", attributes: .concurrent)
     
     init(startDate: Date, endDate: Date) {
         self.startDate = startDate
@@ -30,18 +33,14 @@ class ActivityManager: ObservableObject {
     }
     
     func requestAuthorization() {
-        guard let stepCount = HKQuantityType.quantityType(forIdentifier: .stepCount),
-              let activeEnergyBurned = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned),
-              let appleMoveTime = HKQuantityType.quantityType(forIdentifier: .appleMoveTime),
-              let appleStandTime = HKQuantityType.quantityType(forIdentifier: .appleStandTime),
-              let distanceWalkingRunning = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning),  // Added distanceWalkingRunning
-              let appleExerciseTime = HKQuantityType.quantityType(forIdentifier: .appleExerciseTime)  // Added appleExerciseTime
-        else {
-            print("One or more Health Activity Data is not available")
-            return
-        }
-        
-        let typesToRead: Set = [stepCount, activeEnergyBurned, appleMoveTime, appleStandTime, distanceWalkingRunning, appleExerciseTime]  // Added new types
+        let typesToRead: Set<HKQuantityType> = [
+            .quantityType(forIdentifier: .stepCount)!,
+            .quantityType(forIdentifier: .activeEnergyBurned)!,
+            .quantityType(forIdentifier: .appleMoveTime)!,
+            .quantityType(forIdentifier: .appleStandTime)!,
+            .quantityType(forIdentifier: .distanceWalkingRunning)!,
+            .quantityType(forIdentifier: .appleExerciseTime)!
+        ]
         
         healthStore.requestAuthorization(toShare: nil, read: typesToRead) { success, error in
             if !success {
@@ -53,36 +52,64 @@ class ActivityManager: ObservableObject {
     }
     
     func fetchActivityData(startDate: Date, endDate: Date) {
-        fetchRawData(for: .stepCount, startDate: startDate, endDate: endDate) { result in
-            self.stepCountData = result
+        // Clear cache for new data fetch
+        dataCache.removeAll()
+        
+        // Fetch each data type
+        fetchData(identifier: .stepCount, startDate: startDate, endDate: endDate) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.stepCountData = result
+            }
         }
-        fetchRawData(for: .activeEnergyBurned, startDate: startDate, endDate: endDate) { result in
-            self.activeEnergyBurnedData = result
+        
+        fetchData(identifier: .activeEnergyBurned, startDate: startDate, endDate: endDate) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.activeEnergyBurnedData = result
+            }
         }
-        fetchRawData(for: .appleMoveTime, startDate: startDate, endDate: endDate) { result in
-            self.appleMoveTimeData = result
+        
+        fetchData(identifier: .appleMoveTime, startDate: startDate, endDate: endDate) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.appleMoveTimeData = result
+            }
         }
-        fetchRawData(for: .appleStandTime, startDate: startDate, endDate: endDate) { result in
-            self.appleStandTimeData = result
+        
+        fetchData(identifier: .appleStandTime, startDate: startDate, endDate: endDate) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.appleStandTimeData = result
+            }
         }
-        fetchRawData(for: .distanceWalkingRunning, startDate: startDate, endDate: endDate) { result in
-            self.distanceWalkingRunningData = result
+        
+        fetchData(identifier: .distanceWalkingRunning, startDate: startDate, endDate: endDate) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.distanceWalkingRunningData = result
+            }
         }
-        fetchRawData(for: .appleExerciseTime, startDate: startDate, endDate: endDate) { result in
-            self.appleExerciseTimeData = result
+        
+        fetchData(identifier: .appleExerciseTime, startDate: startDate, endDate: endDate) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.appleExerciseTimeData = result
+            }
         }
     }
     
-    private func fetchRawData(for identifier: HKQuantityTypeIdentifier, startDate: Date, endDate: Date, completion: @escaping ([HKQuantitySample]) -> Void) {
+    private func fetchData(identifier: HKQuantityTypeIdentifier, startDate: Date, endDate: Date, completion: @escaping ([HKQuantitySample]) -> Void) {
+        if let cachedData = dataCache[identifier] {
+            completion(cachedData)
+            return
+        }
+        
         guard let quantityType = HKQuantityType.quantityType(forIdentifier: identifier) else {
             print("\(identifier.rawValue) Type is unavailable")
+            completion([])
             return
         }
         
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
-        let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { query, samples, error in
+        let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { [weak self] _, samples, error in
             if let error = error {
                 print("Failed to fetch \(identifier.rawValue) data: \(error.localizedDescription)")
+                completion([])
                 return
             }
             
@@ -91,22 +118,24 @@ class ActivityManager: ObservableObject {
                 return
             }
             
-            DispatchQueue.main.async {
-                completion(quantitySamples)
-                print("Fetched \(quantitySamples.count) raw samples for \(identifier.rawValue)")
-            }
+            self?.dataCache[identifier] = quantitySamples
+            completion(quantitySamples)
         }
         
-        healthStore.execute(query)
+        backgroundQueue.async {
+            self.healthStore.execute(query)
+        }
     }
     
     func saveDataAsCSV() {
-        saveCSV(for: stepCountData, fileName: "step_count_data.csv", valueUnit: HKUnit.count(), unitLabel: "Count")
-        saveCSV(for: activeEnergyBurnedData, fileName: "active_energy_burned_data.csv", valueUnit: HKUnit.largeCalorie(), multiplier: 1.0, unitLabel: "Kilo Calories")
-        saveCSV(for: appleMoveTimeData, fileName: "move_time_data.csv", valueUnit: HKUnit.second(), unitLabel: "Seconds")
-        saveCSV(for: appleStandTimeData, fileName: "apple_stand_time_data.csv", valueUnit: HKUnit.second(), unitLabel: "Seconds")
-        saveCSV(for: distanceWalkingRunningData, fileName: "distance_walking_running_data.csv", valueUnit: HKUnit.meter(), unitLabel: "Meters")  // Added CSV for distanceWalkingRunning
-        saveCSV(for: appleExerciseTimeData, fileName: "exercise_time_data.csv", valueUnit: HKUnit.second(), unitLabel: "Seconds")  // Added CSV for appleExerciseTime
+        backgroundQueue.async {
+            self.saveCSV(for: self.stepCountData, fileName: "step_count_data.csv", valueUnit: HKUnit.count(), unitLabel: "Count")
+            self.saveCSV(for: self.activeEnergyBurnedData, fileName: "active_energy_burned_data.csv", valueUnit: HKUnit.largeCalorie(), multiplier: 1.0, unitLabel: "Kilo Calories")
+            self.saveCSV(for: self.appleMoveTimeData, fileName: "move_time_data.csv", valueUnit: HKUnit.second(), unitLabel: "Seconds")
+            self.saveCSV(for: self.appleStandTimeData, fileName: "apple_stand_time_data.csv", valueUnit: HKUnit.second(), unitLabel: "Seconds")
+            self.saveCSV(for: self.distanceWalkingRunningData, fileName: "distance_walking_running_data.csv", valueUnit: HKUnit.meter(), unitLabel: "Meters")
+            self.saveCSV(for: self.appleExerciseTimeData, fileName: "exercise_time_data.csv", valueUnit: HKUnit.second(), unitLabel: "Seconds")
+        }
     }
     
     private func saveCSV(for samples: [HKQuantitySample], fileName: String, valueUnit: HKUnit, multiplier: Double = 1.0, unitLabel: String) {
@@ -140,8 +169,10 @@ class ActivityManager: ObservableObject {
         
         do {
             try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
-            print("File saved at \(fileURL.path)")
-            savedFilePath = fileURL.path
+            DispatchQueue.main.async {
+                print("File saved at \(fileURL.path)")
+                self.savedFilePath = fileURL.path
+            }
         } catch {
             print("Failed to save file: \(error)")
         }

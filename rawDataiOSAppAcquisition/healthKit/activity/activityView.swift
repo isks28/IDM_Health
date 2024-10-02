@@ -19,29 +19,29 @@ enum TimeFrame: String, CaseIterable {
 }
 
 struct activityView: View {
-    @StateObject private var healthKitManager: ActivityManager
+    @ObservedObject private var healthKitManager: ActivityManager
     @State private var isRecording = false
-    
     @State private var startDate = Date()
     @State private var endDate = Date()
     
     // State variables to control sheet presentation
-    @State private var showingStepCountChart = false
-    @State private var showingActiveEnergyChart = false
-    @State private var showingMoveTimeChart = false
-    @State private var showingStandTimeChart = false
-    @State private var showingDistanceWalkingRunningChart = false
-    @State private var showingExerciseTimeChart = false
+    @State private var showingChart: [String: Bool] = [
+        "StepCount": false,
+        "ActiveEnergy": false,
+        "MoveTime": false,
+        "StandTime": false,
+        "DistanceWalkingRunning": false,
+        "ExerciseTime": false
+    ]
     
     init() {
-        _healthKitManager = StateObject(wrappedValue: ActivityManager(startDate: Date(), endDate: Date()))
+        _healthKitManager = ObservedObject(wrappedValue: ActivityManager(startDate: Date(), endDate: Date()))
         _startDate = State(initialValue: Date())
         _endDate = State(initialValue: Date())
     }
     
     var body: some View {
         VStack {
-            
             Text("Activity Health Data")
                 .font(.largeTitle)
                 
@@ -50,157 +50,17 @@ struct activityView: View {
                 .padding(.top)
             
             ScrollView {
-                VStack {
-                    // Step Count Section with info button
-                    Section(header: Text("Step Count")) {
-                        HStack {
-                            if !healthKitManager.stepCountData.isEmpty{
-                                Text("Step Count Data is Available")
-                                    .foregroundStyle(Color.mint)
-                                    .multilineTextAlignment(.center)
-                            }
-                            Button(action: {
-                                showingStepCountChart = true
-                            }) {
-                                Image(systemName: "info.circle")
-                                    .foregroundStyle(Color.pink)
-                            }
-                            .sheet(isPresented: $showingStepCountChart) {
-                                ChartWithTimeFramePicker(title: "Step Count", data: healthKitManager.stepCountData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.count()))
-                                },
-                                 startDate: healthKitManager.startDate,
-                                 endDate: healthKitManager.endDate
-                                )
-                            }
-                        }
-                        .padding(.bottom, 10)
-                    }
-                    
-                    // Active Energy Burned Section with info button
-                    Section(header: Text("Active Energy Burned")) {
-                        HStack {
-                            if !healthKitManager.activeEnergyBurnedData.isEmpty{
-                                Text("Active Energy Burned Data is Available")
-                                    .foregroundStyle(Color.mint)
-                                    .multilineTextAlignment(.center)
-                            }
-                            Button(action: {
-                                showingActiveEnergyChart = true
-                            }) {
-                                Image(systemName: "info.circle")
-                                    .foregroundStyle(Color.pink)
-                            }
-                            .sheet(isPresented: $showingActiveEnergyChart) {
-                                ChartWithTimeFramePicker(title: "Active Energy Burned in KiloCalorie", data: healthKitManager.activeEnergyBurnedData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.smallCalorie()))
-                                },
-                                 startDate: healthKitManager.startDate,
-                                 endDate: healthKitManager.endDate
-                                )
-                            }
-                        }
-                        .padding(.bottom, 10)
-                    }
-                    
-                    // Move Time Section with info button
-                    Section(header: Text("Move Time")) {
-                        HStack {
-                            if !healthKitManager.appleMoveTimeData.isEmpty{
-                                Text("Move Time Data is Available")
-                                    .foregroundStyle(Color.mint)
-                                    .multilineTextAlignment(.center)
-                            }
-                            Button(action: {
-                                showingMoveTimeChart = true
-                            }) {
-                                Image(systemName: "info.circle")
-                                    .foregroundStyle(Color.pink)
-                            }
-                            .sheet(isPresented: $showingMoveTimeChart) {
-                                ChartWithTimeFramePicker(title: "Move Time (s)", data: healthKitManager.appleMoveTimeData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.second()))
-                                },
-                                 startDate: healthKitManager.startDate,
-                                 endDate: healthKitManager.endDate
-                                )
-                            }
-                        }
-                        .padding(.bottom, 10)
-                    }
-                    
-                    // Stand Time Section with info button
-                    Section(header: Text("Stand Time")) {
-                        HStack {
-                            if !healthKitManager.appleStandTimeData.isEmpty{
-                                Text("Stand Time Data is Available")
-                                    .foregroundStyle(Color.mint)
-                                    .multilineTextAlignment(.center)
-                            }
-                            Button(action: {
-                                showingStandTimeChart = true
-                            }) {
-                                Image(systemName: "info.circle")
-                                    .foregroundStyle(Color.pink)
-                            }
-                            .sheet(isPresented: $showingStandTimeChart) {
-                                ChartWithTimeFramePicker(title: "Stand Time (s)", data: healthKitManager.appleStandTimeData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.second()))
-                                },
-                                 startDate: healthKitManager.startDate,
-                                 endDate: healthKitManager.endDate
-                                )
-                            }
-                        }
-                        .padding(.bottom, 10)
-                    }
-                    // Distance Walking Running Section with info button
-                    Section(header: Text("Distance Walking/Running")) {
-                        HStack {
-                            if !healthKitManager.activeEnergyBurnedData.isEmpty{
-                                Text("Distance Walking/Running Data is Available")
-                                    .foregroundStyle(Color.mint)
-                                    .multilineTextAlignment(.center)
-                            }
-                            Button(action: {
-                                showingDistanceWalkingRunningChart = true
-                            }) {
-                                Image(systemName: "info.circle")
-                                    .foregroundStyle(Color.pink)
-                            }
-                            .sheet(isPresented: $showingDistanceWalkingRunningChart) {
-                                ChartWithTimeFramePicker(title: "Distance Walking/Running (m)", data: healthKitManager.distanceWalkingRunningData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.meter()))
-                                },
-                                 startDate: healthKitManager.startDate,
-                                 endDate: healthKitManager.endDate
-                                )
-                            }
-                        }
-                        .padding(.bottom, 10)
-                    }
-                    // Exercise Time Section with info button
-                    Section(header: Text("Exercise Time")) {
-                        HStack {
-                            if !healthKitManager.activeEnergyBurnedData.isEmpty{
-                                Text("Exercise Time Data is Available")
-                                    .foregroundStyle(Color.mint)
-                                    .multilineTextAlignment(.center)
-                            }
-                            Button(action: {
-                                showingExerciseTimeChart = true
-                            }) {
-                                Image(systemName: "info.circle")
-                                    .foregroundStyle(Color.pink)
-                            }
-                            .sheet(isPresented: $showingExerciseTimeChart) {
-                                ChartWithTimeFramePicker(title: "Exercise Time (s)", data: healthKitManager.appleExerciseTimeData.map { ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: HKUnit.second()))
-                                },
-                                 startDate: healthKitManager.startDate,
-                                 endDate: healthKitManager.endDate
-                                )
-                            }
-                        }
-                        .padding(.bottom, 10)
-                    }
+                VStack(spacing: 15) {
+                    dataSection(title: "Step Count", dataAvailable: !healthKitManager.stepCountData.isEmpty, chartKey: "StepCount", data: healthKitManager.stepCountData, unit: HKUnit.count(), chartTitle: "Step Count")
+                    dataSection(title: "Active Energy Burned", dataAvailable: !healthKitManager.activeEnergyBurnedData.isEmpty, chartKey: "ActiveEnergy", data: healthKitManager.activeEnergyBurnedData, unit: HKUnit.smallCalorie(), chartTitle: "Active Energy Burned in KiloCalorie")
+                    dataSection(title: "Move Time", dataAvailable: !healthKitManager.appleMoveTimeData.isEmpty, chartKey: "MoveTime", data: healthKitManager.appleMoveTimeData, unit: HKUnit.second(), chartTitle: "Move Time (s)")
+                    dataSection(title: "Stand Time", dataAvailable: !healthKitManager.appleStandTimeData.isEmpty, chartKey: "StandTime", data: healthKitManager.appleStandTimeData, unit: HKUnit.second(), chartTitle: "Stand Time (s)")
+                    dataSection(title: "Distance Walking/Running", dataAvailable: !healthKitManager.distanceWalkingRunningData.isEmpty, chartKey: "DistanceWalkingRunning", data: healthKitManager.distanceWalkingRunningData, unit: HKUnit.meter(), chartTitle: "Distance Walking/Running (m)")
+                    dataSection(title: "Exercise Time", dataAvailable: !healthKitManager.appleExerciseTimeData.isEmpty, chartKey: "ExerciseTime", data: healthKitManager.appleExerciseTimeData, unit: HKUnit.second(), chartTitle: "Exercise Time (s)")
                 }
                 .padding(.horizontal)
             }
+            
             Text("Set Start and End-Date of Data to be fetched:")
                 .font(.headline)
                 .padding(.top, 50)
@@ -217,7 +77,7 @@ struct activityView: View {
 
             Spacer()
 
-            HStack{
+            HStack {
                 Button(action: {
                     if isRecording {
                         healthKitManager.saveDataAsCSV()
@@ -231,22 +91,45 @@ struct activityView: View {
                         .background(isRecording ? Color.gray : Color.mint)
                         .foregroundColor(.white)
                         .cornerRadius(8)
-                    if healthKitManager.savedFilePath != nil {
-                        Text("File saved")
-                            .font(.footnote)
-                    }
                 }
-                .padding() // Ensure button is visible
+                .padding()
+                
+                if healthKitManager.savedFilePath != nil {
+                    Text("File saved")
+                        .font(.footnote)
+                }
             }
         }
         .padding()
     }
-
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
+    
+    // Modular function for creating data sections
+    @ViewBuilder
+    private func dataSection(title: String, dataAvailable: Bool, chartKey: String, data: [HKQuantitySample], unit: HKUnit, chartTitle: String) -> some View {
+        Section(header: Text(title)) {
+            HStack {
+                if dataAvailable {
+                    Text("\(title) Data is Available")
+                        .foregroundStyle(Color.mint)
+                        .multilineTextAlignment(.center)
+                }
+                Button(action: {
+                    showingChart[chartKey] = true
+                }) {
+                    Image(systemName: "info.circle")
+                        .foregroundStyle(Color.pink)
+                }
+                .sheet(isPresented: Binding(
+                    get: { showingChart[chartKey] ?? false },
+                    set: { showingChart[chartKey] = $0 }
+                )) {
+                    ChartWithTimeFramePicker(title: chartTitle, data: data.map {
+                        ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: unit))
+                    }, startDate: healthKitManager.startDate, endDate: healthKitManager.endDate)
+                }
+            }
+            .padding(.bottom, 10)
+        }
     }
 }
 
@@ -255,11 +138,8 @@ struct ChartWithTimeFramePicker: View {
     var data: [ChartDataactivity]
     var startDate: Date
     var endDate: Date
-    
-    // State to control the selected time frame
+
     @State private var selectedTimeFrame: TimeFrame = .daily
-    
-    // Dictionary to track the current page for each time frame independently
     @State private var currentPageForTimeFrames: [TimeFrame: Int] = [
         .daily: 0,
         .weekly: 0,
@@ -267,23 +147,24 @@ struct ChartWithTimeFramePicker: View {
         .sixMonths: 0,
         .yearly: 0
     ]
-    
-    // State for showing the popover
+
     @State private var showInfoPopover: Bool = false
     @State private var showDatePicker: Bool = false
     @State private var selectedDate: Date = Date()
-    
+
+    // Cache for precomputed data
+    @State private var precomputedPageData: [TimeFrame: [Int: [ChartDataactivity]]] = [:]
+    @State private var sum: Double = 0
+    @State private var average: Double = 0
+
     var body: some View {
-        VStack() {
-            
-            // Display additional information based on the selected section (Step Count, Active Energy, etc.)
+        VStack {
             HStack {
                 Text(getInformationText())
                     .font(.subheadline)
                     .padding(.top)
                     .multilineTextAlignment(.center)
                 
-                // Information button with popover
                 Button(action: {
                     showInfoPopover.toggle()
                 }) {
@@ -292,25 +173,11 @@ struct ChartWithTimeFramePicker: View {
                         .padding(.top)
                 }
                 .popover(isPresented: $showInfoPopover) {
-                    // Popover content
-                    VStack(alignment: .leading) {
-                        Text("Additional Information")
-                            .font(.title)
-                            .padding(.bottom, 7)
-                            .foregroundStyle(Color.pink)
-                        Text(measuredUsing())
-                            .font(.body)
-                            .padding(.bottom, 3)
-                        Text(useCase())
-                            .font(.body)
-                            .padding(.bottom, 3)
-                    }
-                    .frame(width: 300, height: 400) // Customize popover size
+                    popoverContent()
                 }
             }
             .padding(.horizontal)
             
-            // Picker for selecting the time frame
             Picker("Time Frame", selection: $selectedTimeFrame) {
                 ForEach(TimeFrame.allCases, id: \.self) { timeFrame in
                     Text(timeFrame.rawValue).tag(timeFrame)
@@ -318,8 +185,10 @@ struct ChartWithTimeFramePicker: View {
             }
             .pickerStyle(SegmentedPickerStyle())
             .padding()
+            .onChange(of: selectedTimeFrame) { _, _ in
+                updateFilteredData()
+            }
             
-            // Title with clickable functionality to show date picker
             Button(action: {
                 showDatePicker = true
             }) {
@@ -327,57 +196,37 @@ struct ChartWithTimeFramePicker: View {
                     .font(.title2)
             }
             .sheet(isPresented: $showDatePicker) {
-                DatePicker(
-                    "Select Date",
-                    selection: $selectedDate,
-                    in: startDate...endDate,
-                    displayedComponents: [.date]
-                )
-                .datePickerStyle(GraphicalDatePickerStyle())
-                .onChange(of: selectedDate) { _, newDate in
-                    jumpToPage(for: selectedDate)
-                }
+                DatePicker("Select Date", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
+                    .datePickerStyle(GraphicalDatePickerStyle())
+                    .onChange(of: selectedDate) { _, _ in
+                        jumpToPage(for: selectedDate)
+                    }
             }
 
-            let filteredData = filterAndAggregateDataForPage(
-                data,
-                timeFrame: selectedTimeFrame,
-                page: currentPageForTimeFrames[selectedTimeFrame] ?? 0,
-                startDate: startDate,
-                endDate: endDate
-            )
-            
-            // Calculate sum and average
-            let (sum, average) = calculateSumAndAverage(
-                for: selectedTimeFrame,
-                data: filteredData,
-                startDate: startDate,
-                endDate: endDate,
-                currentPage: currentPageForTimeFrames[selectedTimeFrame] ?? 0
-            )
-
-            // Display the combined title and value with independent colors in one continuous text
+            // Display the metric sum and average
             HStack {
                 Text(getTitleForMetric(timeFrame: selectedTimeFrame))
-                    .foregroundColor(.black) // Color for the metric title
-                + Text(": ") // Separator
-                    .foregroundColor(.black) // Default color for the separator
+                    .foregroundColor(.black)
+                + Text(": ")
+                    .foregroundColor(.black)
                 + Text(getValueText(timeFrame: selectedTimeFrame, sum: sum, average: average))
-                    .foregroundColor(.mint) // Color for the value text
+                    .foregroundColor(.mint)
             }
-            .font(.headline) // Apply the font to the entire text
-            .frame(maxWidth: .infinity) // Make the text take the full width of the parent view
-            .multilineTextAlignment(.center) // Center align the text
-            
-            // Display the chart with horizontal paging
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .multilineTextAlignment(.center)
+
+            // Use precomputed data for TabView
             TabView(selection: Binding(
                 get: { currentPageForTimeFrames[selectedTimeFrame] ?? 0 },
-                set: { newValue in currentPageForTimeFrames[selectedTimeFrame] = newValue
+                set: { newValue in
+                    currentPageForTimeFrames[selectedTimeFrame] = newValue
+                    updateDisplayedData()
                 }
             )) {
-                if !data.isEmpty {
-                    ForEach((0..<getPageCount(for: selectedTimeFrame, startDate: startDate, endDate: endDate)), id: \.self) { page in
-                        BoxChartViewActivity(data: filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrame, page: page, startDate: startDate, endDate: endDate), timeFrame: selectedTimeFrame, title: title)
+                if let pageData = precomputedPageData[selectedTimeFrame] {
+                    ForEach(0..<getPageCount(for: selectedTimeFrame, startDate: startDate, endDate: endDate), id: \.self) { page in
+                        BoxChartViewActivity(data: pageData[page] ?? [], timeFrame: selectedTimeFrame, title: title)
                             .tag(page)
                             .padding(.horizontal)
                     }
@@ -385,12 +234,61 @@ struct ChartWithTimeFramePicker: View {
                     Text("No Data")
                 }
             }
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never)) // Remove default page indicator for a smooth effect
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .padding(.bottom)
-            
+
             Spacer()
         }
         .padding()
+        .onAppear {
+            updateFilteredData()
+        }
+    }
+
+    // Precompute data for all pages
+    private func updateFilteredData() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            var newPrecomputedData: [Int: [ChartDataactivity]] = [:]
+            let pageCount = getPageCount(for: selectedTimeFrame, startDate: startDate, endDate: endDate)
+
+            for page in 0..<pageCount {
+                let filtered = filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrame, page: page, startDate: startDate, endDate: endDate)
+                newPrecomputedData[page] = filtered
+            }
+
+            let (computedSum, computedAverage) = calculateSumAndAverage(for: selectedTimeFrame, data: newPrecomputedData[currentPageForTimeFrames[selectedTimeFrame] ?? 0] ?? [], startDate: startDate, endDate: endDate, currentPage: currentPageForTimeFrames[selectedTimeFrame] ?? 0)
+
+            DispatchQueue.main.async {
+                precomputedPageData[selectedTimeFrame] = newPrecomputedData
+                sum = computedSum
+                average = computedAverage
+            }
+        }
+    }
+
+    // Update displayed data based on the current page
+    private func updateDisplayedData() {
+        if let pageData = precomputedPageData[selectedTimeFrame]?[currentPageForTimeFrames[selectedTimeFrame] ?? 0] {
+            let (computedSum, computedAverage) = calculateSumAndAverage(for: selectedTimeFrame, data: pageData, startDate: startDate, endDate: endDate, currentPage: currentPageForTimeFrames[selectedTimeFrame] ?? 0)
+            sum = computedSum
+            average = computedAverage
+        }
+    }
+
+    private func popoverContent() -> some View {
+        VStack(alignment: .leading) {
+            Text("Additional Information")
+                .font(.title)
+                .padding(.bottom, 7)
+                .foregroundStyle(Color.pink)
+            Text(measuredUsing())
+                .font(.body)
+                .padding(.bottom, 3)
+            Text(useCase())
+                .font(.body)
+                .padding(.bottom, 3)
+        }
+        .frame(width: 300, height: 400)
     }
     
     // Helper function to get the value text
