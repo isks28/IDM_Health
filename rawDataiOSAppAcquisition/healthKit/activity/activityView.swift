@@ -236,6 +236,7 @@ struct ChartWithTimeFramePicker: View {
                     Button("Done") {
                         showDatePicker = false
                     }
+                    .foregroundStyle(Color.pink)
                     .padding()
                 }
             }
@@ -272,7 +273,7 @@ struct ChartWithTimeFramePicker: View {
                 }
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-            .padding(.bottom)
+            .padding(.horizontal)
 
             Spacer()
         }
