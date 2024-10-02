@@ -44,12 +44,14 @@ struct activityView: View {
         VStack {
             Text("Activity Health Data")
                 .font(.largeTitle)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
                 
             Text("To be fetched Data:")
                 .font(.headline)
                 .padding(.top)
             
-            ScrollView {
+            ScrollView(.vertical) {
                 VStack(spacing: 15) {
                     dataSection(title: "Step Count", dataAvailable: !healthKitManager.stepCountData.isEmpty, chartKey: "StepCount", data: healthKitManager.stepCountData, unit: HKUnit.count(), chartTitle: "Step Count")
                     dataSection(title: "Active Energy Burned", dataAvailable: !healthKitManager.activeEnergyBurnedData.isEmpty, chartKey: "ActiveEnergy", data: healthKitManager.activeEnergyBurnedData, unit: HKUnit.smallCalorie(), chartTitle: "Active Energy Burned in KiloCalorie")
@@ -63,7 +65,7 @@ struct activityView: View {
             
             Text("Set Start and End-Date of Data to be fetched:")
                 .font(.headline)
-                .padding(.top, 50)
+                .foregroundStyle(Color.mint)
             
             DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
                 .onChange(of: startDate) {
@@ -128,7 +130,6 @@ struct activityView: View {
                     }, startDate: healthKitManager.startDate, endDate: healthKitManager.endDate)
                 }
             }
-            .padding(.bottom, 10)
         }
     }
 }
@@ -184,7 +185,6 @@ struct ChartWithTimeFramePicker: View {
                 }
             }
             .pickerStyle(SegmentedPickerStyle())
-            .padding()
             .onChange(of: selectedTimeFrame) { _, _ in
                 updateFilteredData()
             }
@@ -215,6 +215,7 @@ struct ChartWithTimeFramePicker: View {
             .font(.headline)
             .frame(maxWidth: .infinity)
             .multilineTextAlignment(.center)
+            .padding(.horizontal, 25)
 
             // Use precomputed data for TabView
             TabView(selection: Binding(
@@ -228,7 +229,6 @@ struct ChartWithTimeFramePicker: View {
                     ForEach(0..<getPageCount(for: selectedTimeFrame, startDate: startDate, endDate: endDate), id: \.self) { page in
                         BoxChartViewActivity(data: pageData[page] ?? [], timeFrame: selectedTimeFrame, title: title)
                             .tag(page)
-                            .padding(.horizontal)
                     }
                 } else {
                     Text("No Data")
@@ -239,7 +239,6 @@ struct ChartWithTimeFramePicker: View {
 
             Spacer()
         }
-        .padding()
         .onAppear {
             updateFilteredData()
         }
@@ -299,6 +298,8 @@ struct ChartWithTimeFramePicker: View {
             return sum == 0 ? "--" : "\(String(format: "%.2f", sum / 1000)) kcal"
         } else if title == "Active Energy Burned in KiloCalorie" && timeFrame != .daily {
             return average == 0 ? "--" : "\(String(format: "%.2f", average / 1000)) kcal"
+        } else if title == "Step Count"{
+            return average == 0 ? "--" : "\(String(format: "%.0f", average))"
         } else {
             return average == 0 ? "--" : "\(String(format: "%.0f", average))"
         }
@@ -361,16 +362,20 @@ struct ChartWithTimeFramePicker: View {
         switch title {
         case "Step Count":
             switch timeFrame {
+            case .daily:
+                description = "Total step counts"
             case .sixMonths:
                 description = "Daily average step count in this six months span"
             case .yearly:
                 description = "Daily average step count in this one year span"
             default:
-                description = "Step Counts"
+                description = "Daily average step Counts in this time span"
             }
             
         case "Active Energy Burned in KiloCalorie":
             switch timeFrame {
+            case .daily:
+                description = "Total active energy burned"
             case .sixMonths:
                 description = "Daily average active energy burned in these six months span"
             case .yearly:
@@ -812,9 +817,7 @@ struct BoxChartViewActivity: View {
     var title: String
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text(getDynamicTitle())
-                .font(.headline)
+        VStack(alignment: .center) {
 
             if data.allSatisfy({ $0.value == 0 }) {
                 Text("No Data")
@@ -876,6 +879,9 @@ struct BoxChartViewActivity: View {
                         }
                     }
                 }
+                
+                Text(getDynamicTitle())
+                    .font(.callout)
 
                 // Scrollable List of Data below the chart
                 ScrollView {
@@ -892,9 +898,8 @@ struct BoxChartViewActivity: View {
                             }
                         }
                         .padding()
-                        .background(Color(UIColor.secondarySystemBackground))
+                        .background(Color(UIColor.white))
                         .cornerRadius(8)
-                        .shadow(radius: 3)
                         .padding(.horizontal)
                     }
                 }
@@ -903,8 +908,7 @@ struct BoxChartViewActivity: View {
         }
         .padding()
         .background(Color(UIColor.secondarySystemBackground))
-        .cornerRadius(8)
-        .shadow(radius: 5)
+        .cornerRadius(25)
     }
     
     // Helper function to get the dynamic title based on data type and time frame
