@@ -274,7 +274,7 @@ struct ChartWithTimeFramePicker: View {
     @State private var selectedDate: Date = Date()
     
     var body: some View {
-        VStack {
+        VStack() {
             
             // Display additional information based on the selected section (Step Count, Active Energy, etc.)
             HStack {
@@ -325,7 +325,6 @@ struct ChartWithTimeFramePicker: View {
             }) {
                 Text(getTitleForCurrentPage(timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0, startDate: startDate, endDate: endDate))
                     .font(.title2)
-                    .padding(.bottom, 8)
             }
             .sheet(isPresented: $showDatePicker) {
                 DatePicker(
@@ -338,7 +337,6 @@ struct ChartWithTimeFramePicker: View {
                 .onChange(of: selectedDate) { _, newDate in
                     jumpToPage(for: selectedDate)
                 }
-                .padding()
             }
 
             let filteredData = filterAndAggregateDataForPage(
@@ -358,31 +356,18 @@ struct ChartWithTimeFramePicker: View {
                 currentPage: currentPageForTimeFrames[selectedTimeFrame] ?? 0
             )
 
-            // Display correct title for total or average
-            Text(getTitleForMetric())
-                .font(.headline)
-
-            // Conditional display: show total for daily view, average for others
-            if title != "Active Energy Burned in KiloCalorie" && selectedTimeFrame == .daily {
-                Text(sum == 0 ? "--" : "\(String(format: "%.0f", sum))")
-                    .font(.headline)
-                    .foregroundStyle(Color.mint)
-            } 
-            if title == "Active Energy Burned in KiloCalorie" && selectedTimeFrame == .daily {
-                Text(sum == 0 ? "--" : "\(String(format: "%.2f", sum/1000))")
-                    .font(.headline)
-                    .foregroundStyle(Color.mint)
-            } 
-            if title == "Active Energy Burned in KiloCalorie" && selectedTimeFrame != .daily {
-                Text(sum == 0 ? "--" : "\(String(format: "%.2f", average/1000))")
-                    .font(.headline)
-                    .foregroundStyle(Color.mint)
+            // Display the combined title and value with independent colors in one continuous text
+            HStack {
+                Text(getTitleForMetric(timeFrame: selectedTimeFrame))
+                    .foregroundColor(.black) // Color for the metric title
+                + Text(": ") // Separator
+                    .foregroundColor(.black) // Default color for the separator
+                + Text(getValueText(timeFrame: selectedTimeFrame, sum: sum, average: average))
+                    .foregroundColor(.mint) // Color for the value text
             }
-            if title != "Active Energy Burned in KiloCalorie" && selectedTimeFrame != .daily {
-                Text(average == 0 ? "--" : "\(String(format: "%.0f", average))")
-                    .font(.headline)
-                    .foregroundStyle(Color.mint)
-            }
+            .font(.headline) // Apply the font to the entire text
+            .frame(maxWidth: .infinity) // Make the text take the full width of the parent view
+            .multilineTextAlignment(.center) // Center align the text
             
             // Display the chart with horizontal paging
             TabView(selection: Binding(
@@ -408,6 +393,19 @@ struct ChartWithTimeFramePicker: View {
         .padding()
     }
     
+    // Helper function to get the value text
+    private func getValueText(timeFrame: TimeFrame, sum: Double, average: Double) -> String {
+        if title != "Active Energy Burned in KiloCalorie" && timeFrame == .daily {
+            return sum == 0 ? "--" : "\(String(format: "%.0f", sum))"
+        } else if title == "Active Energy Burned in KiloCalorie" && timeFrame == .daily {
+            return sum == 0 ? "--" : "\(String(format: "%.2f", sum / 1000)) kcal"
+        } else if title == "Active Energy Burned in KiloCalorie" && timeFrame != .daily {
+            return average == 0 ? "--" : "\(String(format: "%.2f", average / 1000)) kcal"
+        } else {
+            return average == 0 ? "--" : "\(String(format: "%.0f", average))"
+        }
+    }
+    
     private func jumpToPage(for date: Date) {
         let calendar = Calendar.current
         switch selectedTimeFrame {
@@ -430,165 +428,113 @@ struct ChartWithTimeFramePicker: View {
     }
     
     private func calculateSumAndAverage(for timeFrame: TimeFrame, data: [ChartDataactivity], startDate: Date, endDate: Date, currentPage: Int) -> (sum: Double, average: Double) {
-        let calendar = Calendar.current
         
-        var intervalStartDate: Date = startDate
-        var intervalEndDate: Date = endDate
-        
-        // Calculate the date range for the currently viewed page in the TabView, but only for .sixMonths and .yearly
-        if timeFrame == .sixMonths || timeFrame == .yearly {
-            (intervalStartDate, intervalEndDate) = getDateRangeForCurrentPage(timeFrame: timeFrame, startDate: startDate, currentPage: currentPage)
-        }
+        let intervalStartDate: Date = startDate
+        let intervalEndDate: Date = endDate
 
         var totalSum: Double = 0
-        var daysWithDataCount: Int = 0
-        var uniqueDaysWithData = Set<Date>()
+        var dataPointsCount: Int = 0
 
-        switch timeFrame {
-        case .sixMonths:
-            // Filter data within the selected six-month interval
-            let filteredData = data.filter { $0.date >= intervalStartDate && $0.date <= intervalEndDate }
+        // Filter data within the selected interval and where the value is greater than zero
+        let filteredData = data.filter { $0.date >= intervalStartDate && $0.date <= intervalEndDate && $0.value > 0 }
 
-            // Aggregate data by week, then by day within each week
-            var weeklyData: [Date: [Date: Double]] = [:]
+        // Loop through the filtered data to sum values and count data points
+        for entry in filteredData {
+            // Add the day's value to the total sum
+            totalSum += entry.value
             
-            for entry in filteredData {
-                let weekStartDate = calendar.dateInterval(of: .weekOfYear, for: entry.date)?.start ?? calendar.startOfDay(for: entry.date)
-                let dayStartDate = calendar.startOfDay(for: entry.date)
-                
-                if weeklyData[weekStartDate] == nil {
-                    weeklyData[weekStartDate] = [:]
-                }
-                
-                if let existingValue = weeklyData[weekStartDate]?[dayStartDate] {
-                    weeklyData[weekStartDate]?[dayStartDate] = existingValue + entry.value
-                } else {
-                    weeklyData[weekStartDate]?[dayStartDate] = entry.value
-                }
-                
-                // Add the day to the set of unique days with data
-                uniqueDaysWithData.insert(dayStartDate)
-            }
-            
-            // Sum all data
-            totalSum = weeklyData.values.flatMap { $0.values }.reduce(0, +)
-            daysWithDataCount = uniqueDaysWithData.count
-            print("Days with data count in 6 months: \(daysWithDataCount)")
-
-        case .yearly:
-            // Filter data within the selected yearly interval
-            let filteredData = data.filter { $0.date >= intervalStartDate && $0.date <= intervalEndDate }
-
-            // Aggregate data by month, then by day within each month
-            var monthlyData: [Date: [Date: Double]] = [:]
-            
-            for entry in filteredData {
-                let monthStartDate = calendar.date(from: calendar.dateComponents([.year, .month], from: entry.date)) ?? calendar.startOfDay(for: entry.date)
-                let dayStartDate = calendar.startOfDay(for: entry.date)
-                
-                if monthlyData[monthStartDate] == nil {
-                    monthlyData[monthStartDate] = [:]
-                }
-                
-                if let existingValue = monthlyData[monthStartDate]?[dayStartDate] {
-                    monthlyData[monthStartDate]?[dayStartDate] = existingValue + entry.value
-                } else {
-                    monthlyData[monthStartDate]?[dayStartDate] = entry.value
-                }
-                
-                // Add the day to the set of unique days with data
-                uniqueDaysWithData.insert(dayStartDate)
-            }
-            
-            // Sum all data
-            totalSum = monthlyData.values.flatMap { $0.values }.reduce(0, +)
-            daysWithDataCount = uniqueDaysWithData.count
-            print("Days with data count in yearly: \(daysWithDataCount)")
-
-        default:
-            // For other time frames, use the existing logic
-            let nonZeroData = data.filter { $0.value > 0 && $0.date >= intervalStartDate && $0.date <= intervalEndDate }
-
-            for entry in nonZeroData {
-                let entryDay = calendar.startOfDay(for: entry.date)
-                uniqueDaysWithData.insert(entryDay)
-            }
-
-            totalSum = nonZeroData.map { $0.value }.reduce(0, +)
-            daysWithDataCount = uniqueDaysWithData.count
-            print("Days with data count: \(daysWithDataCount)")
+            // Count this data point
+            dataPointsCount += 1
         }
 
-        // Calculate the average based on the actual number of unique days with data
-        let average = daysWithDataCount > 0 ? totalSum / Double(daysWithDataCount) : 0
+        // Calculate the average based on the number of data points with values
+        let average = dataPointsCount > 0 ? totalSum / Double(dataPointsCount) : 0
+
+        print("Data points count: \(dataPointsCount)")
+        print("Total Sum: \(totalSum)")
 
         return (sum: totalSum, average: average)
     }
 
-    // Helper function to get the date range for the current page in the TabView
-    private func getDateRangeForCurrentPage(timeFrame: TimeFrame, startDate: Date, currentPage: Int) -> (Date, Date) {
-        let calendar = Calendar.current
-        var intervalStartDate: Date = startDate
-        var intervalEndDate: Date = startDate
-
-        switch timeFrame {
-        case .sixMonths:
-            // Get the start date for the 6-month period
-            intervalStartDate = calendar.date(byAdding: .month, value: currentPage * 6, to: startDate) ?? startDate
-            intervalEndDate = calendar.date(byAdding: .month, value: 5, to: intervalStartDate) ?? intervalStartDate
-            intervalEndDate = calendar.date(byAdding: .day, value: 30, to: intervalEndDate) ?? intervalEndDate
-
-        case .yearly:
-            // Get the start date for the 1-year period
-            intervalStartDate = calendar.date(byAdding: .year, value: currentPage, to: startDate) ?? startDate
-            intervalEndDate = calendar.date(byAdding: .year, value: 1, to: intervalStartDate) ?? intervalStartDate
-            intervalEndDate = calendar.date(byAdding: .day, value: -1, to: intervalEndDate) ?? intervalEndDate
-
-        default:
-            break
-        }
-
-        return (intervalStartDate, intervalEndDate)
-    }
-
-    private func getTitleForMetric() -> String {
+    private func getTitleForMetric(timeFrame: TimeFrame) -> String {
         let description: String
-        let dataType: String
         
-        // Determine the data type based on the title of the chart
+        // Determine the data type and set the title based on the timeframe
         switch title {
         case "Step Count":
-            dataType = "Step Counts"
+            switch timeFrame {
+            case .sixMonths:
+                description = "Daily average step count in this six months span"
+            case .yearly:
+                description = "Daily average step count in this one year span"
+            default:
+                description = "Step Counts"
+            }
+            
         case "Active Energy Burned in KiloCalorie":
-            dataType = "Active Energy Burned in KCal"
+            switch timeFrame {
+            case .sixMonths:
+                description = "Daily average active energy burned in these six months span"
+            case .yearly:
+                description = "Daily average active energy burned in one year span"
+            default:
+                description = "Active Energy Burned in KCal"
+            }
+            
         case "Move Time (s)":
-            dataType = "Move Time in seconds"
+            switch timeFrame {
+            case .sixMonths:
+                description = "6-Month Move Time Overview (seconds)"
+            case .yearly:
+                description = "Yearly Move Time Overview (seconds)"
+            default:
+                description = "Move Time in seconds"
+            }
+            
         case "Stand Time (s)":
-            dataType = "Stand Time in seconds"
+            switch timeFrame {
+            case .sixMonths:
+                description = "6-Month Stand Time Overview (seconds)"
+            case .yearly:
+                description = "Yearly Stand Time Overview (seconds)"
+            default:
+                description = "Stand Time in seconds"
+            }
+            
         case "Distance Walking/Running (m)":
-            dataType = "Distance Walking/Running in meters"
+            switch timeFrame {
+            case .sixMonths:
+                description = "6-Month Distance Walking/Running Overview (meters)"
+            case .yearly:
+                description = "Yearly Distance Walking/Running Overview (meters)"
+            default:
+                description = "Distance Walking/Running in meters"
+            }
+            
         case "Exercise Time (s)":
-            dataType = "Exercise Time in seconds"
+            switch timeFrame {
+            case .sixMonths:
+                description = "6-Month Exercise Time Overview (seconds)"
+            case .yearly:
+                description = "Yearly Exercise Time Overview (seconds)"
+            default:
+                description = "Exercise Time in seconds"
+            }
+            
         default:
-            dataType = "Data"
-        }
-        
-        // Determine the description based on the selected timeframe
-        switch selectedTimeFrame {
-        case .daily:
-            description = "Total \(dataType) in this Day"
-        case .weekly:
-            description = "Daily Average \(dataType) in this Week"
-        case .monthly:
-            description = "Daily Average \(dataType) in this Month"
-        case .sixMonths:
-            description = "Weekly Average \(dataType) in this 6 Months Span"
-        case .yearly:
-            description = "Monthly Average \(dataType) in this Year"
+            switch timeFrame {
+            case .sixMonths:
+                description = "6-Month Data Overview"
+            case .yearly:
+                description = "Yearly Data Overview"
+            default:
+                description = "Data"
+            }
         }
         
         return description
     }
+
     
     // Helper function to display different text based on the selected data section
     private func getInformationText() -> String {
@@ -828,8 +774,9 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
             // Get the start and end of each week
             let currentWeekStart = calendar.dateInterval(of: .weekOfYear, for: calendar.date(byAdding: .weekOfYear, value: weekOffset, to: startDate)!)?.start ?? startDate
             let currentWeekEnd = calendar.date(byAdding: .day, value: 6, to: currentWeekStart)!
-            
+
             var weeklyValue = 0.0
+            var daysWithData = Set<Date>() // Track unique days with data
 
             // Loop through all the data to sum the values for the week
             for item in data {
@@ -848,17 +795,26 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
                     // Proportionally distribute the data based on the overlap
                     let proportion = overlapDuration / totalDuration
                     weeklyValue += item.value * proportion
+
+                    // Add each day in the overlap to the set of days with data
+                    var overlapDate = calendar.startOfDay(for: overlapStart)
+                    while overlapDate <= overlapEnd {
+                        daysWithData.insert(overlapDate)
+                        overlapDate = calendar.date(byAdding: .day, value: 1, to: overlapDate)!
+                    }
                 }
             }
 
-            // Append the aggregated data for the current week
-            weeklyData.append(ChartDataactivity(date: currentWeekStart, value: weeklyValue))
+            // Calculate daily average for the week (avoid division by zero)
+            let dailyAverage = daysWithData.count > 0 ? weeklyValue / Double(daysWithData.count) : 0.0
+
+            // Append the aggregated data for the current week with the daily average
+            weeklyData.append(ChartDataactivity(date: currentWeekStart, value: dailyAverage))
         }
-        
+
         return weeklyData
     }
 
-    // Aggregate data by month for 6-month and yearly time frames
     private func aggregateDataByMonth(for startDate: Date, data: [ChartDataactivity], months: Int) -> [ChartDataactivity] {
         let calendar = Calendar.current
         var monthlyData: [ChartDataactivity] = []
@@ -869,6 +825,7 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
             let currentMonthEnd = calendar.date(byAdding: .month, value: 1, to: currentMonthStart)!.addingTimeInterval(-1)
             
             var monthlyValue = 0.0
+            var daysWithData = Set<Date>() // Track unique days with data
 
             // Loop through all the data to sum the values for the month
             for item in data {
@@ -887,11 +844,21 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFram
                     // Proportionally distribute the data based on the overlap
                     let proportion = overlapDuration / totalDuration
                     monthlyValue += item.value * proportion
+
+                    // Add each day in the overlap to the set of days with data
+                    var overlapDate = calendar.startOfDay(for: overlapStart)
+                    while overlapDate <= overlapEnd {
+                        daysWithData.insert(overlapDate)
+                        overlapDate = calendar.date(byAdding: .day, value: 1, to: overlapDate)!
+                    }
                 }
             }
             
-            // Append the aggregated data for the current month
-            monthlyData.append(ChartDataactivity(date: currentMonthStart, value: monthlyValue))
+            // Calculate daily average for the month (avoid division by zero)
+            let dailyAverage = daysWithData.count > 0 ? monthlyValue / Double(daysWithData.count) : 0.0
+
+            // Append the aggregated data for the current month with the daily average
+            monthlyData.append(ChartDataactivity(date: currentMonthStart, value: dailyAverage))
         }
         
         return monthlyData
@@ -948,7 +915,7 @@ struct BoxChartViewActivity: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text(title)
+            Text(getDynamicTitle())
                 .font(.headline)
 
             if data.allSatisfy({ $0.value == 0 }) {
@@ -1041,6 +1008,81 @@ struct BoxChartViewActivity: View {
         .cornerRadius(8)
         .shadow(radius: 5)
     }
+    
+    // Helper function to get the dynamic title based on data type and time frame
+        private func getDynamicTitle() -> String {
+            switch title {
+            case "Step Count":
+                switch timeFrame {
+                case .sixMonths:
+                    return "Daily average step counts (weekly)"
+                case .yearly:
+                    return "Daily average step counts (monthly)"
+                default:
+                    return "Step Counts"
+                }
+                
+            case "Active Energy Burned in KiloCalorie":
+                switch timeFrame {
+                case .sixMonths:
+                    return "6-Month Active Energy Burned in KCal Overview"
+                case .yearly:
+                    return "Yearly Active Energy Burned in KCal Overview"
+                default:
+                    return "Active Energy Burned in KCal"
+                }
+                
+            case "Move Time (s)":
+                switch timeFrame {
+                case .sixMonths:
+                    return "6-Month Move Time Overview (seconds)"
+                case .yearly:
+                    return "Yearly Move Time Overview (seconds)"
+                default:
+                    return "Move Time in seconds"
+                }
+                
+            case "Stand Time (s)":
+                switch timeFrame {
+                case .sixMonths:
+                    return "6-Month Stand Time Overview (seconds)"
+                case .yearly:
+                    return "Yearly Stand Time Overview (seconds)"
+                default:
+                    return "Stand Time in seconds"
+                }
+                
+            case "Distance Walking/Running (m)":
+                switch timeFrame {
+                case .sixMonths:
+                    return "6-Month Distance Walking/Running Overview (meters)"
+                case .yearly:
+                    return "Yearly Distance Walking/Running Overview (meters)"
+                default:
+                    return "Distance Walking/Running in meters"
+                }
+                
+            case "Exercise Time (s)":
+                switch timeFrame {
+                case .sixMonths:
+                    return "6-Month Exercise Time Overview (seconds)"
+                case .yearly:
+                    return "Yearly Exercise Time Overview (seconds)"
+                default:
+                    return "Exercise Time in seconds"
+                }
+                
+            default:
+                switch timeFrame {
+                case .sixMonths:
+                    return "6-Month Data Overview"
+                case .yearly:
+                    return "Yearly Data Overview"
+                default:
+                    return "Data"
+                }
+            }
+        }
     
     // Function to get the offset based on the time frame. Offset to set the position of the X-Axis Label
         private func getOffsetForTimeFrame(_ timeFrame: TimeFrame) -> CGFloat {
