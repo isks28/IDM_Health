@@ -196,19 +196,56 @@ struct ChartWithTimeFramePicker: View {
                     .font(.title2)
             }
             .sheet(isPresented: $showDatePicker) {
-                DatePicker("Select Date", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
-                    .datePickerStyle(GraphicalDatePickerStyle())
-                    .onChange(of: selectedDate) { _, _ in
-                        jumpToPage(for: selectedDate)
+                VStack {
+                    if selectedTimeFrame == .yearly {
+                        // Yearly: Restrict to year-only
+                        DatePicker("Select Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: .date)
+                            .datePickerStyle(WheelDatePickerStyle())
+                            .labelsHidden()
+                            .onChange(of: selectedDate) { _, newDate in
+                                let calendar = Calendar.current
+                                if let selectedYear = calendar.dateComponents([.year], from: newDate).year {
+                                    // Set the date to January 1st of the selected year
+                                    selectedDate = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1)) ?? newDate
+                                    jumpToPage(for: selectedDate)
+                                }
+                            }
+                    } else if selectedTimeFrame == .monthly || selectedTimeFrame == .sixMonths {
+                        // Monthly and SixMonths: Restrict to month and year
+                        DatePicker("Select Month and Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
+                            .datePickerStyle(WheelDatePickerStyle())
+                            .labelsHidden()
+                            .onChange(of: selectedDate) { _, newDate in
+                                let calendar = Calendar.current
+                                let components = calendar.dateComponents([.year, .month], from: newDate)
+                                if let selectedYear = components.year, let selectedMonth = components.month {
+                                    // Set the date to the first of the selected month and year
+                                    selectedDate = calendar.date(from: DateComponents(year: selectedYear, month: selectedMonth, day: 1)) ?? newDate
+                                    jumpToPage(for: selectedDate)
+                                }
+                            }
+                    } else {
+                        // Daily and Weekly: Regular Date Picker
+                        DatePicker("Select Date", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
+                            .datePickerStyle(GraphicalDatePickerStyle())
+                            .onChange(of: selectedDate) { _, _ in
+                                jumpToPage(for: selectedDate)
+                            }
                     }
+
+                    Button("Done") {
+                        showDatePicker = false
+                    }
+                    .padding()
+                }
             }
 
             // Display the metric sum and average
             HStack {
                 Text(getTitleForMetric(timeFrame: selectedTimeFrame))
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                 + Text(": ")
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                 + Text(getValueText(timeFrame: selectedTimeFrame, sum: sum, average: average))
                     .foregroundColor(.mint)
             }
@@ -363,75 +400,85 @@ struct ChartWithTimeFramePicker: View {
         case "Step Count":
             switch timeFrame {
             case .daily:
-                description = "Total step counts"
+                description = "Total in this day"
             case .sixMonths:
-                description = "Daily average step count in this six months span"
+                description = "Daily average in this six months span"
             case .yearly:
-                description = "Daily average step count in this one year span"
+                description = "Daily average in this one year span"
             default:
-                description = "Daily average step Counts in this time span"
+                description = "Daily average in this time span"
             }
             
         case "Active Energy Burned in KiloCalorie":
             switch timeFrame {
             case .daily:
-                description = "Total active energy burned"
+                description = "Total in this day"
             case .sixMonths:
-                description = "Daily average active energy burned in these six months span"
+                description = "Daily average in these six months span"
             case .yearly:
-                description = "Daily average active energy burned in one year span"
+                description = "Daily average in one year span"
             default:
-                description = "Active Energy Burned in KCal"
+                description = "Daily average in this time span"
             }
             
         case "Move Time (s)":
             switch timeFrame {
+            case .daily:
+                description = "Total in this day"
             case .sixMonths:
-                description = "6-Month Move Time Overview (seconds)"
+                description = "Daily average in these six months span"
             case .yearly:
-                description = "Yearly Move Time Overview (seconds)"
+                description = "Daily average in one year span"
             default:
-                description = "Move Time in seconds"
+                description = "Daily average in this time span"
             }
             
         case "Stand Time (s)":
             switch timeFrame {
+            case .daily:
+                description = "Total in this day"
             case .sixMonths:
-                description = "6-Month Stand Time Overview (seconds)"
+                description = "Daily average in these six months span"
             case .yearly:
-                description = "Yearly Stand Time Overview (seconds)"
+                description = "Daily average in one year span"
             default:
-                description = "Stand Time in seconds"
+                description = "Daily average in this time span"
             }
             
         case "Distance Walking/Running (m)":
             switch timeFrame {
+            case .daily:
+                description = "Total in this day"
             case .sixMonths:
-                description = "6-Month Distance Walking/Running Overview (meters)"
+                description = "Daily average in these six months span"
             case .yearly:
-                description = "Yearly Distance Walking/Running Overview (meters)"
+                description = "Daily average in one year span"
             default:
-                description = "Distance Walking/Running in meters"
+                description = "Daily average in this time span"
             }
             
         case "Exercise Time (s)":
             switch timeFrame {
+            case .daily:
+                description = "Total in this day"
             case .sixMonths:
-                description = "6-Month Exercise Time Overview (seconds)"
+                description = "Daily average in these six months span"
             case .yearly:
-                description = "Yearly Exercise Time Overview (seconds)"
+                description = "Daily average in one year span"
             default:
-                description = "Exercise Time in seconds"
+                description = "Daily average in this time span"
             }
             
         default:
             switch timeFrame {
+            case .daily:
+                description = "Total in this day"
             case .sixMonths:
-                description = "6-Month Data Overview"
+                description = "Daily average in these six months span"
             case .yearly:
-                description = "Yearly Data Overview"
+                description = "Daily average in one year span"
             default:
-                description = "Data"
+                description = "Daily average in this time span"
             }
         }
         
@@ -898,9 +945,10 @@ struct BoxChartViewActivity: View {
                             }
                         }
                         .padding()
-                        .background(Color(UIColor.white))
+                        .background(Color(UIColor.systemBackground))
                         .cornerRadius(8)
                         .padding(.horizontal)
+                        .foregroundStyle(Color.primary)
                     }
                 }
                 .frame(maxHeight: 200) // Restrict the height of the scrollable list
