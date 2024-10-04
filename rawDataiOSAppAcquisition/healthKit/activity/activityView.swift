@@ -65,7 +65,7 @@ struct activityView: View {
             
             Text("Set Start and End-Date of Data to be fetched:")
                 .font(.headline)
-                .foregroundStyle(Color.mint)
+                .foregroundStyle(Color.pink)
             
             DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
                 .onChange(of: startDate) {
@@ -119,7 +119,7 @@ struct activityView: View {
                     showingChart[chartKey] = true
                 }) {
                     Image(systemName: "info.circle")
-                        .foregroundStyle(Color.pink)
+                        .foregroundStyle(Color.blue)
                 }
                 .sheet(isPresented: Binding(
                     get: { showingChart[chartKey] ?? false },
@@ -922,7 +922,7 @@ struct BoxChartViewActivity: View {
                         AxisMarks(values: .automatic(desiredCount: 12)) { value in
                             AxisValueLabel(format: 
                                 .dateTime.month(.narrow))
-                            .offset(x: 2.5)
+                            .offset(x: 5)
                             AxisGridLine()
                         }
                     }
@@ -1047,7 +1047,7 @@ struct BoxChartViewActivity: View {
             case .sixMonths:
                 return 0 // Offset for 6 months view
             case .yearly:
-                return 10 // No offset for yearly view
+                return 12.5 // No offset for yearly view
             }
         }
 
