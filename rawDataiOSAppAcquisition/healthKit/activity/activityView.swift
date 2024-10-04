@@ -65,7 +65,7 @@ struct activityView: View {
             
             Text("Set Start and End-Date of Data to be fetched:")
                 .font(.headline)
-                .foregroundStyle(Color.pink)
+                .foregroundStyle(Color.mint)
             
             DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
                 .onChange(of: startDate) {
@@ -112,7 +112,7 @@ struct activityView: View {
             HStack {
                 if dataAvailable {
                     Text("\(title) Data is Available")
-                        .foregroundStyle(Color.mint)
+                        .foregroundStyle(Color.pink)
                         .multilineTextAlignment(.center)
                 }
                 Button(action: {
