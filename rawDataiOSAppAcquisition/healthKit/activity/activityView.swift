@@ -46,13 +46,9 @@ struct activityView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
-                
-            Text("To be fetched Data:")
-                .font(.headline)
-                .padding(.top)
             
             ScrollView(.vertical) {
-                VStack(spacing: 15) {
+                VStack(spacing: 5) {
                     dataSection(title: "Step Count", dataAvailable: !healthKitManager.stepCountData.isEmpty, chartKey: "StepCount", data: healthKitManager.stepCountData, unit: HKUnit.count(), chartTitle: "Step Count")
                     dataSection(title: "Active Energy Burned", dataAvailable: !healthKitManager.activeEnergyBurnedData.isEmpty, chartKey: "ActiveEnergy", data: healthKitManager.activeEnergyBurnedData, unit: HKUnit.smallCalorie(), chartTitle: "Active Energy Burned in KiloCalorie")
                     dataSection(title: "Move Time", dataAvailable: !healthKitManager.appleMoveTimeData.isEmpty, chartKey: "MoveTime", data: healthKitManager.appleMoveTimeData, unit: HKUnit.second(), chartTitle: "Move Time (s)")
@@ -60,7 +56,7 @@ struct activityView: View {
                     dataSection(title: "Distance Walking/Running", dataAvailable: !healthKitManager.distanceWalkingRunningData.isEmpty, chartKey: "DistanceWalkingRunning", data: healthKitManager.distanceWalkingRunningData, unit: HKUnit.meter(), chartTitle: "Distance Walking/Running (m)")
                     dataSection(title: "Exercise Time", dataAvailable: !healthKitManager.appleExerciseTimeData.isEmpty, chartKey: "ExerciseTime", data: healthKitManager.appleExerciseTimeData, unit: HKUnit.second(), chartTitle: "Exercise Time (s)")
                 }
-                .padding(.horizontal)
+                .padding(.all)
             }
             
             Text("Set Start and End-Date of Data to be fetched:")
@@ -90,7 +86,7 @@ struct activityView: View {
                 }) {
                     Text(isRecording ? "Save Data" : "Fetch Data")
                         .padding()
-                        .background(isRecording ? Color.gray : Color.mint)
+                        .background(isRecording ? Color.pink : Color.mint)
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 }
@@ -108,10 +104,21 @@ struct activityView: View {
     // Modular function for creating data sections
     @ViewBuilder
     private func dataSection(title: String, dataAvailable: Bool, chartKey: String, data: [HKQuantitySample], unit: HKUnit, chartTitle: String) -> some View {
-        Section(header: Text(title)) {
+        Section(header: Text(title)
+            .font(.headline)) {
             HStack {
                 if dataAvailable {
-                    Text("\(title) Data is Available")
+                    Button(action: {
+                        showingChart[chartKey] = true
+                    }) {
+                        Text("\(title) Data is Available")
+                            .font(.footnote)
+                            .foregroundStyle(Color.blue)
+                            .multilineTextAlignment(.center)
+                    }
+                } else {
+                    Text("\(title) Data is not Available")
+                        .font(.footnote)
                         .foregroundStyle(Color.pink)
                         .multilineTextAlignment(.center)
                 }
