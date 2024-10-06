@@ -48,7 +48,7 @@ struct activityView: View {
                 .multilineTextAlignment(.center)
             
             ScrollView(.vertical) {
-                VStack(spacing: 5) {
+                VStack(spacing: 10) {
                     dataSection(title: "Step Count", dataAvailable: !healthKitManager.stepCountData.isEmpty, chartKey: "StepCount", data: healthKitManager.stepCountData, unit: HKUnit.count(), chartTitle: "Step Count")
                     dataSection(title: "Active Energy Burned", dataAvailable: !healthKitManager.activeEnergyBurnedData.isEmpty, chartKey: "ActiveEnergy", data: healthKitManager.activeEnergyBurnedData, unit: HKUnit.smallCalorie(), chartTitle: "Active Energy Burned in KiloCalorie")
                     dataSection(title: "Move Time", dataAvailable: !healthKitManager.appleMoveTimeData.isEmpty, chartKey: "MoveTime", data: healthKitManager.appleMoveTimeData, unit: HKUnit.second(), chartTitle: "Move Time (s)")
@@ -61,7 +61,6 @@ struct activityView: View {
             
             Text("Set Start and End-Date of Data to be fetched:")
                 .font(.headline)
-                .foregroundStyle(Color.mint)
             
             DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
                 .onChange(of: startDate) {
@@ -170,15 +169,18 @@ struct ChartWithTimeFramePicker: View {
             HStack {
                 Text(getInformationText())
                     .font(.subheadline)
-                    .padding(.top)
-                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Color.white)
+                    .padding(2)
+                    .background(Color.mint)
+                    .cornerRadius(8)
+                    .padding(.top, 5)
                 
                 Button(action: {
                     showInfoPopover.toggle()
                 }) {
                     Image(systemName: "info.circle")
                         .foregroundColor(.pink)
-                        .padding(.top)
+                        .padding(.vertical)
                 }
                 .popover(isPresented: $showInfoPopover) {
                     popoverContent()
@@ -243,8 +245,12 @@ struct ChartWithTimeFramePicker: View {
                     Button("Done") {
                         showDatePicker = false
                     }
-                    .foregroundStyle(Color.pink)
-                    .padding()
+                    .foregroundStyle(Color.white)
+                    .padding() // Add padding inside the button to make the text area larger
+                    .background(Color.pink) // Set background color
+                    .cornerRadius(8) // Round the corners
+                    .padding(.horizontal, 20) // Add horizontal padding to make the button wider
+                    .padding(.vertical, 10) // Add vertical padding to make the button taller
                 }
             }
 
@@ -285,7 +291,7 @@ struct ChartWithTimeFramePicker: View {
             Spacer()
         }
         .onAppear {
-            updateFilteredData()
+            jumpToPage(for: endDate)
         }
     }
 
@@ -331,6 +337,13 @@ struct ChartWithTimeFramePicker: View {
             Text(useCase())
                 .font(.body)
                 .padding(.bottom, 3)
+            Text("For more information, go to:")
+                .font(.title3)
+                .padding(.bottom, 3)
+                .foregroundStyle(Color.mint)
+            Text("https://dimesociety.org/library-of-digital-endpoints/")
+                .font(.body)
+                .padding(.bottom, 3)
         }
         .frame(width: 300, height: 400)
     }
@@ -340,9 +353,9 @@ struct ChartWithTimeFramePicker: View {
         if title != "Active Energy Burned in KiloCalorie" && timeFrame == .daily {
             return sum == 0 ? "--" : "\(String(format: "%.0f", sum))"
         } else if title == "Active Energy Burned in KiloCalorie" && timeFrame == .daily {
-            return sum == 0 ? "--" : "\(String(format: "%.2f", sum / 1000)) kcal"
+            return sum == 0 ? "--" : "\(String(format: "%.2f", sum / 1000))"
         } else if title == "Active Energy Burned in KiloCalorie" && timeFrame != .daily {
-            return average == 0 ? "--" : "\(String(format: "%.2f", average / 1000)) kcal"
+            return average == 0 ? "--" : "\(String(format: "%.2f", average / 1000))"
         } else if title == "Step Count"{
             return average == 0 ? "--" : "\(String(format: "%.0f", average))"
         } else {
@@ -500,15 +513,15 @@ struct ChartWithTimeFramePicker: View {
         case "Step Count":
             return "Number of Steps taken"
         case "Active Energy Burned in KiloCalorie":
-            return "Amount of Energy burned (Calories) through physical activity, excluding Energy burned at Rest (basal metabolic rate)"
+            return "Energy burned through physical activity, excluding Energy burned at Rest (basal metabolic rate)"
         case "Move Time (s)":
-            return "Amount of time spent performing activities that involve full-body movements during the specified day."
+            return "Time spent performing activities that involve full-body movements"
         case "Stand Time (s)":
-            return "Amount of time has spent standing"
+            return "Time has spent standing"
         case "Distance Walking/Running (m)":
-            return "Distance Walking/Running in meters"
+            return "Distance the user has moved by walking or running"
         case "Exercise Time (s)":
-            return "Exercise Time in seconds"
+            return "Time that the user has spent exercising"
         default:
             return "Data not available."
         }
@@ -518,17 +531,17 @@ struct ChartWithTimeFramePicker: View {
     private func measuredUsing() -> String {
         switch title {
         case "Step Count":
-            return "MEASURED USING: Accelerometer and Gyroscope"
+            return "MEASURED USING: iPhone or Apple Watch"
         case "Active Energy Burned in KiloCalorie":
-            return "Measured using: Accelerometer, Gyroscope and GPS. Use Case: Managing weight, metabolic conditions, diabetes, cardiovascular diseases"
+            return "MEASURED USING: Apple Watch"
         case "Move Time (s)":
-            return "Move time represents the time during which physical activity was recorded. It's measured in seconds."
+            return "MEASURED USING: Apple Watch and/or iPhone"
         case "Stand Time (s)":
-            return "Stand time is the total duration in which the user stood up and moved around during the day, measured in seconds."
+            return "MEASURED USING: Apple Watch"
         case "Distance Walking/Running (m)":
-            return "Distance Walking/Running in meters"
+            return "MEASURED USING: iPhone and Apple Watch"
         case "Exercise Time (s)":
-            return "Exercise Time in seconds"
+            return "MEASURED USING: Apple Watch"
         default:
             return "More information about this section is not available."
         }
@@ -538,33 +551,15 @@ struct ChartWithTimeFramePicker: View {
         case "Step Count":
             return "USE CASE: Cardiovascular Diseases, Diabetes, Parkinson Diseases, Musculoskeletal Issues such as Arthritis"
         case "Active Energy Burned in KiloCalorie":
-            return "Measured using: Accelerometer, Gyroscope and GPS. Use Case: Managing weight, metabolic conditions, diabetes, cardiovascular diseases"
+            return "USE CASE: Managing weight, Metabolic conditions, Diabetes and Cardiovascular disease"
         case "Move Time (s)":
-            return "Move time represents the time during which physical activity was recorded. It's measured in seconds."
+            return "USE CASE: Cardiovascular disease, Obesity and Diabetes"
         case "Stand Time (s)":
-            return "Stand time is the total duration in which the user stood up and moved around during the day, measured in seconds."
+            return "USE CASE: Prolonged sitting, Cardiovascular disease, Diabetes and obesity"
         case "Distance Walking/Running (m)":
-            return "Distance Walking/Running in meters"
+            return "USE CASE: Cardiovascular disease, Rehabilitation after surgery and Diabetes"
         case "Exercise Time (s)":
-            return "Exercise Time in seconds"
-        default:
-            return "More information about this section is not available."
-        }
-    }
-    private func normalRange() -> String {
-        switch title {
-        case "Step Count":
-            return "RECORDED FROM: iPhone and Apple Watch"
-        case "Active Energy Burned in KiloCalorie":
-            return "Measured using: Accelerometer, Gyroscope and GPS. Use Case: Managing weight, metabolic conditions, diabetes, cardiovascular diseases"
-        case "Move Time (s)":
-            return "Move time represents the time during which physical activity was recorded. It's measured in seconds."
-        case "Stand Time (s)":
-            return "Stand time is the total duration in which the user stood up and moved around during the day, measured in seconds."
-        case "Distance Walking/Running (m)":
-            return "Distance Walking/Running in meters"
-        case "Exercise Time (s)":
-            return "Exercise Time in seconds"
+            return "USE CASE: Cardiovascular disease, Obesity, Diabetes and Mental health disorders"
         default:
             return "More information about this section is not available."
         }
@@ -945,11 +940,24 @@ struct BoxChartViewActivity: View {
                             Text(formatDateForTimeFrame(item.date)) // Display date formatted based on time frame
                             Spacer()
                             
-                            // Apply division by 1000 if the title indicates it's the Active Energy Burned section
+                            // Display 0 if item.value is NaN
                             if title == "Active Energy Burned in KiloCalorie" {
-                                Text("\(String(format: "%.0f", item.value / 1000)) kcal") // Convert to kiloCalories
-                            } else {
-                                Text("\(String(format: "%.0f", item.value))") // Display value without conversion
+                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value / 1000)) kcal")
+                            }
+                            if title == "Step Count" {
+                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) Steps")
+                            }
+                            if title == "Move Time (s)" {
+                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) seconds")
+                            }
+                            if title == "Stand Time (s)" {
+                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) secodns")
+                            }
+                            if title == "Distance Walking/Running (m)" {
+                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) meters")
+                            }
+                            if title == "Exercise Time (s)" {
+                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) seconds")
                             }
                         }
                         .padding()
@@ -983,9 +991,9 @@ struct BoxChartViewActivity: View {
             case "Active Energy Burned in KiloCalorie":
                 switch timeFrame {
                 case .sixMonths:
-                    return "6-Month Active Energy Burned in KCal Overview"
+                    return "Daily average Active energy burned (weekly)"
                 case .yearly:
-                    return "Yearly Active Energy Burned in KCal Overview"
+                    return "Daily average Active energy burned (monthly)"
                 default:
                     return "Active Energy Burned in KCal"
                 }
@@ -993,9 +1001,9 @@ struct BoxChartViewActivity: View {
             case "Move Time (s)":
                 switch timeFrame {
                 case .sixMonths:
-                    return "6-Month Move Time Overview (seconds)"
+                    return "Daily average Move time (weekly)"
                 case .yearly:
-                    return "Yearly Move Time Overview (seconds)"
+                    return "Daily average Move time (monthly)"
                 default:
                     return "Move Time in seconds"
                 }
@@ -1003,9 +1011,9 @@ struct BoxChartViewActivity: View {
             case "Stand Time (s)":
                 switch timeFrame {
                 case .sixMonths:
-                    return "6-Month Stand Time Overview (seconds)"
+                    return "Daily average Stand time (weekly)"
                 case .yearly:
-                    return "Yearly Stand Time Overview (seconds)"
+                    return "Daily average Stand time (monthly)"
                 default:
                     return "Stand Time in seconds"
                 }
@@ -1013,9 +1021,9 @@ struct BoxChartViewActivity: View {
             case "Distance Walking/Running (m)":
                 switch timeFrame {
                 case .sixMonths:
-                    return "6-Month Distance Walking/Running Overview (meters)"
+                    return "Daily average Distance Walking/Running (weekly)"
                 case .yearly:
-                    return "Yearly Distance Walking/Running Overview (meters)"
+                    return "Daily average Distance Walking/Running (monthly)"
                 default:
                     return "Distance Walking/Running in meters"
                 }
@@ -1023,9 +1031,9 @@ struct BoxChartViewActivity: View {
             case "Exercise Time (s)":
                 switch timeFrame {
                 case .sixMonths:
-                    return "6-Month Exercise Time Overview (seconds)"
+                    return "Daily average Exercise time (weekly)"
                 case .yearly:
-                    return "Yearly Exercise Time Overview (seconds)"
+                    return "Daily average Exercise time (monthly)"
                 default:
                     return "Exercise Time in seconds"
                 }
