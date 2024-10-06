@@ -22,7 +22,6 @@ enum VitalTimeFrame: String, CaseIterable {
 struct vitalView: View {
     @StateObject private var vitalManager: VitalManager
     @State private var isRecording = false
-    
     @State private var startDate = Date()
     @State private var endDate = Date()
     

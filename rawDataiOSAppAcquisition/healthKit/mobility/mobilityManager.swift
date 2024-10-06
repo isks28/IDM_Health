@@ -9,18 +9,29 @@ import HealthKit
 import Foundation
 import SwiftUI
 
+// Define a struct to store min, max, and average values with the date
+struct MobilityStatistics {
+    let date: Date
+    let minValue: Double
+    let maxValue: Double
+    let averageValue: Double
+}
+
 class HealthKitMobilityManager: ObservableObject {
     let healthStore = HKHealthStore()
     
-    @Published var walkingDoubleSupportData: [HKQuantitySample] = []
-    @Published var walkingAsymmetryData: [HKQuantitySample] = []
-    @Published var walkingSpeedData: [HKQuantitySample] = []
-    @Published var walkingStepLengthData: [HKQuantitySample] = []
-    @Published var walkingSteadinessData: [HKQuantitySample] = []
+    @Published var walkingDoubleSupportData: [MobilityStatistics] = []
+    @Published var walkingAsymmetryData: [MobilityStatistics] = []
+    @Published var walkingSpeedData: [MobilityStatistics] = []
+    @Published var walkingStepLengthData: [MobilityStatistics] = []
+    @Published var walkingSteadinessData: [MobilityStatistics] = []
     @Published var savedFilePath: String?
     
     @Published var startDate: Date
     @Published var endDate: Date
+    
+    private var dataCache: [HKQuantityTypeIdentifier: [HKQuantitySample]] = [:]
+    private let backgroundQueue = DispatchQueue(label: "com.mobilityManager.backgroundQueue", attributes: .concurrent)
     
     init(startDate: Date, endDate: Date) {
         self.startDate = startDate
@@ -29,16 +40,13 @@ class HealthKitMobilityManager: ObservableObject {
     }
     
     func requestAuthorization() {
-        guard let walkingDoubleSupport = HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage),
-              let walkingAsymmetry = HKQuantityType.quantityType(forIdentifier: .walkingAsymmetryPercentage),
-              let walkingSpeed = HKQuantityType.quantityType(forIdentifier: .walkingSpeed),
-              let walkingStepLength = HKQuantityType.quantityType(forIdentifier: .walkingStepLength),
-              let walkingSteadiness = HKQuantityType.quantityType(forIdentifier: .appleWalkingSteadiness) else {
-            print("One or more Health Mobility Data is not available")
-            return
-        }
-
-        let typesToRead: Set = [walkingDoubleSupport, walkingAsymmetry, walkingSpeed, walkingStepLength, walkingSteadiness]
+        let typesToRead: Set<HKQuantityType> = [
+            .quantityType(forIdentifier: .walkingDoubleSupportPercentage)!,
+            .quantityType(forIdentifier: .walkingAsymmetryPercentage)!,
+            .quantityType(forIdentifier: .walkingSpeed)!,
+            .quantityType(forIdentifier: .walkingStepLength)!,
+            .quantityType(forIdentifier: .appleWalkingSteadiness)!
+        ]
         
         healthStore.requestAuthorization(toShare: nil, read: typesToRead) { success, error in
             if !success {
@@ -49,172 +57,129 @@ class HealthKitMobilityManager: ObservableObject {
         }
     }
     
-    func fetchMobilityData() {
-        fetchWalkingDoubleSupportData()
-        fetchWalkingAsymmetryData()
-        fetchWalkingSpeedData()
-        fetchStepLengthData()
-        fetchWalkingSteadinessData()
+    func fetchMobilityData(startDate: Date, endDate: Date) {
+        // Clear cache for new data fetch
+        dataCache.removeAll()
+        
+        // Fetch each mobility-related data type with min, max, and average calculations
+        fetchData(identifier: .walkingDoubleSupportPercentage, startDate: startDate, endDate: endDate) { [weak self] result in
+            let statistics = self?.computeStatistics(from: result, unit: HKUnit.percent())
+            DispatchQueue.main.async {
+                if let stats = statistics {
+                    self?.walkingDoubleSupportData = [MobilityStatistics(date: Date(), minValue: stats.minValue, maxValue: stats.maxValue, averageValue: stats.averageValue)]
+                }
+            }
+        }
+        
+        fetchData(identifier: .walkingAsymmetryPercentage, startDate: startDate, endDate: endDate) { [weak self] result in
+            let statistics = self?.computeStatistics(from: result, unit: HKUnit.percent())
+            DispatchQueue.main.async {
+                if let stats = statistics {
+                    self?.walkingAsymmetryData = [MobilityStatistics(date: Date(), minValue: stats.minValue, maxValue: stats.maxValue, averageValue: stats.averageValue)]
+                }
+            }
+        }
+        
+        fetchData(identifier: .walkingSpeed, startDate: startDate, endDate: endDate) { [weak self] result in
+            let statistics = self?.computeStatistics(from: result, unit: HKUnit.meter().unitDivided(by: HKUnit.second()))
+            DispatchQueue.main.async {
+                if let stats = statistics {
+                    self?.walkingSpeedData = [MobilityStatistics(date: Date(), minValue: stats.minValue, maxValue: stats.maxValue, averageValue: stats.averageValue)]
+                }
+            }
+        }
+        
+        fetchData(identifier: .walkingStepLength, startDate: startDate, endDate: endDate) { [weak self] result in
+            let statistics = self?.computeStatistics(from: result, unit: HKUnit.meter())
+            DispatchQueue.main.async {
+                if let stats = statistics {
+                    self?.walkingStepLengthData = [MobilityStatistics(date: Date(), minValue: stats.minValue, maxValue: stats.maxValue, averageValue: stats.averageValue)]
+                }
+            }
+        }
+        
+        fetchData(identifier: .appleWalkingSteadiness, startDate: startDate, endDate: endDate) { [weak self] result in
+            let statistics = self?.computeStatistics(from: result, unit: HKUnit.percent())
+            DispatchQueue.main.async {
+                if let stats = statistics {
+                    self?.walkingSteadinessData = [MobilityStatistics(date: Date(), minValue: stats.minValue, maxValue: stats.maxValue, averageValue: stats.averageValue)]
+                }
+            }
+        }
     }
-    
-    private func fetchWalkingDoubleSupportData() {
-        guard let walkingDoubleSupportType = HKQuantityType.quantityType(forIdentifier: .walkingDoubleSupportPercentage) else {
-            print("Walking Double Support Type is unavailable")
+
+    // Helper function to compute min, max, and average from the fetched data
+    private func computeStatistics(from samples: [HKQuantitySample], unit: HKUnit) -> (minValue: Double, maxValue: Double, averageValue: Double)? {
+        guard !samples.isEmpty else { return nil }
+        
+        var minValue = Double.greatestFiniteMagnitude
+        var maxValue = Double.leastNormalMagnitude
+        var totalValue: Double = 0.0
+        
+        for sample in samples {
+            let value = sample.quantity.doubleValue(for: unit)
+            minValue = min(minValue, value)
+            maxValue = max(maxValue, value)
+            totalValue += value
+        }
+        
+        let averageValue = totalValue / Double(samples.count)
+        return (minValue, maxValue, averageValue)
+    }
+
+    private func fetchData(identifier: HKQuantityTypeIdentifier, startDate: Date, endDate: Date, completion: @escaping ([HKQuantitySample]) -> Void) {
+        if let cachedData = dataCache[identifier] {
+            completion(cachedData)
             return
         }
         
-        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
-        
-        let query = HKSampleQuery(sampleType: walkingDoubleSupportType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { query, results, error in
-            if let error = error {
-                print("Failed to fetch walking double support data: \(error.localizedDescription)")
-                return
-            }
-            
-            guard let results = results as? [HKQuantitySample] else {
-                print("No walking double support data found")
-                return
-            }
-            
-            DispatchQueue.main.async {
-                self.walkingDoubleSupportData = results
-                print("Fetched \(results.count) walking double support samples")
-            }
-        }
-        
-        healthStore.execute(query)
-    }
-    
-    private func fetchWalkingAsymmetryData() {
-        guard let walkingAsymmetryType = HKQuantityType.quantityType(forIdentifier: .walkingAsymmetryPercentage) else {
-            print("Walking Asymmetry Type is unavailable")
+        guard let quantityType = HKQuantityType.quantityType(forIdentifier: identifier) else {
+            print("\(identifier.rawValue) Type is unavailable")
+            completion([])
             return
         }
         
-        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
-        
-        let query = HKSampleQuery(sampleType: walkingAsymmetryType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { query, results, error in
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+        let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { [weak self] _, samples, error in
             if let error = error {
-                print("Failed to fetch walking asymmetry data: \(error.localizedDescription)")
+                print("Failed to fetch \(identifier.rawValue) data: \(error.localizedDescription)")
+                completion([])
                 return
             }
             
-            guard let results = results as? [HKQuantitySample] else {
-                print("No walking asymmetry data found")
+            guard let quantitySamples = samples as? [HKQuantitySample] else {
+                completion([])
                 return
             }
             
-            DispatchQueue.main.async {
-                self.walkingAsymmetryData = results
-                print("Fetched \(results.count) walking asymmetry samples")
-            }
+            self?.dataCache[identifier] = quantitySamples
+            completion(quantitySamples)
         }
         
-        healthStore.execute(query)
-    }
-    
-    private func fetchWalkingSpeedData() {
-        guard let walkingSpeedType = HKQuantityType.quantityType(forIdentifier: .walkingSpeed) else {
-            print("Walking Speed Type is unavailable")
-            return
+        backgroundQueue.async {
+            self.healthStore.execute(query)
         }
-        
-        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
-        
-        let query = HKSampleQuery(sampleType: walkingSpeedType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { query, results, error in
-            if let error = error {
-                print("Failed to fetch walking speed data: \(error.localizedDescription)")
-                return
-            }
-            
-            guard let results = results as? [HKQuantitySample] else {
-                print("No walking speed data found")
-                return
-            }
-            
-            DispatchQueue.main.async {
-                self.walkingSpeedData = results
-                print("Fetched \(results.count) walking speed samples")
-            }
-        }
-        
-        healthStore.execute(query)
-    }
-    
-    private func fetchStepLengthData() {
-        guard let stepLengthType = HKQuantityType.quantityType(forIdentifier: .walkingStepLength) else {
-            print("Step Length Type is unavailable")
-            return
-        }
-        
-        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
-        
-        let query = HKSampleQuery(sampleType: stepLengthType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { query, results, error in
-            if let error = error {
-                print("Failed to fetch step length data: \(error.localizedDescription)")
-                return
-            }
-            
-            guard let results = results as? [HKQuantitySample] else {
-                print("No step length data found")
-                return
-            }
-            
-            DispatchQueue.main.async {
-                self.walkingStepLengthData = results
-                print("Fetched \(results.count) step length samples")
-            }
-        }
-        
-        healthStore.execute(query)
-    }
-    
-    private func fetchWalkingSteadinessData() {
-        guard let walkingSteadinessType = HKQuantityType.quantityType(forIdentifier: .appleWalkingSteadiness) else {
-            print("Walking Steadiness Type is unavailable")
-            return
-        }
-        
-        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
-        
-        let query = HKSampleQuery(sampleType: walkingSteadinessType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { query, results, error in
-            if let error = error {
-                print("Failed to fetch walking steadiness data: \(error.localizedDescription)")
-                return
-            }
-            
-            guard let results = results as? [HKQuantitySample] else {
-                print("No walking steadiness data found")
-                return
-            }
-            
-            DispatchQueue.main.async {
-                self.walkingSteadinessData = results
-                print("Fetched \(results.count) walking steadiness samples")
-            }
-        }
-        
-        healthStore.execute(query)
     }
     
     func saveDataAsCSV() {
-        saveCSV(for: walkingDoubleSupportData, fileName: "walking_double_support_data.csv", valueUnit: HKUnit.percent(), multiplier: 100, unitLabel: "%")
-        saveCSV(for: walkingAsymmetryData, fileName: "walking_asymmetry_data.csv", valueUnit: HKUnit.percent(), multiplier: 100, unitLabel: "%")
-        saveCSV(for: walkingSpeedData, fileName: "walking_speed_data.csv", valueUnit: HKUnit.meter().unitDivided(by: HKUnit.second()), multiplier: 3.6, unitLabel: "km/h")
-        saveCSV(for: walkingStepLengthData, fileName: "walking_step_length_data.csv", valueUnit: HKUnit.meter(), unitLabel: "m")
-        saveCSV(for: walkingSteadinessData, fileName: "walking_steadiness_data.csv", valueUnit: HKUnit.percent(), multiplier: 100, unitLabel: "%")
+        saveCSV(for: walkingDoubleSupportData, fileName: "walking_double_support_data.csv", unitLabel: "%")
+        saveCSV(for: walkingAsymmetryData, fileName: "walking_asymmetry_data.csv", unitLabel: "%")
+        saveCSV(for: walkingSpeedData, fileName: "walking_speed_data.csv", unitLabel: "m/s")
+        saveCSV(for: walkingStepLengthData, fileName: "walking_step_length_data.csv", unitLabel: "m")
+        saveCSV(for: walkingSteadinessData, fileName: "walking_steadiness_data.csv", unitLabel: "%")
     }
     
-    private func saveCSV(for samples: [HKQuantitySample], fileName: String, valueUnit: HKUnit, multiplier: Double = 1.0, unitLabel: String) {
-        var csvString = "Date,Value (\(unitLabel))\n"
+    private func saveCSV(for samples: [MobilityStatistics], fileName: String, unitLabel: String) {
+        var csvString = "Date,Min Value (\(unitLabel)),Max Value (\(unitLabel)),Average Value (\(unitLabel))\n"
         
         let dateFormatter = ISO8601DateFormatter()
         
         for sample in samples {
-            let value = sample.quantity.doubleValue(for: valueUnit) * multiplier
-            let date = sample.startDate
-            let dateString = dateFormatter.string(from: date)
-            csvString += "\(dateString),\(value) \(unitLabel)\n"
+            let dateString = dateFormatter.string(from: sample.date)
+            let minValue = String(format: "%.2f", sample.minValue)
+            let maxValue = String(format: "%.2f", sample.maxValue)
+            let averageValue = String(format: "%.2f", sample.averageValue)
+            csvString += "\(dateString),\(minValue),\(maxValue),\(averageValue)\n"
         }
         
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
@@ -234,7 +199,6 @@ class HealthKitMobilityManager: ObservableObject {
         let fileURL = folderURL.appendingPathComponent(fileName)
         
         do {
-            print("Attempting to save file at \(fileURL.path)")
             try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
             print("File saved at \(fileURL.path)")
             savedFilePath = fileURL.path
