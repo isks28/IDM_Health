@@ -106,34 +106,43 @@ struct activityView: View {
         Section(header: Text(title)
             .font(.headline)) {
             HStack {
-                if dataAvailable {
+                if !isRecording {
+                    // Show this message if the "Fetch Data" button hasn't been clicked
+                    Text("Set the date to fetch data")
+                        .font(.footnote)
+                        .foregroundStyle(Color.secondary)
+                        .multilineTextAlignment(.center)
+                } else {
+                    // Show data availability information after fetching data
+                    if dataAvailable {
+                        Button(action: {
+                            showingChart[chartKey] = true
+                        }) {
+                            Text("\(title) Data is Available")
+                                .font(.footnote)
+                                .foregroundStyle(Color.blue)
+                                .multilineTextAlignment(.center)
+                        }
+                    } else {
+                        Text("\(title) Data is not Available")
+                            .font(.footnote)
+                            .foregroundStyle(Color.pink)
+                            .multilineTextAlignment(.center)
+                    }
                     Button(action: {
                         showingChart[chartKey] = true
                     }) {
-                        Text("\(title) Data is Available")
-                            .font(.footnote)
+                        Image(systemName: "info.circle")
                             .foregroundStyle(Color.blue)
-                            .multilineTextAlignment(.center)
                     }
-                } else {
-                    Text("\(title) Data is not Available")
-                        .font(.footnote)
-                        .foregroundStyle(Color.pink)
-                        .multilineTextAlignment(.center)
-                }
-                Button(action: {
-                    showingChart[chartKey] = true
-                }) {
-                    Image(systemName: "info.circle")
-                        .foregroundStyle(Color.blue)
-                }
-                .sheet(isPresented: Binding(
-                    get: { showingChart[chartKey] ?? false },
-                    set: { showingChart[chartKey] = $0 }
-                )) {
-                    ChartWithTimeFramePicker(title: chartTitle, data: data.map {
-                        ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: unit))
-                    }, startDate: healthKitManager.startDate, endDate: healthKitManager.endDate)
+                    .sheet(isPresented: Binding(
+                        get: { showingChart[chartKey] ?? false },
+                        set: { showingChart[chartKey] = $0 }
+                    )) {
+                        ChartWithTimeFramePicker(title: chartTitle, data: data.map {
+                            ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: unit))
+                        }, startDate: healthKitManager.startDate, endDate: healthKitManager.endDate)
+                    }
                 }
             }
         }
@@ -348,18 +357,36 @@ struct ChartWithTimeFramePicker: View {
         .frame(width: 300, height: 400)
     }
     
+    // Helper function to get the unit for the metric based on the title
+    private func getUnitForMetric(title: String) -> String {
+        switch title {
+        case "Step Count":
+            return "Steps"
+        case "Active Energy Burned in KiloCalorie":
+            return "KCal"
+        case "Move Time (s)", "Stand Time (s)", "Exercise Time (s)":
+            return "seconds"
+        case "Distance Walking/Running (m)":
+            return "meters"
+        default:
+            return ""
+        }
+    }
+
     // Helper function to get the value text
     private func getValueText(timeFrame: TimeFrame, sum: Double, average: Double) -> String {
-        if title != "Active Energy Burned in KiloCalorie" && timeFrame == .daily {
-            return sum == 0 ? "--" : "\(String(format: "%.0f", sum))"
-        } else if title == "Active Energy Burned in KiloCalorie" && timeFrame == .daily {
-            return sum == 0 ? "--" : "\(String(format: "%.2f", sum / 1000))"
+        let unit = getUnitForMetric(title: title) // Get the unit based on the title
+
+        if title == "Active Energy Burned in KiloCalorie" && timeFrame == .daily {
+            return sum == 0 ? "--" : "\(String(format: "%.2f", sum / 1000)) \(unit)"
         } else if title == "Active Energy Burned in KiloCalorie" && timeFrame != .daily {
-            return average == 0 ? "--" : "\(String(format: "%.2f", average / 1000))"
-        } else if title == "Step Count"{
-            return average == 0 ? "--" : "\(String(format: "%.0f", average))"
+            return average == 0 ? "--" : "\(String(format: "%.2f", average / 1000)) \(unit)"
+        } else if title == "Step Count" {
+            return average == 0 ? "--" : "\(String(format: "%.0f", average)) \(unit)"
+        } else if timeFrame == .daily {
+            return sum == 0 ? "--" : "\(String(format: "%.0f", sum)) \(unit)"
         } else {
-            return average == 0 ? "--" : "\(String(format: "%.0f", average))"
+            return average == 0 ? "--" : "\(String(format: "%.0f", average)) \(unit)"
         }
     }
     
@@ -951,7 +978,7 @@ struct BoxChartViewActivity: View {
                                 Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) seconds")
                             }
                             if title == "Stand Time (s)" {
-                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) secodns")
+                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) seconds")
                             }
                             if title == "Distance Walking/Running (m)" {
                                 Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) meters")

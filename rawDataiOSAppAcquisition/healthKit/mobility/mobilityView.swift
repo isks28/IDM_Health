@@ -103,46 +103,54 @@ struct mobilityView: View {
     }
     
     // Modular function for creating data sections
-   @ViewBuilder
-   private func dataSection(title: String, dataAvailable: Bool, chartKey: String, data: [MobilityStatistics], unit: HKUnit, chartTitle: String) -> some View {
-       Section(header: Text(title)
-           .font(.headline)) {
-           HStack {
-               if dataAvailable {
-                   Button(action: {
-                       showingChart[chartKey] = true
-                   }) {
-                       Text("\(title) Data is Available")
-                           .font(.footnote)
-                           .foregroundStyle(Color.blue)
-                           .multilineTextAlignment(.center)
-                   }
-               } else {
-                   Text("\(title) Data is not Available")
-                       .font(.footnote)
-                       .foregroundStyle(Color.pink)
-                       .multilineTextAlignment(.center)
-               }
-               Button(action: {
-                   showingChart[chartKey] = true
-               }) {
-                   Image(systemName: "info.circle")
-                       .foregroundStyle(Color.blue)
-               }
-               .sheet(isPresented: Binding(
-                   get: { showingChart[chartKey] ?? false },
-                   set: { showingChart[chartKey] = $0 }
-               )) {
-                   ChartWithTimeFrameMobilityPicker(title: chartTitle, data: data.map {
-                       ChartDataMobility(date: $0.date, minValue: $0.minValue, maxValue: $0.maxValue, value: $0.averageValue)
-                   },
-                    startDate: healthKitManager.startDate,
-                    endDate: healthKitManager.endDate
-               )
-               }
-           }
-       }
-   }
+    @ViewBuilder
+    private func dataSection(title: String, dataAvailable: Bool, chartKey: String, data: [MobilityStatistics], unit: HKUnit, chartTitle: String) -> some View {
+        Section(header: Text(title)
+            .font(.headline)) {
+            HStack {
+                if !isRecording {
+                    // Show this message if the "Fetch Data" button hasn't been clicked
+                    Text("Set the date to fetch data")
+                        .font(.footnote)
+                        .foregroundStyle(Color.secondary)
+                        .multilineTextAlignment(.center)
+                } else {
+                    // Show data availability information after fetching data
+                    if dataAvailable {
+                        Button(action: {
+                            showingChart[chartKey] = true
+                        }) {
+                            Text("\(title) Data is Available")
+                                .font(.footnote)
+                                .foregroundStyle(Color.blue)
+                                .multilineTextAlignment(.center)
+                        }
+                    } else {
+                        Text("\(title) Data is not Available")
+                            .font(.footnote)
+                            .foregroundStyle(Color.pink)
+                            .multilineTextAlignment(.center)
+                    }
+                    Button(action: {
+                        showingChart[chartKey] = true
+                    }) {
+                        Image(systemName: "info.circle")
+                            .foregroundStyle(Color.blue)
+                    }
+                    .sheet(isPresented: Binding(
+                        get: { showingChart[chartKey] ?? false },
+                        set: { showingChart[chartKey] = $0 }
+                    )) {
+                        ChartWithTimeFrameMobilityPicker(title: chartTitle, data: data.map {
+                            ChartDataMobility(date: $0.endDate, minValue: $0.minValue, maxValue: $0.maxValue, value: $0.averageValue)
+                        },
+                        startDate: healthKitManager.startDate,
+                        endDate: healthKitManager.endDate)
+                    }
+                }
+            }
+        }
+    }
 }
 
 struct ChartWithTimeFrameMobilityPicker: View {
@@ -194,8 +202,8 @@ struct ChartWithTimeFrameMobilityPicker: View {
             .padding(.horizontal)
             
             Picker("Time Frame", selection: $selectedTimeFrameMobility) {
-                ForEach(TimeFrameMobility.allCases, id: \.self) { TimeFrameMobility in
-                    Text(TimeFrameMobility.rawValue).tag(TimeFrameMobility)
+                ForEach(getAvailableTimeFrames(for: title), id: \.self) { timeFrame in
+                    Text(timeFrame.rawValue).tag(timeFrame)
                 }
             }
             .pickerStyle(SegmentedPickerStyle())
@@ -297,6 +305,16 @@ struct ChartWithTimeFrameMobilityPicker: View {
         }
         .onAppear {
             jumpToPage(for: endDate)
+        }
+    }
+    
+    private func getAvailableTimeFrames(for title: String) -> [TimeFrameMobility] {
+        if title == "Walking Steadiness" {
+            // Exclude .daily and .weekly for "Walking Steadiness"
+            return TimeFrameMobility.allCases.filter { $0 != .daily && $0 != .weekly }
+        } else {
+            // Return all time frames for other titles
+            return TimeFrameMobility.allCases
         }
     }
 
@@ -603,7 +621,10 @@ struct ChartWithTimeFrameMobilityPicker: View {
                 let numberOfDaysInMonth = range.count
                 let dailyData = (0..<numberOfDaysInMonth).compactMap { offset -> ChartDataMobility? in
                     let date = calendar.date(byAdding: .day, value: offset, to: startOfMonth)!
-                    return aggregateDataByDay(for: date, data: data, endDate: endDate)
+                    if date <= endDate { // Ensure the date is within the end date
+                        return aggregateDataByDay(for: date, data: data, endDate: endDate)
+                    }
+                    return nil
                 }
                 filteredData = dailyData
             }
@@ -612,7 +633,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
             let startOfSixMonths = calendar.date(byAdding: .month, value: page * 6, to: startDate) ?? startDate
             if startOfSixMonths <= endDate {
                 let sixMonthsData = aggregateDataByWeek(for: startOfSixMonths, data: data, weeks: 26)
-                filteredData = sixMonthsData
+                filteredData = sixMonthsData.filter { $0.date <= endDate } // Ensure data is within the end date
             }
             
         case .yearly:
@@ -796,12 +817,33 @@ struct BoxChartViewMobility: View {
             } else {
                 Chart {
                     ForEach(data) { item in
-                        BarMark(
-                            x: .value("Date", item.date),
-                            yStart: .value("Min", item.minValue),
-                            yEnd: .value("Max", item.maxValue)
-                        )
-                        .offset(x: getOffsetForTimeFrame(timeFrame))
+                        if title == "Walking Steadiness" && (timeFrame == .monthly || timeFrame == .sixMonths) {
+                            // Use PointMark for Walking Steadiness in .monthly and .sixMonths
+                            if item.value != 0 {
+                                PointMark(
+                                    x: .value("Date", item.date),
+                                    y: .value("Value", item.value)
+                                )
+                            }
+                        } else if title == "Walking Steadiness" && timeFrame == .yearly {
+                            // Adjust minValue for Walking Steadiness in .yearly, but skip if minValue is 0
+                            let adjustedMinValue = item.minValue != 0 ? item.minValue - 1 : item.minValue
+                            
+                            BarMark(
+                                x: .value("Date", item.date),
+                                yStart: .value("Min", adjustedMinValue), // Use the adjusted minValue
+                                yEnd: .value("Max", item.maxValue)
+                            )
+                            .offset(x: getOffsetForTimeFrame(timeFrame))
+                        } else {
+                            // Use BarMark for other cases
+                            BarMark(
+                                x: .value("Date", item.date),
+                                yStart: .value("Min", item.minValue),
+                                yEnd: .value("Max", item.maxValue)
+                            )
+                            .offset(x: getOffsetForTimeFrame(timeFrame))
+                        }
                     }
                 }
                 .foregroundStyle(Color.pink)
@@ -817,7 +859,7 @@ struct BoxChartViewMobility: View {
                         AxisMarks(values: [0, 20, 40, 100]) {
                             AxisGridLine()
                         }
-                        
+
                         // Add custom labels at midpoints (10, 30, 70)
                         AxisMarks(values: [10, 30, 70]) { value in
                             AxisValueLabel {
@@ -839,41 +881,31 @@ struct BoxChartViewMobility: View {
                 .chartXAxis {
                     switch timeFrame {
                     case .daily:
-                        // Hourly marks for daily view
                         AxisMarks(values: .automatic(desiredCount: 4)) { value in
                             AxisValueLabel(format: .dateTime.hour())
                             AxisGridLine()
                         }
-
                     case .weekly:
-                        // Day marks for weekly view
                         AxisMarks(values: .automatic(desiredCount: 7)) { value in
                             AxisValueLabel(format: .dateTime.weekday(.abbreviated))
                                 .offset(x: 5)
                             AxisGridLine()
                         }
-
                     case .monthly:
-                        // Date marks for monthly view (from the 1st to the end of the month)
                         AxisMarks(values: .automatic) { value in
                             AxisValueLabel(format: .dateTime.day())
                                 .offset(x: -(2))
                             AxisGridLine()
                         }
-
                     case .sixMonths:
-                        // Month marks for six months view
                         AxisMarks(values: .stride(by: .month)) { value in
                             AxisValueLabel(format: .dateTime.month(.abbreviated))
                                 .offset(x: 8)
                             AxisGridLine()
                         }
-
                     case .yearly:
-                        // Narrow month marks (first letter) for yearly view
                         AxisMarks(values: .automatic(desiredCount: 12)) { value in
-                            AxisValueLabel(format:
-                                .dateTime.month(.narrow))
+                            AxisValueLabel(format: .dateTime.month(.narrow))
                             .offset(x: 5)
                             AxisGridLine()
                         }
@@ -906,26 +938,31 @@ struct BoxChartViewMobility: View {
                        .cornerRadius(25)
                    }
 
-                   // Helper function to format the text based on the title
-                   private func getFormattedText(minValue: Double, maxValue: Double) -> String {
-                       guard minValue != 0 || maxValue != 0 else {
-                           return "--"
-                       }
+        // Helper function to format the text based on the title
+        private func getFormattedText(minValue: Double, maxValue: Double) -> String {
+            guard minValue != 0 || maxValue != 0 else {
+                return "--"
+            }
 
-                       let unit: String
-                       switch title {
-                       case "Walking Speed":
-                           unit = "m/s"
-                       case "Walking Step Length":
-                           unit = "meters"
-                       case "Walking Double Support", "Walking Asymmetry", "Walking Steadiness":
-                           unit = "Percent"
-                       default:
-                           unit = ""
-                       }
+            let unit: String
+            switch title {
+            case "Walking Speed":
+                unit = "m/s"
+            case "Walking Step Length":
+                unit = "meters"
+            case "Walking Double Support", "Walking Asymmetry", "Walking Steadiness":
+                unit = "Percent"
+            default:
+                unit = ""
+            }
 
-                       return "\(String(format: "%.1f", minValue)) - \(String(format: "%.1f", maxValue)) \(unit)"
-                   }
+            // Check if minValue is equal to maxValue
+            if minValue == maxValue {
+                return "\(String(format: "%.1f", maxValue)) \(unit)"
+            } else {
+                return "\(String(format: "%.1f", minValue)) - \(String(format: "%.1f", maxValue)) \(unit)"
+            }
+        }
     
     // Helper function to get the dynamic title based on data type and time frame
         private func getDynamicTitle() -> String {
@@ -1004,7 +1041,7 @@ struct BoxChartViewMobility: View {
             case .sixMonths:
                 return 0 // Offset for 6 months view
             case .yearly:
-                return 12.5 // No offset for yearly view
+                return 11.5 // No offset for yearly view
             }
         }
 
@@ -1069,31 +1106,27 @@ struct BoxChartViewMobility: View {
         }
     }
     // Function to extend the X-axis range based on the data for monthly time frame
-        private func getXScaleDomain() -> ClosedRange<Date> {
-            let calendar = Calendar.current
-            guard let firstDate = data.first?.date, let lastDate = data.last?.date else {
-                return Date()...Date() // Fallback to current date
-            }
-            
-            // Only extend the last date if the timeFrame is .monthly
-            if timeFrame == .monthly {
-                let adjustedLastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
-                return firstDate...adjustedLastDate
-            }
-            if timeFrame == .sixMonths {
-                let adjustedLastDate = calendar.date(byAdding: .day, value: 15, to: lastDate) ?? lastDate
-                return firstDate...adjustedLastDate
-            }
-            if timeFrame == .yearly {
-                let adjustedLastDate = calendar.date(byAdding: .month, value: 1, to: lastDate) ?? lastDate
-                return firstDate...adjustedLastDate
-            }
-            else {
-                // For other time frames, use the default range from first to last date
-                return firstDate...lastDate
-            }
+    private func getXScaleDomain() -> ClosedRange<Date> {
+        let calendar = Calendar.current
+        guard let firstDate = data.first?.date, let lastDate = data.last?.date else {
+            return Date()...Date() // Fallback to current date
+        }
+        
+        switch timeFrame {
+        case .monthly:
+            let adjustedLastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
+            return firstDate...adjustedLastDate
+        case .sixMonths:
+            let adjustedLastDate = calendar.date(byAdding: .day, value: 15, to: lastDate) ?? lastDate
+            return firstDate...adjustedLastDate
+        case .yearly:
+            let adjustedLastDate = calendar.date(byAdding: .month, value: 1, to: lastDate) ?? lastDate
+            return firstDate...adjustedLastDate
+        default:
+            return firstDate...lastDate
         }
     }
+}
 
 
 #Preview {

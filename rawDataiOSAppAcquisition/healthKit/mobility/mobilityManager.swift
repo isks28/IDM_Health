@@ -11,7 +11,8 @@ import SwiftUI
 
 // Define a struct to store min, max, and average values with the date
 struct MobilityStatistics {
-    let date: Date
+    let startDate: Date
+    let endDate: Date // Add endDate property
     let minValue: Double
     let maxValue: Double
     let averageValue: Double
@@ -114,7 +115,8 @@ class HealthKitMobilityManager: ObservableObject {
                 break // For percentages, no change needed
             }
 
-            return MobilityStatistics(date: sample.startDate, minValue: value, maxValue: value, averageValue: value)
+            // Use both startDate and endDate of the sample
+            return MobilityStatistics(startDate: sample.startDate, endDate: sample.endDate, minValue: value, maxValue: value, averageValue: value)
         }
     }
 
@@ -183,9 +185,11 @@ class HealthKitMobilityManager: ObservableObject {
         var csvString = "Date,Value (\(unitLabel))\n"  // Updated header to only include the value
         
         let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.timeZone = TimeZone.current
         
         for sample in samples {
-            let dateString = dateFormatter.string(from: sample.date)
+            // Use endDate when generating the CSV string
+            let dateString = dateFormatter.string(from: sample.endDate)
             let value = String(format: "%.2f", sample.averageValue)  // Assuming `averageValue` holds the desired value
             csvString += "\(dateString),\(value)\n"
         }
