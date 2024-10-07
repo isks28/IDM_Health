@@ -353,9 +353,27 @@ struct ChartWithTimeFrameMobilityPicker: View {
         .frame(width: 300, height: 400)
     }
     
-    // Helper function to get the value text
+    private func getUnitForMetric(title: String) -> String {
+        switch title {
+        case "Walking Double Support", "Walking Asymmetry", "Walking Steadiness":
+            return "%"
+        case "Walking Speed":
+            return "km/h"
+        case "Walking Step Length":
+            return "cm"
+        default:
+            return ""
+        }
+    }
+
     private func getValueText(TimeFrameMobility: TimeFrameMobility, sum: Double, average: Double) -> String {
-            return average == 0 ? "--" : "\(String(average))"
+        let unit = getUnitForMetric(title: title) // Get the unit based on the title
+        
+        // Format sum and average to 1 decimal place and append the unit
+        let formattedSum = String(format: "%.1f", sum)
+        let formattedAverage = String(format: "%.1f", average)
+        
+        return "Average: \(formattedAverage) \(unit)"
     }
     
     private func jumpToPage(for date: Date) {
@@ -389,7 +407,11 @@ struct ChartWithTimeFrameMobilityPicker: View {
         // Calculate the average, avoiding division by zero
         let average = nonZeroDataCount > 0 ? totalSum / Double(nonZeroDataCount) : 0.0
         
-        return (sum: totalSum, average: average)
+        // Round the sum and average to 1 decimal place
+        let roundedSum = Double(String(format: "%.1f", totalSum)) ?? 0.0
+        let roundedAverage = Double(String(format: "%.1f", average)) ?? 0.0
+        
+        return (sum: roundedSum, average: roundedAverage)
     }
 
     private func getTitleForMetric(TimeFrameMobility: TimeFrameMobility) -> String {
@@ -767,7 +789,7 @@ struct BoxChartViewMobility: View {
     var body: some View {
         VStack(alignment: .center) {
 
-            if data.allSatisfy({ $0.value == 0 }) {
+            if data.allSatisfy({ $0.minValue == 0 && $0.maxValue == 0}) {
                 Text("No Data")
                     .font(.headline)
                     .foregroundColor(.gray)
@@ -833,51 +855,53 @@ struct BoxChartViewMobility: View {
                     .font(.callout)
 
                 // Scrollable List of Data below the chart
-                ScrollView {
-                    ForEach(timeFrame == .weekly ? Array(data.prefix(7)) : data) { item in
-                        HStack {
-                            Text(formatDateForTimeFrame(item.date)) // Display date formatted based on time frame
-                            Spacer()
-                            
-                            // Display 0 if item.value is NaN
-                            if title == "Active Energy Burned in KiloCalorie" {
-                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value / 1000)) kcal")
-                            }
-                            if title == "Step Count" {
-                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) Steps")
-                            }
-                            if title == "Move Time (s)" {
-                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) seconds")
-                            }
-                            if title == "Stand Time (s)" {
-                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) secodns")
-                            }
-                            if title == "Distance Walking/Running (m)" {
-                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) meters")
-                            }
-                            if title == "Exercise Time (s)" {
-                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) seconds")
-                            }
-                        }
-                        .padding()
-                        .background(Color(UIColor.systemBackground))
-                        .cornerRadius(8)
-                        .padding(.horizontal)
-                        .foregroundStyle(Color.primary)
-                    }
-                }
-                .frame(maxHeight: 200) // Restrict the height of the scrollable list
-            }
-        }
-        .padding()
-        .background(Color(UIColor.secondarySystemBackground))
-        .cornerRadius(25)
-    }
+                               ScrollView {
+                                   ForEach(timeFrame == .weekly ? Array(data.prefix(7)) : data) { item in
+                                       HStack {
+                                           Text(formatDateForTimeFrame(item.date)) // Display date formatted based on time frame
+                                           Spacer()
+                                           Text(getFormattedText(minValue: item.minValue, maxValue: item.maxValue))
+                                       }
+                                       .padding()
+                                       .background(Color(UIColor.systemBackground))
+                                       .cornerRadius(8)
+                                       .padding(.horizontal)
+                                       .foregroundStyle(Color.primary)
+                                   }
+                               }
+                               .frame(maxHeight: 200) // Restrict the height of the scrollable list
+                           }
+                       }
+                       .padding()
+                       .background(Color(UIColor.secondarySystemBackground))
+                       .cornerRadius(25)
+                   }
+
+                   // Helper function to format the text based on the title
+                   private func getFormattedText(minValue: Double, maxValue: Double) -> String {
+                       guard minValue != 0 || maxValue != 0 else {
+                           return "--"
+                       }
+
+                       let unit: String
+                       switch title {
+                       case "Walking Speed":
+                           unit = "m/s"
+                       case "Walking Step Length":
+                           unit = "meters"
+                       case "Walking Double Support", "Walking Asymmetry", "Walking Steadiness":
+                           unit = "Percent"
+                       default:
+                           unit = ""
+                       }
+
+                       return "\(String(format: "%.1f", minValue)) - \(String(format: "%.1f", maxValue)) \(unit)"
+                   }
     
     // Helper function to get the dynamic title based on data type and time frame
         private func getDynamicTitle() -> String {
             switch title {
-            case "Step Count":
+            case "Walking Double Support":
                 switch timeFrame {
                 case .sixMonths:
                     return "Daily average step counts (weekly)"
@@ -887,7 +911,7 @@ struct BoxChartViewMobility: View {
                     return "Step Counts"
                 }
                 
-            case "Active Energy Burned in KiloCalorie":
+            case "Walking Asymmetry":
                 switch timeFrame {
                 case .sixMonths:
                     return "Daily average Active energy burned (weekly)"
@@ -897,7 +921,7 @@ struct BoxChartViewMobility: View {
                     return "Active Energy Burned in KCal"
                 }
                 
-            case "Move Time (s)":
+            case "Walking Speed":
                 switch timeFrame {
                 case .sixMonths:
                     return "Daily average Move time (weekly)"
@@ -907,7 +931,7 @@ struct BoxChartViewMobility: View {
                     return "Move Time in seconds"
                 }
                 
-            case "Stand Time (s)":
+            case "Walking Step length":
                 switch timeFrame {
                 case .sixMonths:
                     return "Daily average Stand time (weekly)"
@@ -917,7 +941,7 @@ struct BoxChartViewMobility: View {
                     return "Stand Time in seconds"
                 }
                 
-            case "Distance Walking/Running (m)":
+            case "Walking Steadiness":
                 switch timeFrame {
                 case .sixMonths:
                     return "Daily average Distance Walking/Running (weekly)"
@@ -925,16 +949,6 @@ struct BoxChartViewMobility: View {
                     return "Daily average Distance Walking/Running (monthly)"
                 default:
                     return "Distance Walking/Running in meters"
-                }
-                
-            case "Exercise Time (s)":
-                switch timeFrame {
-                case .sixMonths:
-                    return "Daily average Exercise time (weekly)"
-                case .yearly:
-                    return "Daily average Exercise time (monthly)"
-                default:
-                    return "Exercise Time in seconds"
                 }
                 
             default:

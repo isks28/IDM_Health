@@ -61,50 +61,60 @@ class HealthKitMobilityManager: ObservableObject {
         // Clear cache for new data fetch
         dataCache.removeAll()
         
-        // Fetch each mobility-related data type with min, max, and average calculations
+        // Fetch each mobility-related data type without aggregation
         fetchData(identifier: .walkingDoubleSupportPercentage, startDate: startDate, endDate: endDate) { [weak self] result in
-            let statistics = self?.computeStatistics(from: result, unit: HKUnit.percent())
+            let statistics = self?.convertSamplesToStatistics(samples: result, unit: HKUnit.percent())
             DispatchQueue.main.async {
-                if let stats = statistics {
-                    self?.walkingDoubleSupportData = [MobilityStatistics(date: Date(), minValue: stats.minValue, maxValue: stats.maxValue, averageValue: stats.averageValue)]
-                }
+                self?.walkingDoubleSupportData = statistics ?? []
             }
         }
         
         fetchData(identifier: .walkingAsymmetryPercentage, startDate: startDate, endDate: endDate) { [weak self] result in
-            let statistics = self?.computeStatistics(from: result, unit: HKUnit.percent())
+            let statistics = self?.convertSamplesToStatistics(samples: result, unit: HKUnit.percent())
             DispatchQueue.main.async {
-                if let stats = statistics {
-                    self?.walkingAsymmetryData = [MobilityStatistics(date: Date(), minValue: stats.minValue, maxValue: stats.maxValue, averageValue: stats.averageValue)]
-                }
+                self?.walkingAsymmetryData = statistics ?? []
             }
         }
         
         fetchData(identifier: .walkingSpeed, startDate: startDate, endDate: endDate) { [weak self] result in
-            let statistics = self?.computeStatistics(from: result, unit: HKUnit.meter().unitDivided(by: HKUnit.second()))
+            let statistics = self?.convertSamplesToStatistics(samples: result, unit: HKUnit.meter().unitDivided(by: HKUnit.second()))
             DispatchQueue.main.async {
-                if let stats = statistics {
-                    self?.walkingSpeedData = [MobilityStatistics(date: Date(), minValue: stats.minValue, maxValue: stats.maxValue, averageValue: stats.averageValue)]
-                }
+                self?.walkingSpeedData = statistics ?? []
             }
         }
         
         fetchData(identifier: .walkingStepLength, startDate: startDate, endDate: endDate) { [weak self] result in
-            let statistics = self?.computeStatistics(from: result, unit: HKUnit.meter())
+            let statistics = self?.convertSamplesToStatistics(samples: result, unit: HKUnit.meter())
             DispatchQueue.main.async {
-                if let stats = statistics {
-                    self?.walkingStepLengthData = [MobilityStatistics(date: Date(), minValue: stats.minValue, maxValue: stats.maxValue, averageValue: stats.averageValue)]
-                }
+                self?.walkingStepLengthData = statistics ?? []
             }
         }
         
         fetchData(identifier: .appleWalkingSteadiness, startDate: startDate, endDate: endDate) { [weak self] result in
-            let statistics = self?.computeStatistics(from: result, unit: HKUnit.percent())
+            let statistics = self?.convertSamplesToStatistics(samples: result, unit: HKUnit.percent())
             DispatchQueue.main.async {
-                if let stats = statistics {
-                    self?.walkingSteadinessData = [MobilityStatistics(date: Date(), minValue: stats.minValue, maxValue: stats.maxValue, averageValue: stats.averageValue)]
-                }
+                self?.walkingSteadinessData = statistics ?? []
             }
+        }
+    }
+    
+    private func convertSamplesToStatistics(samples: [HKQuantitySample], unit: HKUnit) -> [MobilityStatistics] {
+        return samples.map { sample in
+            var value = sample.quantity.doubleValue(for: unit)
+            
+            // Convert units as needed
+            switch unit {
+            case HKUnit.meter().unitDivided(by: HKUnit.second()): // Walking speed in m/s
+                value *= 3.6 // Convert m/s to km/h
+            case HKUnit.meter(): // Walking step length in meters
+                value *= 100 // Convert meters to centimeters
+            case HKUnit.percent():
+                value *= 100
+            default:
+                break // For percentages, no change needed
+            }
+
+            return MobilityStatistics(date: sample.startDate, minValue: value, maxValue: value, averageValue: value)
         }
     }
 
@@ -164,22 +174,20 @@ class HealthKitMobilityManager: ObservableObject {
     func saveDataAsCSV() {
         saveCSV(for: walkingDoubleSupportData, fileName: "walking_double_support_data.csv", unitLabel: "%")
         saveCSV(for: walkingAsymmetryData, fileName: "walking_asymmetry_data.csv", unitLabel: "%")
-        saveCSV(for: walkingSpeedData, fileName: "walking_speed_data.csv", unitLabel: "m/s")
-        saveCSV(for: walkingStepLengthData, fileName: "walking_step_length_data.csv", unitLabel: "m")
+        saveCSV(for: walkingSpeedData, fileName: "walking_speed_data.csv", unitLabel: "km/h")
+        saveCSV(for: walkingStepLengthData, fileName: "walking_step_length_data.csv", unitLabel: "cm")
         saveCSV(for: walkingSteadinessData, fileName: "walking_steadiness_data.csv", unitLabel: "%")
     }
     
     private func saveCSV(for samples: [MobilityStatistics], fileName: String, unitLabel: String) {
-        var csvString = "Date,Min Value (\(unitLabel)),Max Value (\(unitLabel)),Average Value (\(unitLabel))\n"
+        var csvString = "Date,Value (\(unitLabel))\n"  // Updated header to only include the value
         
         let dateFormatter = ISO8601DateFormatter()
         
         for sample in samples {
             let dateString = dateFormatter.string(from: sample.date)
-            let minValue = String(format: "%.2f", sample.minValue)
-            let maxValue = String(format: "%.2f", sample.maxValue)
-            let averageValue = String(format: "%.2f", sample.averageValue)
-            csvString += "\(dateString),\(minValue),\(maxValue),\(averageValue)\n"
+            let value = String(format: "%.2f", sample.averageValue)  // Assuming `averageValue` holds the desired value
+            csvString += "\(dateString),\(value)\n"
         }
         
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
