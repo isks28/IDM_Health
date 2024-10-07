@@ -370,7 +370,6 @@ struct ChartWithTimeFrameMobilityPicker: View {
         let unit = getUnitForMetric(title: title) // Get the unit based on the title
         
         // Format sum and average to 1 decimal place and append the unit
-        let formattedSum = String(format: "%.1f", sum)
         let formattedAverage = String(format: "%.1f", average)
         
         return "Average: \(formattedAverage) \(unit)"
@@ -806,6 +805,36 @@ struct BoxChartViewMobility: View {
                     }
                 }
                 .foregroundStyle(Color.pink)
+                .chartYAxis {
+                    switch title {
+                    case "Walking Double Support", "Walking Asymmetry":
+                        AxisMarks(values: [0, 50, 100]) { value in
+                            AxisValueLabel(format: Decimal.FormatStyle.Percent.percent.scale(1))
+                            AxisGridLine()
+                        }
+                    case "Walking Steadiness":
+                        // Add grid lines at 0, 20, 40, and 100
+                        AxisMarks(values: [0, 20, 40, 100]) {
+                            AxisGridLine()
+                        }
+                        
+                        // Add custom labels at midpoints (10, 30, 70)
+                        AxisMarks(values: [10, 30, 70]) { value in
+                            AxisValueLabel {
+                                let steadinessValue = value.as(Double.self) ?? 0
+                                if steadinessValue == 10 {
+                                    Text("Very Low")
+                                } else if steadinessValue == 30 {
+                                    Text("Low")
+                                } else if steadinessValue == 70 {
+                                    Text("OK")
+                                }
+                            }
+                        }
+                    default:
+                        AxisMarks(values: .automatic(desiredCount: 3))
+                    }
+                }
                 .chartXScale(domain: getXScaleDomain())
                 .chartXAxis {
                     switch timeFrame {
