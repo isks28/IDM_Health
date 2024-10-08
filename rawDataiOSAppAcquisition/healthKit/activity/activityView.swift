@@ -253,11 +253,37 @@ struct ChartWithTimeFramePicker: View {
                             .labelsHidden()
                             .onChange(of: selectedDate) { _, newDate in
                                 let calendar = Calendar.current
-                                let components = calendar.dateComponents([.year, .month], from: newDate)
+                                let timeZone = TimeZone.current
+                                
+                                // Log the selected date before any modification
+                                print("Newly selected date before any adjustments: \(newDate)")
+                                
+                                // Get the year and month of the selected date directly
+                                var components = calendar.dateComponents([.year, .month], from: newDate)
+                                
                                 if let selectedYear = components.year, let selectedMonth = components.month {
-                                    // Set the date to the first of the selected month and year
-                                    selectedDate = calendar.date(from: DateComponents(year: selectedYear, month: selectedMonth, day: 1)) ?? newDate
-                                    jumpToPage(for: selectedDate)
+                                    
+                                    // Log the components before setting the new date
+                                    print("Selected Year: \(selectedYear), Selected Month: \(selectedMonth)")
+                                    
+                                    // Force the selected date to be the 1st of the month and set the time to midday (to avoid time zone issues)
+                                    components.day = 1
+                                    components.hour = 23
+                                    components.minute = 0
+                                    components.second = 0
+                                    components.timeZone = timeZone
+                                    
+                                    if let adjustedDate = calendar.date(from: components) {
+                                        
+                                        // Log the newly adjusted date
+                                        print("Adjusted Date to first of the month: \(adjustedDate)")
+                                        
+                                        // Update the selected date and jump to the corresponding page
+                                        selectedDate = adjustedDate
+                                        jumpToPage(for: selectedDate)
+                                    } else {
+                                        print("Failed to adjust the date correctly.")
+                                    }
                                 }
                             }
                     } else {
