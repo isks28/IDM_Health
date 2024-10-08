@@ -23,6 +23,9 @@ struct activityView: View {
     @State private var isRecording = false
     @State private var startDate = Date()
     @State private var endDate = Date()
+
+    // New state to trigger the graph refresh
+    @State private var refreshGraph = UUID() // Use UUID for forcing refresh
     
     // State variables to control sheet presentation
     @State private var showingChart: [String: Bool] = [
@@ -58,6 +61,17 @@ struct activityView: View {
                 }
                 .padding(.all)
             }
+            .onAppear {
+                print("View appeared, forcing data fetch and refresh")
+                // Re-fetch data and force refresh on view appear
+                healthKitManager.fetchActivityData(startDate: startDate, endDate: endDate)
+                    refreshGraph = UUID() // Force refresh with UUID
+                
+            }
+            .onChange(of: healthKitManager.stepCountData) { _, newData in
+                print("Step count data changed, forcing graph refresh")
+                refreshGraph = UUID() // Force refresh whenever stepCountData changes
+            }
             
             Text("Set Start and End-Date of Data to be fetched:")
                 .font(.headline)
@@ -80,6 +94,9 @@ struct activityView: View {
                         healthKitManager.saveDataAsCSV()
                     } else {
                         healthKitManager.fetchActivityData(startDate: startDate, endDate: endDate)
+                            print("Data fetched, refreshing graph")
+                            refreshGraph = UUID() // Force the chart to refresh after data is fetched
+                        
                     }
                     isRecording.toggle()
                 }) {
@@ -142,6 +159,7 @@ struct activityView: View {
                         ChartWithTimeFramePicker(title: chartTitle, data: data.map {
                             ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: unit))
                         }, startDate: healthKitManager.startDate, endDate: healthKitManager.endDate)
+                            .id(refreshGraph) // Force refresh with UUID to ensure the view is recreated
                     }
                 }
             }
@@ -911,19 +929,18 @@ struct BoxChartViewActivity: View {
                         .offset(x: getOffsetForTimeFrame(timeFrame))
                     }
                 }
+                .id(UUID()) // Force re-render whenever data changes
                 .foregroundStyle(Color.pink)
                 .chartXScale(domain: getXScaleDomain())
                 .chartXAxis {
                     switch timeFrame {
                     case .daily:
-                        // Hourly marks for daily view
                         AxisMarks(values: .automatic(desiredCount: 4)) { value in
                             AxisValueLabel(format: .dateTime.hour())
                             AxisGridLine()
                         }
 
                     case .weekly:
-                        // Day marks for weekly view
                         AxisMarks(values: .automatic(desiredCount: 7)) { value in
                             AxisValueLabel(format: .dateTime.weekday(.abbreviated))
                                 .offset(x: 5)
@@ -931,7 +948,6 @@ struct BoxChartViewActivity: View {
                         }
 
                     case .monthly:
-                        // Date marks for monthly view (from the 1st to the end of the month)
                         AxisMarks(values: .automatic) { value in
                             AxisValueLabel(format: .dateTime.day())
                                 .offset(x: -(2))
@@ -939,7 +955,6 @@ struct BoxChartViewActivity: View {
                         }
 
                     case .sixMonths:
-                        // Month marks for six months view
                         AxisMarks(values: .stride(by: .month)) { value in
                             AxisValueLabel(format: .dateTime.month(.abbreviated))
                                 .offset(x: 8)
@@ -947,27 +962,24 @@ struct BoxChartViewActivity: View {
                         }
 
                     case .yearly:
-                        // Narrow month marks (first letter) for yearly view
                         AxisMarks(values: .automatic(desiredCount: 12)) { value in
-                            AxisValueLabel(format: 
+                            AxisValueLabel(format:
                                 .dateTime.month(.narrow))
                             .offset(x: 5)
                             AxisGridLine()
                         }
                     }
                 }
-                
+
                 Text(getDynamicTitle())
                     .font(.callout)
 
-                // Scrollable List of Data below the chart
                 ScrollView {
                     ForEach(timeFrame == .weekly ? Array(data.prefix(7)) : data) { item in
                         HStack {
                             Text(formatDateForTimeFrame(item.date)) // Display date formatted based on time frame
                             Spacer()
                             
-                            // Display 0 if item.value is NaN
                             if title == "Active Energy Burned in KiloCalorie" {
                                 Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value / 1000)) kcal")
                             }
@@ -994,12 +1006,15 @@ struct BoxChartViewActivity: View {
                         .foregroundStyle(Color.primary)
                     }
                 }
-                .frame(maxHeight: 200) // Restrict the height of the scrollable list
+                .frame(maxHeight: 200)
             }
         }
         .padding()
         .background(Color(UIColor.secondarySystemBackground))
         .cornerRadius(25)
+        .onAppear {
+            print("BoxChartViewActivity appeared with new data") // Debugging log
+        }
     }
     
     // Helper function to get the dynamic title based on data type and time frame

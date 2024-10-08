@@ -614,6 +614,7 @@ struct BoxChartViewVital: View {
                         }
                     }
                 }
+                .id(UUID())
                 .foregroundStyle(Color.pink)
                 .chartXScale(domain: getXScaleDomain())
                 .chartXAxis {

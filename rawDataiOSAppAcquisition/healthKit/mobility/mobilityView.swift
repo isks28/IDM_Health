@@ -854,6 +854,7 @@ struct BoxChartViewMobility: View {
                         }
                     }
                 }
+                .id(UUID())
                 .foregroundStyle(Color.pink)
                 .chartYAxis {
                     switch title {
