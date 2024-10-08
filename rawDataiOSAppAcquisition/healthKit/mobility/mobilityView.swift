@@ -835,6 +835,14 @@ struct BoxChartViewMobility: View {
                                 yEnd: .value("Max", item.maxValue)
                             )
                             .offset(x: getOffsetForTimeFrame(timeFrame))
+                        } else if item.minValue == item.maxValue {
+                            let adjustedMinValue = item.minValue != 0 ? item.minValue - 1 : item.minValue
+                            
+                            BarMark(
+                                x: .value("Date", item.date),
+                                yStart: .value("Min", adjustedMinValue), // Use the adjusted minValue
+                                yEnd: .value("Max", item.maxValue)
+                            )
                         } else {
                             // Use BarMark for other cases
                             BarMark(
