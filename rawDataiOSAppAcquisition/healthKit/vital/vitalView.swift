@@ -25,13 +25,11 @@ struct vitalView: View {
     @State private var startDate = Date()
     @State private var endDate = Date()
     
-    // State variables to control sheet presentation
+    // State variable to control sheet presentation
     @State private var showingHeartRateChart = false
     
     init() {
         _vitalManager = StateObject(wrappedValue: VitalManager(startDate: Date(), endDate: Date()))
-        _startDate = State(initialValue: Date())
-        _endDate = State(initialValue: Date())
     }
     
     var body: some View {
@@ -43,50 +41,24 @@ struct vitalView: View {
                 .font(.headline)
                 .padding(.top)
             
-            ScrollView {
-                VStack {
-                    // Heart Rate Section with info button
-                    Section(header: Text("Heart Rate")) {
-                        HStack {
-                            if !vitalManager.heartRateData.isEmpty {
-                                Text("Heart Rate Data is Available")
-                                    .foregroundStyle(Color.mint)
-                                    .multilineTextAlignment(.center)
-                            }
-                            Button(action: {
-                                showingHeartRateChart = true
-                            }) {
-                                Image(systemName: "info.circle")
-                                    .foregroundStyle(Color.pink)
-                            }
-                            .sheet(isPresented: $showingHeartRateChart) {
-                                VitalChartWithTimeFramePicker(
-                                    title: "Heart Rate",
-                                    data: vitalManager.heartRateData.map {
-                                        ChartDataVital(date: $0.date, minValue: $0.minValue, maxValue: $0.maxValue, averageValue: $0.averageValue)
-                                    },
-                                    startDate: vitalManager.startDate,
-                                    endDate: vitalManager.endDate
-                                )
-                            }
-                        }
-                        .padding(.bottom, 10)
-                    }
+            ScrollView(.vertical) {
+                VStack(spacing: 10) {
+                    dataSection(title: "Heart Rate", dataAvailable: !vitalManager.heartRateData.isEmpty, data: vitalManager.heartRateData, unit: HKUnit.init(from: "count/min"), chartTitle: "Heart Rate")
                 }
-                .padding(.horizontal)
+                .padding()
             }
             Text("Set Start and End-Date of Data to be fetched:")
                 .font(.headline)
                 .padding(.top, 50)
             
             DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
-                .onChange(of: startDate) {
-                    vitalManager.startDate = startDate
+                .onChange(of: startDate) { _, newDate in
+                    vitalManager.startDate = newDate
                 }
             
             DatePicker("End Date", selection: $endDate, displayedComponents: .date)
-                .onChange(of: endDate) {
-                    vitalManager.endDate = endDate
+                .onChange(of: endDate) { _, newDate in
+                    vitalManager.endDate = newDate
                 }
 
             Spacer()
@@ -96,7 +68,7 @@ struct vitalView: View {
                     if isRecording {
                         vitalManager.saveDataAsCSV()
                     } else {
-                        vitalManager.fetchRawHeartRateData(startDate: startDate, endDate: endDate)
+                        vitalManager.fetchVitalData(startDate: startDate, endDate: endDate)
                     }
                     isRecording.toggle()
                 }) {
@@ -110,10 +82,53 @@ struct vitalView: View {
                             .font(.footnote)
                     }
                 }
-                .padding() // Ensure button is visible
+                .padding()
             }
         }
         .padding()
+    }
+    
+    @ViewBuilder
+    private func dataSection(title: String, dataAvailable: Bool, data: [VitalStatistics], unit: HKUnit, chartTitle: String) -> some View {
+        Section(header: Text(title).font(.title3)) {
+            HStack {
+                if !isRecording {
+                    Text("Set the date to fetch data")
+                        .font(.footnote)
+                        .foregroundStyle(Color.secondary)
+                        .multilineTextAlignment(.center)
+                } else {
+                    if dataAvailable {
+                        Button(action: {
+                            showingHeartRateChart = true
+                        }) {
+                            Text("\(title) Data is Available")
+                                .font(.footnote)
+                                .foregroundStyle(Color.blue)
+                                .multilineTextAlignment(.center)
+                        }
+                    } else {
+                        Text("\(title) Data is not Available")
+                            .font(.footnote)
+                            .foregroundStyle(Color.pink)
+                            .multilineTextAlignment(.center)
+                    }
+                    Button(action: {
+                        showingHeartRateChart = true
+                    }) {
+                        Image(systemName: "info.circle")
+                            .foregroundStyle(Color.blue)
+                    }
+                    .sheet(isPresented: $showingHeartRateChart) {
+                        VitalChartWithTimeFramePicker(title: chartTitle, data: data.map {
+                            ChartDataVital(date: $0.endDate, minValue: $0.minValue, maxValue: $0.maxValue, averageValue: $0.averageValue)
+                        },
+                              startDate: vitalManager.startDate,
+                              endDate: vitalManager.endDate)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -135,6 +150,11 @@ struct VitalChartWithTimeFramePicker: View {
     @State private var showInfoPopover: Bool = false
     @State private var showDatePicker: Bool = false
     @State private var selectedDate: Date = Date()
+    
+    // Cache for precomputed data
+    @State private var precomputedPageData: [VitalTimeFrame: [Int: [ChartDataVital]]] = [:]
+    @State private var minValue: Double = 0
+    @State private var maxValue: Double = 0
 
     var body: some View {
         VStack {
@@ -175,6 +195,8 @@ struct VitalChartWithTimeFramePicker: View {
                 }
             }
             .pickerStyle(SegmentedPickerStyle())
+            .onChange(of: selectedTimeFrame) { _, _ in
+                updateFilteredData()
             .padding()
 
             // Title with clickable functionality to show date picker
