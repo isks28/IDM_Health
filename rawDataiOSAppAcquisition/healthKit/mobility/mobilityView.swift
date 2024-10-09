@@ -176,6 +176,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
     @State private var precomputedPageData: [TimeFrameMobility: [Int: [ChartDataMobility]]] = [:]
     @State private var minValue: Double = 0
     @State private var maxValue: Double = 0
+    @State private var averageValue: Double = 0
 
     var body: some View {
         VStack {
@@ -298,7 +299,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
                     .foregroundColor(.primary)
                 + Text(": ")
                     .foregroundColor(.primary)
-                + Text(getValueText(timeFrame: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue))
+                + Text(getValueText(timeFrame: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue, averageValue: averageValue)) // Pass averageValue here
                     .foregroundColor(.pink)
             }
             .font(.headline)
@@ -352,12 +353,12 @@ struct ChartWithTimeFrameMobilityPicker: View {
 
             // Loop over each page and compute the data for it
             for page in 0..<pageCount {
-                let filtered = filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrameMobility, page: page, startDate: startDate, endDate: endDate)
+                let filtered = filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrameMobility, page: page, startDate: startDate, endDate: endDate, title: title)
                 newPrecomputedData[page] = filtered
             }
 
-            // Compute min and max for the current page
-            let (computedMinValue, computedMaxValue) = calculateMinMax(
+            // Compute min, max, and average for the current page
+            let (computedMinValue, computedMaxValue, computedAverageValue) = calculateMinMaxAndAverage(
                 for: selectedTimeFrameMobility,
                 data: newPrecomputedData[currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0] ?? [],
                 startDate: startDate,
@@ -370,6 +371,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
                 precomputedPageData[selectedTimeFrameMobility] = newPrecomputedData
                 minValue = computedMinValue
                 maxValue = computedMaxValue
+                averageValue = computedAverageValue // Update average value
             }
         }
     }
@@ -377,9 +379,16 @@ struct ChartWithTimeFrameMobilityPicker: View {
     // Update displayed data based on the current page
     private func updateDisplayedData() {
         if let pageData = precomputedPageData[selectedTimeFrameMobility]?[currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0] {
-            let (computedMinValue, computedMaxValue) = calculateMinMax(for: selectedTimeFrameMobility, data: pageData, startDate: startDate, endDate: endDate, currentPage: currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0)
+            let (computedMinValue, computedMaxValue, computedAverageValue) = calculateMinMaxAndAverage(
+                for: selectedTimeFrameMobility,
+                data: pageData,
+                startDate: startDate,
+                endDate: endDate,
+                currentPage: currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0
+            )
             minValue = computedMinValue
             maxValue = computedMaxValue
+            averageValue = computedAverageValue // Update average value
         }
     }
 
@@ -419,20 +428,26 @@ struct ChartWithTimeFrameMobilityPicker: View {
         }
     }
 
-    private func getValueText(timeFrame: TimeFrameMobility, minValue: Double, maxValue: Double) -> String {
+    private func getValueText(timeFrame: TimeFrameMobility, minValue: Double, maxValue: Double, averageValue: Double = 0) -> String {
         let unit = getUnitForMetric(title: title) // Get the unit based on the title
+
+        // Special case for "Walking Asymmetry" to show only the average value
+        if title == "Walking Asymmetry" {
+            // If the averageValue is 0, return "--"
+            return averageValue == 0 ? "-- \(unit)" : "\(String(format: "%.1f", averageValue)) \(unit)"
+        }
 
         // Check if both minValue and maxValue are 0, return "--" if true
         guard minValue != 0 || maxValue != 0 else {
             return "-- \(unit)"
         }
-        
-        // If minValue equals maxValue, return only minValue
+
+        // If minValue equals maxValue, return only minValue for other metrics
         if minValue == maxValue {
             return "\(String(format: "%.1f", minValue)) \(unit)"
         }
 
-        // Return formatted string showing the range between minValue and maxValue
+        // Return formatted string showing the range between minValue and maxValue for other metrics
         return "\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)) \(unit)"
     }
     
@@ -457,20 +472,32 @@ struct ChartWithTimeFrameMobilityPicker: View {
         }
     }
         
-    private func calculateMinMax(for timeFrame: TimeFrameMobility, data: [ChartDataMobility], startDate: Date, endDate: Date, currentPage: Int) -> (minValue: Double, maxValue: Double) {
+    private func calculateMinMaxAndAverage(for timeFrame: TimeFrameMobility, data: [ChartDataMobility], startDate: Date, endDate: Date, currentPage: Int) -> (minValue: Double, maxValue: Double, averageValue: Double) {
         // Filter out zero values when computing the minimum
         let nonZeroData = data.filter { $0.minValue > 0 }
-
+        
         // Calculate min and max from non-zero values
         let minValue = nonZeroData.map { $0.minValue }.min() ?? 0.0
         let maxValue = data.map { $0.maxValue }.max() ?? 0.0
 
-        return (minValue, maxValue)
+        // Filter data with valid non-zero values
+        let validData = data.filter { $0.value > 0 }
+
+        // Calculate the total and average value only for entries that have data
+        let totalValue = validData.reduce(0) { $0 + $1.value }
+        let averageValue = validData.isEmpty ? 0 : totalValue / Double(validData.count)
+
+        return (minValue, maxValue, averageValue)
     }
 
     private func getTitleForMetric(TimeFrameMobility: TimeFrameMobility, minValue: Double, maxValue: Double) -> String {
         let description: String
-        let rangeOrValue = (minValue == maxValue) ? "Value" : "Range"  // Switch between "Range" and "Value"
+        var rangeOrValue = (minValue == maxValue) ? "Value" : "Range"  // Switch between "Range" and "Value"
+        
+        // Special case for "Walking Asymmetry" to always display "average"
+        if title == "Walking Asymmetry" {
+            rangeOrValue = "average"
+        }
         
         // Determine the data type and set the title based on the TimeFrameMobility and the min/max values
         switch title {
@@ -629,7 +656,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
     }
     
     // Function to filter and aggregate data based on the current page and time frame
-    private func filterAndAggregateDataForPage(_ data: [ChartDataMobility], timeFrame: TimeFrameMobility, page: Int, startDate: Date, endDate: Date) -> [ChartDataMobility] {
+    private func filterAndAggregateDataForPage(_ data: [ChartDataMobility], timeFrame: TimeFrameMobility, page: Int, startDate: Date, endDate: Date, title: String) -> [ChartDataMobility] {
         let calendar = Calendar.current
         var filteredData: [ChartDataMobility] = []
 
@@ -637,7 +664,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
         case .daily:
             let pageDate = calendar.date(byAdding: .day, value: page, to: startDate) ?? startDate
             if pageDate <= endDate {
-                let hourlyData = aggregateDataByHour(for: pageDate, data: data, endDate: endDate)
+                let hourlyData = aggregateDataByHour(for: pageDate, data: data, endDate: endDate, title: title)
                 filteredData = hourlyData
             }
             
@@ -646,7 +673,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
             if startOfWeek <= endDate {
                 let dailyData = (0..<7).compactMap { offset -> ChartDataMobility? in
                     let date = calendar.date(byAdding: .day, value: offset, to: startOfWeek)!
-                    return aggregateDataByDay(for: date, data: data, endDate: endDate)
+                    return aggregateDataByDay(for: date, data: data, endDate: endDate, title: title)
                 }
                 filteredData = dailyData
             }
@@ -659,7 +686,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
                 let dailyData = (0..<numberOfDaysInMonth).compactMap { offset -> ChartDataMobility? in
                     let date = calendar.date(byAdding: .day, value: offset, to: startOfMonth)!
                     if date <= endDate { // Ensure the date is within the end date
-                        return aggregateDataByDay(for: date, data: data, endDate: endDate)
+                        return aggregateDataByDay(for: date, data: data, endDate: endDate, title: title)
                     }
                     return nil
                 }
@@ -669,14 +696,14 @@ struct ChartWithTimeFrameMobilityPicker: View {
         case .sixMonths:
             let startOfSixMonths = calendar.date(byAdding: .month, value: page * 6, to: startDate) ?? startDate
             if startOfSixMonths <= endDate {
-                let sixMonthsData = aggregateDataByWeek(for: startOfSixMonths, data: data, weeks: 26)
+                let sixMonthsData = aggregateDataByWeek(for: startOfSixMonths, data: data, weeks: 26, title: title)
                 filteredData = sixMonthsData.filter { $0.date <= endDate } // Ensure data is within the end date
             }
             
         case .yearly:
             let startOfYear = calendar.date(byAdding: .year, value: page, to: startDate) ?? startDate
             if startOfYear <= endDate {
-                let yearlyData = aggregateDataByMonth(for: startOfYear, data: data, months: 12)
+                let yearlyData = aggregateDataByMonth(for: startOfYear, data: data, months: 12, title: title)
                 filteredData = yearlyData
             }
         }
@@ -684,33 +711,8 @@ struct ChartWithTimeFrameMobilityPicker: View {
         return filteredData
     }
 
-    // Aggregate data by minute
-    private func aggregateDataByMinute(for date: Date, data: [ChartDataMobility], endDate: Date) -> [ChartDataMobility] {
-        let calendar = Calendar.current
-        var minuteData: [ChartDataMobility] = []
-
-        for minute in 0..<60 {
-            let startOfMinute = calendar.date(bySettingHour: calendar.component(.hour, from: date), minute: minute, second: 0, of: date)!
-            let endOfMinute = calendar.date(bySettingHour: calendar.component(.hour, from: date), minute: minute, second: 59, of: date)!
-
-            if startOfMinute > endDate {
-                break
-            }
-
-            let filteredData = data.filter { $0.date >= startOfMinute && $0.date <= endOfMinute }
-
-            let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
-            let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
-            let averageValue = (minValue + maxValue) / 2
-
-            minuteData.append(ChartDataMobility(date: startOfMinute, minValue: minValue, maxValue: maxValue, value: averageValue))
-        }
-
-        return minuteData
-    }
-
     // Aggregate data by hour with min, max, and average values
-    private func aggregateDataByHour(for date: Date, data: [ChartDataMobility], endDate: Date) -> [ChartDataMobility] {
+    private func aggregateDataByHour(for date: Date, data: [ChartDataMobility], endDate: Date, title: String) -> [ChartDataMobility] {
         let calendar = Calendar.current
         var hourlyData: [ChartDataMobility] = []
 
@@ -724,33 +726,45 @@ struct ChartWithTimeFrameMobilityPicker: View {
 
             let filteredData = data.filter { $0.date >= startOfHour && $0.date <= endOfHour }
 
-            let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
-            let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
-            let averageValue = (minValue + maxValue) / 2
-
-            hourlyData.append(ChartDataMobility(date: startOfHour, minValue: minValue, maxValue: maxValue, value: averageValue))
+            if title == "Walking Asymmetry" {
+                // For Walking Asymmetry, calculate the correct average
+                let totalValue = filteredData.reduce(0) { $0 + $1.value }
+                let averageValue = filteredData.isEmpty ? 0 : totalValue / Double(filteredData.count)
+                hourlyData.append(ChartDataMobility(date: startOfHour, minValue: 0, maxValue: 0, value: averageValue))
+            } else {
+                let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
+                let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
+                let averageValue = (minValue + maxValue) / 2
+                hourlyData.append(ChartDataMobility(date: startOfHour, minValue: minValue, maxValue: maxValue, value: averageValue))
+            }
         }
 
         return hourlyData
     }
 
     // Aggregate data by day with min, max, and average values
-    private func aggregateDataByDay(for date: Date, data: [ChartDataMobility], endDate: Date) -> ChartDataMobility {
+    private func aggregateDataByDay(for date: Date, data: [ChartDataMobility], endDate: Date, title: String) -> ChartDataMobility {
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: date)
         let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: date) ?? endDate
 
         let filteredData = data.filter { $0.date >= startOfDay && $0.date <= endOfDay }
 
-        let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
-        let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
-        let averageValue = (minValue + maxValue) / 2
-
-        return ChartDataMobility(date: startOfDay, minValue: minValue, maxValue: maxValue, value: averageValue)
+        if title == "Walking Asymmetry" {
+            // For Walking Asymmetry, calculate the correct average
+            let totalValue = filteredData.reduce(0) { $0 + $1.value }
+            let averageValue = filteredData.isEmpty ? 0 : totalValue / Double(filteredData.count)
+            return ChartDataMobility(date: startOfDay, minValue: 0, maxValue: 0, value: averageValue)
+        } else {
+            let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
+            let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
+            let averageValue = (minValue + maxValue) / 2
+            return ChartDataMobility(date: startOfDay, minValue: minValue, maxValue: maxValue, value: averageValue)
+        }
     }
 
     // Aggregate data by week with min, max, and average values
-    private func aggregateDataByWeek(for startDate: Date, data: [ChartDataMobility], weeks: Int) -> [ChartDataMobility] {
+    private func aggregateDataByWeek(for startDate: Date, data: [ChartDataMobility], weeks: Int, title: String) -> [ChartDataMobility] {
         let calendar = Calendar.current
         var weeklyData: [ChartDataMobility] = []
 
@@ -760,18 +774,23 @@ struct ChartWithTimeFrameMobilityPicker: View {
 
             let filteredData = data.filter { $0.date >= currentWeekStart && $0.date <= currentWeekEnd }
 
-            let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
-            let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
-            let averageValue = (minValue + maxValue) / 2
-
-            weeklyData.append(ChartDataMobility(date: currentWeekStart, minValue: minValue, maxValue: maxValue, value: averageValue))
+            if title == "Walking Asymmetry" {
+                let totalValue = filteredData.reduce(0) { $0 + $1.value }
+                let averageValue = filteredData.isEmpty ? 0 : totalValue / Double(filteredData.count)
+                weeklyData.append(ChartDataMobility(date: currentWeekStart, minValue: 0, maxValue: 0, value: averageValue))
+            } else {
+                let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
+                let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
+                let averageValue = (minValue + maxValue) / 2
+                weeklyData.append(ChartDataMobility(date: currentWeekStart, minValue: minValue, maxValue: maxValue, value: averageValue))
+            }
         }
 
         return weeklyData
     }
 
     // Aggregate data by month with min, max, and average values
-    private func aggregateDataByMonth(for startDate: Date, data: [ChartDataMobility], months: Int) -> [ChartDataMobility] {
+    private func aggregateDataByMonth(for startDate: Date, data: [ChartDataMobility], months: Int, title: String) -> [ChartDataMobility] {
         let calendar = Calendar.current
         var monthlyData: [ChartDataMobility] = []
 
@@ -781,11 +800,16 @@ struct ChartWithTimeFrameMobilityPicker: View {
 
             let filteredData = data.filter { $0.date >= currentMonthStart && $0.date <= currentMonthEnd }
 
-            let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
-            let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
-            let averageValue = (minValue + maxValue) / 2
-
-            monthlyData.append(ChartDataMobility(date: currentMonthStart, minValue: minValue, maxValue: maxValue, value: averageValue))
+            if title == "Walking Asymmetry" {
+                let totalValue = filteredData.reduce(0) { $0 + $1.value }
+                let averageValue = filteredData.isEmpty ? 0 : totalValue / Double(filteredData.count)
+                monthlyData.append(ChartDataMobility(date: currentMonthStart, minValue: 0, maxValue: 0, value: averageValue))
+            } else {
+                let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
+                let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
+                let averageValue = (minValue + maxValue) / 2
+                monthlyData.append(ChartDataMobility(date: currentMonthStart, minValue: minValue, maxValue: maxValue, value: averageValue))
+            }
         }
 
         return monthlyData
@@ -873,8 +897,8 @@ struct BoxChartViewMobility: View {
             } else {
                 Chart {
                     ForEach(data) { item in
+                        // For "Walking Steadiness" (monthly or sixMonths)
                         if title == "Walking Steadiness" && (timeFrame == .monthly || timeFrame == .sixMonths) {
-                            // Use PointMark for Walking Steadiness in .monthly and .sixMonths
                             if item.value != 0 {
                                 PointMark(
                                     x: .value("Date", item.date),
@@ -882,26 +906,42 @@ struct BoxChartViewMobility: View {
                                 )
                                 .symbolSize(25)
                             }
-                        } else if title == "Walking Steadiness" && timeFrame == .yearly {
-                            // Adjust minValue for Walking Steadiness in .yearly, but skip if minValue is 0
+                        }
+                        // For "Walking Steadiness" (yearly)
+                        else if title == "Walking Steadiness" && timeFrame == .yearly {
                             let adjustedMinValue = item.minValue != 0 ? item.minValue - 1 : item.minValue
-                            
                             BarMark(
                                 x: .value("Date", item.date),
-                                yStart: .value("Min", adjustedMinValue), // Use the adjusted minValue
+                                yStart: .value("Min", adjustedMinValue),
                                 yEnd: .value("Max", item.maxValue)
                             )
                             .offset(x: getOffsetForTimeFrame(timeFrame))
-                        } else if item.minValue == item.maxValue {
+                        }
+                        // For "Walking Asymmetry" (show average instead of range)
+                        else if title == "Walking Asymmetry" {
+                            LineMark(   // Add a line connecting the points
+                                x: .value("Date", item.date),
+                                y: .value("Average", item.value)
+                            )
+                            .interpolationMethod(.catmullRom)  // Optional: Make the line smooth
+
+                            PointMark(
+                                x: .value("Date", item.date),
+                                y: .value("Average", item.value)  // Show average value
+                            )
+                            .symbolSize(25)   // Optional: Customize symbol size
+                        }
+                        // For metrics where minValue equals maxValue
+                        else if item.minValue == item.maxValue {
                             let adjustedMinValue = item.minValue != 0 ? item.minValue - 1 : item.minValue
-                            
                             BarMark(
                                 x: .value("Date", item.date),
-                                yStart: .value("Min", adjustedMinValue), // Use the adjusted minValue
+                                yStart: .value("Min", adjustedMinValue),
                                 yEnd: .value("Max", item.maxValue)
                             )
-                        } else {
-                            // Use BarMark for other cases
+                        }
+                        // Default case for other metrics (use BarMark for range)
+                        else {
                             BarMark(
                                 x: .value("Date", item.date),
                                 yStart: .value("Min", item.minValue),
@@ -982,53 +1022,65 @@ struct BoxChartViewMobility: View {
                     .font(.callout)
 
                 // Scrollable List of Data below the chart
-                               ScrollView {
-                                   ForEach(timeFrame == .weekly ? Array(data.prefix(7)) : data) { item in
-                                       HStack {
-                                           Text(formatDateForTimeFrame(item.date)) // Display date formatted based on time frame
-                                           Spacer()
-                                           Text(getFormattedText(minValue: item.minValue, maxValue: item.maxValue))
-                                       }
-                                       .padding()
-                                       .background(Color(UIColor.systemBackground))
-                                       .cornerRadius(8)
-                                       .padding(.horizontal)
-                                       .foregroundStyle(Color.primary)
-                                   }
-                               }
-                               .frame(maxHeight: 200) // Restrict the height of the scrollable list
-                           }
-                       }
-                       .padding()
-                       .background(Color(UIColor.secondarySystemBackground))
-                       .cornerRadius(25)
-                   }
+                ScrollView {
+                    ForEach(timeFrame == .weekly ? Array(data.prefix(7)) : data) { item in
+                        HStack {
+                            Text(formatDateForTimeFrame(item.date)) // Display date formatted based on time frame
+                            Spacer()
+                            
+                            // Show average for Walking Asymmetry
+                            if title == "Walking Asymmetry" && item.value != 0{
+                                Text("\(String(format: "%.1f", item.value)) %")
+                            } else {
+                                Text(getFormattedText(minValue: item.minValue, maxValue: item.maxValue, value: item.value))
+                            }
+                        }
+                        .padding()
+                        .background(Color(UIColor.systemBackground))
+                        .cornerRadius(8)
+                        .padding(.horizontal)
+                        .foregroundStyle(Color.primary)
+                    }
+                }
+               .frame(maxHeight: 200) // Restrict the height of the scrollable list
+           }
+       }
+       .padding()
+       .background(Color(UIColor.secondarySystemBackground))
+       .cornerRadius(25)
+   }
 
         // Helper function to format the text based on the title
-        private func getFormattedText(minValue: Double, maxValue: Double) -> String {
-            guard minValue != 0 || maxValue != 0 else {
-                return "--"
-            }
+    private func getFormattedText(minValue: Double, maxValue: Double, value: Double) -> String {
+        guard minValue != 0 || maxValue != 0 else {
+            return "--"
+        }
 
-            let unit: String
-            switch title {
-            case "Walking Speed":
-                unit = "m/s"
-            case "Walking Step Length":
-                unit = "meters"
-            case "Walking Double Support", "Walking Asymmetry", "Walking Steadiness":
-                unit = "%"
-            default:
-                unit = ""
-            }
+        let unit: String
+        switch title {
+        case "Walking Speed":
+            unit = "m/s"
+        case "Walking Step Length":
+            unit = "meters"
+        case "Walking Double Support", "Walking Asymmetry", "Walking Steadiness":
+            unit = "%"
+        default:
+            unit = ""
+        }
 
-            // Check if minValue is equal to maxValue
+        // For Walking Asymmetry, show the average value instead of the range
+        if title == "Walking Asymmetry" {
+            return "\(String(format: "%.1f", value)) \(unit)"
+        } else {
+            // Check if minValue is equal to maxValue, return only maxValue if true
             if minValue == maxValue {
                 return "\(String(format: "%.1f", maxValue)) \(unit)"
             } else {
+                // Return formatted string showing the range between minValue and maxValue
                 return "\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)) \(unit)"
             }
         }
+    }
     
     // Helper function to get the dynamic title based on data type and time frame
         private func getDynamicTitle() -> String {
