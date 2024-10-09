@@ -329,6 +329,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
             Spacer()
         }
         .onAppear {
+            selectedDate = endDate
             jumpToPage(for: endDate)
         }
     }
@@ -841,14 +842,33 @@ struct BoxChartViewMobility: View {
     var data: [ChartDataMobility]
     var timeFrame: TimeFrameMobility
     var title: String
+    @State private var isLoading: Bool = true // Flag for loading state
 
     var body: some View {
         VStack(alignment: .center) {
 
-            if data.allSatisfy({ $0.minValue == 0 && $0.maxValue == 0}) {
+            if isLoading {
+                VStack {
+                    ProgressView() // Display the progress spinner
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .scaleEffect(2) // Optional: make the progress view bigger
+                        .padding()
+                    
+                    Text("Fetching Data...")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .onAppear {
+                    // Simulate a loading delay or wait for actual data fetching logic
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        isLoading = false // Set to false when loading is complete
+                    }
+                }
+            } else if data.allSatisfy({ $0.value == 0 }) {
                 Text("No Data")
                     .font(.headline)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
                 Chart {

@@ -248,6 +248,15 @@ struct VitalChartWithTimeFramePicker: View {
                                     }
                                 }
                             }
+                    } else if selectedTimeFrameVital == .hourly {
+                        // Hourly: Include hour and minute components
+                        DatePicker("Select Hour", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date, .hourAndMinute])
+                            .datePickerStyle(GraphicalDatePickerStyle())
+                            .labelsHidden()
+                            .onChange(of: selectedDate) { _, newDate in
+                                selectedDate = newDate
+                                jumpToPage(for: selectedDate)
+                            }
                     } else {
                         // Daily and Weekly: Regular Date Picker
                         DatePicker("Select Date", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
@@ -306,6 +315,7 @@ struct VitalChartWithTimeFramePicker: View {
             Spacer()
         }
         .onAppear {
+            selectedDate = endDate
             jumpToPage(for: endDate)
         }
     }
@@ -412,7 +422,7 @@ struct VitalChartWithTimeFramePicker: View {
         let calendar = Calendar.current
         switch selectedTimeFrameVital {
         case .hourly:
-            let hoursDifference = calendar.dateComponents([.hour], from: startDate, to: date).day ?? 0
+            let hoursDifference = calendar.dateComponents([.hour], from: startDate, to: date).hour ?? 0
             currentPageForTimeFramesVital[selectedTimeFrameVital] = max(hoursDifference, 0)
         case .daily:
             let daysDifference = calendar.dateComponents([.day], from: startDate, to: date).day ?? 0
@@ -573,10 +583,8 @@ struct VitalChartWithTimeFramePicker: View {
             let startHour = calendar.date(byAdding: .hour, value: page, to: floorDateToHour(startDate)) ?? startDate
             let endHour = calendar.date(byAdding: .hour, value: 1, to: startHour) ?? startHour
             
-            // Format the date and time range for the title
             dateFormatter.dateStyle = .medium
             let formattedDate = dateFormatter.string(from: startHour)
-            
             dateFormatter.dateFormat = "HH:mm"
             let startTime = dateFormatter.string(from: startHour)
             let endTime = dateFormatter.string(from: endHour)
@@ -816,13 +824,30 @@ struct BoxChartViewVital: View {
     var data: [ChartDataVital]
     var timeFrame: TimeFrameVital
     var title: String
+    @State private var isLoading: Bool = true // Flag for loading state
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text(title)
-                .font(.headline)
+        VStack(alignment: .center) {
 
-            if data.allSatisfy({ $0.minValue == 0 && $0.maxValue == 0}) {
+            if isLoading {
+                VStack {
+                    ProgressView() // Display the progress spinner
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .scaleEffect(2) // Optional: make the progress view bigger
+                        .padding()
+                    
+                    Text("Fetching Data...")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .onAppear {
+                    // Simulate a loading delay or wait for actual data fetching logic
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        isLoading = false // Set to false when loading is complete
+                    }
+                }
+            } else if data.allSatisfy({ $0.minValue == 0 && $0.maxValue == 0}) {
                 Text("No Data")
                     .font(.headline)
                     .foregroundColor(.gray)

@@ -963,7 +963,7 @@ struct BoxChartViewActivity: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 .onAppear {
                     // Simulate a loading delay or wait for actual data fetching logic
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         isLoading = false // Set to false when loading is complete
                     }
                 }
