@@ -14,10 +14,11 @@ struct rawDataView: View {
             // Customize navigation bar appearance
             let appearance = UINavigationBarAppearance()
         
-            appearance.titleTextAttributes = [.foregroundColor: UIColor.white]  // Title color
-        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.systemMint] // Large title color
-            
-            UINavigationBar.appearance().standardAppearance = appearance
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.secondarySystemFill]  // Title color
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.black]  // Large title color
+    
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
         
         }
     
@@ -29,9 +30,9 @@ struct rawDataView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
-                        .foregroundStyle(Color.pink)
+                        .foregroundStyle(Color.blue)
                     Text("Accelerometer Data")
-                        .foregroundStyle(Color.gray)
+                        .foregroundStyle(Color.primary)
                         .font(.title)
                         }
                         .tag("Accelerometer Data")
@@ -40,9 +41,9 @@ struct rawDataView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
-                        .foregroundStyle(Color.pink)
+                        .foregroundStyle(Color.blue)
                     Text("Gyroscope Data")
-                        .foregroundStyle(Color.gray)
+                        .foregroundStyle(Color.primary)
                         .font(.title)
                         }
                         .tag("Gyroscope Data")
@@ -51,9 +52,9 @@ struct rawDataView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
-                        .foregroundStyle(Color.pink)
+                        .foregroundStyle(Color.blue)
                     Text("Magnetometer Data")
-                        .foregroundStyle(Color.gray)
+                        .foregroundStyle(Color.primary)
                         .font(.title)
                         }
                         .tag("Magnetometer Data")
@@ -62,9 +63,9 @@ struct rawDataView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
-                        .foregroundStyle(Color.pink)
+                        .foregroundStyle(Color.blue)
                     Text("Raw Data All")
-                        .foregroundStyle(Color.gray)
+                        .foregroundStyle(Color.primary)
                         .font(.title)
                 }
                         .tag("RawDataAll")

@@ -106,7 +106,7 @@ struct mobilityView: View {
     @ViewBuilder
     private func dataSection(title: String, dataAvailable: Bool, chartKey: String, data: [MobilityStatistics], unit: HKUnit, chartTitle: String) -> some View {
         Section(header: Text(title)
-            .font(.headline)) {
+            .font(.title3)) {
             HStack {
                 if !isRecording {
                     // Show this message if the "Fetch Data" button hasn't been clicked

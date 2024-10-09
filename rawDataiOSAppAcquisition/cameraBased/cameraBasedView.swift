@@ -44,7 +44,7 @@ struct cameraBasedView: View {
             VStack {
                 Text("Press the Button to start Recording or Capturing")
                     .font(.largeTitle)
-                    .foregroundStyle(.mint)
+                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
                 Spacer()
                 HStack {
@@ -53,7 +53,7 @@ struct cameraBasedView: View {
                     }) {
                         Image(systemName: isRecording ? "stop.circle.fill" : "video.circle.fill")
                             .font(.system(size: 50))
-                            .foregroundColor(.pink)
+                            .foregroundColor(.blue)
                     }
                     .padding(20)
                     
@@ -62,7 +62,7 @@ struct cameraBasedView: View {
                     }) {
                         Image(systemName: "camera.circle.fill")
                             .font(.system(size: 50))
-                            .foregroundColor(.mint)
+                            .foregroundColor(.secondary)
                     }
                     .padding(20)
                 }
