@@ -87,7 +87,7 @@ struct mobilityView: View {
                 }) {
                     Text(isRecording ? "Save Data" : "Fetch Data")
                         .padding()
-                        .background(isRecording ? Color.pink : Color.mint)
+                        .background(isRecording ? Color.secondary : Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 }
@@ -174,25 +174,24 @@ struct ChartWithTimeFrameMobilityPicker: View {
 
     // Cache for precomputed data
     @State private var precomputedPageData: [TimeFrameMobility: [Int: [ChartDataMobility]]] = [:]
-    @State private var sum: Double = 0
-    @State private var average: Double = 0
+    @State private var minValue: Double = 0
+    @State private var maxValue: Double = 0
 
     var body: some View {
         VStack {
             HStack {
                 Text(getInformationText())
-                    .font(.subheadline)
-                    .foregroundStyle(Color.white)
+                    .font(.headline)
+                    .foregroundStyle(Color.secondary)
+                    .multilineTextAlignment(.center)
                     .padding(2)
-                    .background(Color.mint)
-                    .cornerRadius(8)
                     .padding(.top, 5)
                 
                 Button(action: {
                     showInfoPopover.toggle()
                 }) {
                     Image(systemName: "info.circle")
-                        .foregroundColor(.pink)
+                        .foregroundColor(.blue)
                         .padding(.vertical)
                 }
                 .popover(isPresented: $showInfoPopover) {
@@ -239,11 +238,37 @@ struct ChartWithTimeFrameMobilityPicker: View {
                             .labelsHidden()
                             .onChange(of: selectedDate) { _, newDate in
                                 let calendar = Calendar.current
-                                let components = calendar.dateComponents([.year, .month], from: newDate)
+                                let timeZone = TimeZone.current
+                                
+                                // Log the selected date before any modification
+                                print("Newly selected date before any adjustments: \(newDate)")
+                                
+                                // Get the year and month of the selected date directly
+                                var components = calendar.dateComponents([.year, .month], from: newDate)
+                                
                                 if let selectedYear = components.year, let selectedMonth = components.month {
-                                    // Set the date to the first of the selected month and year
-                                    selectedDate = calendar.date(from: DateComponents(year: selectedYear, month: selectedMonth, day: 1)) ?? newDate
-                                    jumpToPage(for: selectedDate)
+                                    
+                                    // Log the components before setting the new date
+                                    print("Selected Year: \(selectedYear), Selected Month: \(selectedMonth)")
+                                    
+                                    // Force the selected date to be the 1st of the month and set the time to midday (to avoid time zone issues)
+                                    components.day = 1
+                                    components.hour = 23
+                                    components.minute = 0
+                                    components.second = 0
+                                    components.timeZone = timeZone
+                                    
+                                    if let adjustedDate = calendar.date(from: components) {
+                                        
+                                        // Log the newly adjusted date
+                                        print("Adjusted Date to first of the month: \(adjustedDate)")
+                                        
+                                        // Update the selected date and jump to the corresponding page
+                                        selectedDate = adjustedDate
+                                        jumpToPage(for: selectedDate)
+                                    } else {
+                                        print("Failed to adjust the date correctly.")
+                                    }
                                 }
                             }
                     } else {
@@ -260,7 +285,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
                     }
                     .foregroundStyle(Color.white)
                     .padding() // Add padding inside the button to make the text area larger
-                    .background(Color.pink) // Set background color
+                    .background(Color.blue) // Set background color
                     .cornerRadius(8) // Round the corners
                     .padding(.horizontal, 20) // Add horizontal padding to make the button wider
                     .padding(.vertical, 10) // Add vertical padding to make the button taller
@@ -269,12 +294,12 @@ struct ChartWithTimeFrameMobilityPicker: View {
 
             // Display the metric sum and average
             HStack {
-                Text(getTitleForMetric(TimeFrameMobility: selectedTimeFrameMobility))
+                Text(getTitleForMetric(TimeFrameMobility: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue))
                     .foregroundColor(.primary)
                 + Text(": ")
                     .foregroundColor(.primary)
-                + Text(getValueText(TimeFrameMobility: selectedTimeFrameMobility, sum: sum, average: average))
-                    .foregroundColor(.mint)
+                + Text(getValueText(timeFrame: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue))
+                    .foregroundColor(.pink)
             }
             .font(.headline)
             .frame(maxWidth: .infinity)
@@ -324,17 +349,26 @@ struct ChartWithTimeFrameMobilityPicker: View {
             var newPrecomputedData: [Int: [ChartDataMobility]] = [:]
             let pageCount = getPageCount(for: selectedTimeFrameMobility, startDate: startDate, endDate: endDate)
 
+            // Loop over each page and compute the data for it
             for page in 0..<pageCount {
                 let filtered = filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrameMobility, page: page, startDate: startDate, endDate: endDate)
                 newPrecomputedData[page] = filtered
             }
 
-            let (computedSum, computedAverage) = calculateSumAndAverage(for: selectedTimeFrameMobility, data: newPrecomputedData[currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0] ?? [], startDate: startDate, endDate: endDate, currentPage: currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0)
+            // Compute min and max for the current page
+            let (computedMinValue, computedMaxValue) = calculateMinMax(
+                for: selectedTimeFrameMobility,
+                data: newPrecomputedData[currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0] ?? [],
+                startDate: startDate,
+                endDate: endDate,
+                currentPage: currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0
+            )
 
+            // Update state on the main thread
             DispatchQueue.main.async {
                 precomputedPageData[selectedTimeFrameMobility] = newPrecomputedData
-                sum = computedSum
-                average = computedAverage
+                minValue = computedMinValue
+                maxValue = computedMaxValue
             }
         }
     }
@@ -342,9 +376,9 @@ struct ChartWithTimeFrameMobilityPicker: View {
     // Update displayed data based on the current page
     private func updateDisplayedData() {
         if let pageData = precomputedPageData[selectedTimeFrameMobility]?[currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0] {
-            let (computedSum, computedAverage) = calculateSumAndAverage(for: selectedTimeFrameMobility, data: pageData, startDate: startDate, endDate: endDate, currentPage: currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0)
-            sum = computedSum
-            average = computedAverage
+            let (computedMinValue, computedMaxValue) = calculateMinMax(for: selectedTimeFrameMobility, data: pageData, startDate: startDate, endDate: endDate, currentPage: currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0)
+            minValue = computedMinValue
+            maxValue = computedMaxValue
         }
     }
 
@@ -384,13 +418,21 @@ struct ChartWithTimeFrameMobilityPicker: View {
         }
     }
 
-    private func getValueText(TimeFrameMobility: TimeFrameMobility, sum: Double, average: Double) -> String {
+    private func getValueText(timeFrame: TimeFrameMobility, minValue: Double, maxValue: Double) -> String {
         let unit = getUnitForMetric(title: title) // Get the unit based on the title
+
+        // Check if both minValue and maxValue are 0, return "--" if true
+        guard minValue != 0 || maxValue != 0 else {
+            return "-- \(unit)"
+        }
         
-        // Format sum and average to 1 decimal place and append the unit
-        let formattedAverage = String(format: "%.1f", average)
-        
-        return "Average: \(formattedAverage) \(unit)"
+        // If minValue equals maxValue, return only minValue
+        if minValue == maxValue {
+            return "\(String(format: "%.1f", minValue)) \(unit)"
+        }
+
+        // Return formatted string showing the range between minValue and maxValue
+        return "\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)) \(unit)"
     }
     
     private func jumpToPage(for date: Date) {
@@ -414,102 +456,96 @@ struct ChartWithTimeFrameMobilityPicker: View {
         }
     }
         
-    private func calculateSumAndAverage(for TimeFrameMobility: TimeFrameMobility, data: [ChartDataMobility], startDate: Date, endDate: Date, currentPage: Int) -> (sum: Double, average: Double) {
-        // Sum all average values
-        let totalSum = data.map { $0.value }.reduce(0, +)
-        
-        // Count only the data points that have a value greater than 0
-        let nonZeroDataCount = data.filter { $0.value > 0 }.count
-        
-        // Calculate the average, avoiding division by zero
-        let average = nonZeroDataCount > 0 ? totalSum / Double(nonZeroDataCount) : 0.0
-        
-        // Round the sum and average to 1 decimal place
-        let roundedSum = Double(String(format: "%.1f", totalSum)) ?? 0.0
-        let roundedAverage = Double(String(format: "%.1f", average)) ?? 0.0
-        
-        return (sum: roundedSum, average: roundedAverage)
+    private func calculateMinMax(for timeFrame: TimeFrameMobility, data: [ChartDataMobility], startDate: Date, endDate: Date, currentPage: Int) -> (minValue: Double, maxValue: Double) {
+        // Filter out zero values when computing the minimum
+        let nonZeroData = data.filter { $0.minValue > 0 }
+
+        // Calculate min and max from non-zero values
+        let minValue = nonZeroData.map { $0.minValue }.min() ?? 0.0
+        let maxValue = data.map { $0.maxValue }.max() ?? 0.0
+
+        return (minValue, maxValue)
     }
 
-    private func getTitleForMetric(TimeFrameMobility: TimeFrameMobility) -> String {
+    private func getTitleForMetric(TimeFrameMobility: TimeFrameMobility, minValue: Double, maxValue: Double) -> String {
         let description: String
+        let rangeOrValue = (minValue == maxValue) ? "Value" : "Range"  // Switch between "Range" and "Value"
         
-        // Determine the data type and set the title based on the TimeFrameMobility
+        // Determine the data type and set the title based on the TimeFrameMobility and the min/max values
         switch title {
         case "Walking Double Support":
             switch TimeFrameMobility {
             case .daily:
-                description = "Range in this day"
+                description = "\(rangeOrValue) in this day"
             case .weekly:
-                description = "Range in this week"
+                description = "\(rangeOrValue) in this week"
             case .monthly:
-                description = "Range in this month"
+                description = "\(rangeOrValue) in this month"
             case .sixMonths:
-                description = "Range in these 6 months span"
+                description = "\(rangeOrValue) in these 6 months span"
             case .yearly:
-                description = "Range in this year"
+                description = "\(rangeOrValue) in this year"
             }
             
         case "Walking Asymmetry":
             switch TimeFrameMobility {
             case .daily:
-                description = "Range in this day"
+                description = "\(rangeOrValue) in this day"
             case .weekly:
-                description = "Range in this week"
+                description = "\(rangeOrValue) in this week"
             case .monthly:
-                description = "Range in this month"
+                description = "\(rangeOrValue) in this month"
             case .sixMonths:
-                description = "Range in these 6 months span"
+                description = "\(rangeOrValue) in these 6 months span"
             case .yearly:
-                description = "Range in this year"
+                description = "\(rangeOrValue) in this year"
             }
             
         case "Walking Step Length":
             switch TimeFrameMobility {
             case .daily:
-                description = "Range in this day"
+                description = "\(rangeOrValue) in this day"
             case .weekly:
-                description = "Range in this week"
+                description = "\(rangeOrValue) in this week"
             case .monthly:
-                description = "Range in this month"
+                description = "\(rangeOrValue) in this month"
             case .sixMonths:
-                description = "Range in these 6 months span"
+                description = "\(rangeOrValue) in these 6 months span"
             case .yearly:
-                description = "Range in this year"
+                description = "\(rangeOrValue) in this year"
             }
             
         case "Walking Steadiness":
             switch TimeFrameMobility {
             case .daily:
-                description = "Range in this day"
+                description = "\(rangeOrValue) in this day"
             case .weekly:
-                description = "Range in this week"
+                description = "\(rangeOrValue) in this week"
             case .monthly:
-                description = "Range in this month"
+                description = "\(rangeOrValue) in this month"
             case .sixMonths:
-                description = "Range in these 6 months span"
+                description = "\(rangeOrValue) in these 6 months span"
             case .yearly:
-                description = "Range in this year"
+                description = "\(rangeOrValue) in this year"
             }
             
         default:
             switch TimeFrameMobility {
             case .daily:
-                description = "Range in this day"
+                description = "\(rangeOrValue) in this day"
             case .weekly:
-                description = "Range in this week"
+                description = "\(rangeOrValue) in this week"
             case .monthly:
-                description = "Range in this month"
+                description = "\(rangeOrValue) in this month"
             case .sixMonths:
-                description = "Range in these 6 months span"
+                description = "\(rangeOrValue) in these 6 months span"
             case .yearly:
-                description = "Range in this year"
+                description = "\(rangeOrValue) in this year"
             }
         }
         
         return description
     }
-
     
     // Helper function to display different text based on the selected data section
     private func getInformationText() -> String {
@@ -519,11 +555,11 @@ struct ChartWithTimeFrameMobilityPicker: View {
         case "Walking Asymmetry":
             return "Percentage of steps in which one foot moves at a different speed than the other when walking on flat ground"
         case "Walking Speed":
-            return "Average speed when walking steadily over flat ground"
+            return "Speed when walking steadily over flat ground"
         case "Walking Step Length":
-            return "Average length when walking steadily over flat ground"
+            return "Distance between your front foot and back foot when you're walking"
         case "Walking Steadiness":
-            return "Steadiness of the gait"
+            return "Steadiness of the gait calculated using walking speed, step length, double support time and wlaking asymmetry data"
         default:
             return "Data not available."
         }
@@ -824,6 +860,7 @@ struct BoxChartViewMobility: View {
                                     x: .value("Date", item.date),
                                     y: .value("Value", item.value)
                                 )
+                                .symbolSize(25)
                             }
                         } else if title == "Walking Steadiness" && timeFrame == .yearly {
                             // Adjust minValue for Walking Steadiness in .yearly, but skip if minValue is 0
@@ -855,7 +892,7 @@ struct BoxChartViewMobility: View {
                     }
                 }
                 .id(UUID())
-                .foregroundStyle(Color.pink)
+                .foregroundStyle(Color.primary)
                 .chartYAxis {
                     switch title {
                     case "Walking Double Support", "Walking Asymmetry":
@@ -960,7 +997,7 @@ struct BoxChartViewMobility: View {
             case "Walking Step Length":
                 unit = "meters"
             case "Walking Double Support", "Walking Asymmetry", "Walking Steadiness":
-                unit = "Percent"
+                unit = "%"
             default:
                 unit = ""
             }
@@ -969,7 +1006,7 @@ struct BoxChartViewMobility: View {
             if minValue == maxValue {
                 return "\(String(format: "%.1f", maxValue)) \(unit)"
             } else {
-                return "\(String(format: "%.1f", minValue)) - \(String(format: "%.1f", maxValue)) \(unit)"
+                return "\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)) \(unit)"
             }
         }
     

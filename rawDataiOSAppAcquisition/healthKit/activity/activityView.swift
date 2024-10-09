@@ -298,7 +298,7 @@ struct ChartWithTimeFramePicker: View {
                     Button("Done") {
                         showDatePicker = false
                     }
-                    .foregroundStyle(Color.primary)
+                    .foregroundStyle(Color.white)
                     .padding() // Add padding inside the button to make the text area larger
                     .background(Color.blue) // Set background color
                     .cornerRadius(8) // Round the corners
@@ -423,22 +423,22 @@ struct ChartWithTimeFramePicker: View {
         
         switch (title, timeFrame) {
         case ("Active Energy Burned in KiloCalorie", .daily):
-            return sum == 0 ? "--" : "\(String(format: "%.2f", sum / 1000)) \(unit)"
+            return sum == 0 ? "-- \(unit)" : "\(String(format: "%.1f", sum / 1000)) \(unit)"
             
         case ("Active Energy Burned in KiloCalorie", _):
-            return average == 0 ? "--" : "\(String(format: "%.2f", average / 1000)) \(unit)"
+            return average == 0 ? "-- \(unit)" : "\(String(format: "%.0f", average / 1000)) \(unit)"
             
         case ("Step Count", _):
-            return average == 0 ? "--" : "\(String(format: "%.0f", average)) \(unit)"
+            return average == 0 ? "-- \(unit)" : "\(String(format: "%.0f", average)) \(unit)"
             
         case ("Distance Walking/Running (Km)", .daily):
-            return sum == 0 ? "--" : "\(String(format: "%.2f", sum / 1000)) \(unit)"
+            return sum == 0 ? "-- \(unit)" : "\(String(format: "%.2f", sum / 1000)) \(unit)"
             
         case ("Distance Walking/Running (Km)", _):
-            return average == 0 ? "--" : "\(String(format: "%.1f", average / 1000)) \(unit)"
+            return average == 0 ? "-- \(unit)" : "\(String(format: "%.1f", average / 1000)) \(unit)"
             
         default:
-            return average == 0 ? "--" : "\(String(format: "%.0f", average)) \(unit)"
+            return average == 0 ? "-- \(unit)" : "\(String(format: "%.0f", average)) \(unit)"
         }
     }
     
