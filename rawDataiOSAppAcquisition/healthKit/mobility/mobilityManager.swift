@@ -182,7 +182,7 @@ class HealthKitMobilityManager: ObservableObject {
     }
     
     private func saveCSV(for samples: [MobilityStatistics], fileName: String, unitLabel: String) {
-        var csvString = "Date,Value (\(unitLabel))\n"  // Updated header to only include the value
+        var csvString = "Recorded Date and Time,Value (\(unitLabel))\n"  // Updated header to only include the value
         
         let dateFormatter = ISO8601DateFormatter()
         dateFormatter.timeZone = TimeZone.current

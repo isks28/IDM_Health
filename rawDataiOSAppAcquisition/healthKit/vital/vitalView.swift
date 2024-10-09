@@ -10,7 +10,7 @@ import HealthKit
 import Charts
 import Foundation
 
-enum VitalTimeFrame: String, CaseIterable {
+enum TimeFrameVital: String, CaseIterable {
     case hourly = "Hourly"
     case daily = "Daily"
     case weekly = "Weekly"
@@ -36,20 +36,17 @@ struct vitalView: View {
         VStack {
             Text("Vital Health Data")
                 .font(.largeTitle)
-                
-            Text("To be fetched Data:")
-                .font(.headline)
-                .padding(.top)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
             
             ScrollView(.vertical) {
                 VStack(spacing: 10) {
-                    dataSection(title: "Heart Rate", dataAvailable: !vitalManager.heartRateData.isEmpty, data: vitalManager.heartRateData, unit: HKUnit.init(from: "count/min"), chartTitle: "Heart Rate")
+                    dataSection(title: "Heart Rate", dataAvailable: !vitalManager.heartRateData.isEmpty, chartKey: "HeartRate", data: vitalManager.heartRateData, unit: HKUnit.init(from: "count/min"), chartTitle: "Heart Rate")
                 }
                 .padding()
             }
             Text("Set Start and End-Date of Data to be fetched:")
                 .font(.headline)
-                .padding(.top, 50)
             
             DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
                 .onChange(of: startDate) { _, newDate in
@@ -77,19 +74,20 @@ struct vitalView: View {
                         .background(isRecording ? Color.gray : Color.mint)
                         .foregroundColor(.white)
                         .cornerRadius(8)
-                    if vitalManager.savedFilePath != nil {
-                        Text("File saved")
-                            .font(.footnote)
-                    }
                 }
                 .padding()
+                
+                if vitalManager.savedFilePath != nil {
+                    Text("File saved")
+                        .font(.footnote)
+                }
             }
         }
         .padding()
     }
     
     @ViewBuilder
-    private func dataSection(title: String, dataAvailable: Bool, data: [VitalStatistics], unit: HKUnit, chartTitle: String) -> some View {
+    private func dataSection(title: String, dataAvailable: Bool, chartKey: String, data: [VitalStatistics], unit: HKUnit, chartTitle: String) -> some View {
         Section(header: Text(title).font(.title3)) {
             HStack {
                 if !isRecording {
@@ -138,8 +136,8 @@ struct VitalChartWithTimeFramePicker: View {
     var startDate: Date
     var endDate: Date
     
-    @State private var selectedTimeFrame: VitalTimeFrame = .daily
-    @State private var currentPageForTimeFrames: [VitalTimeFrame: Int] = [
+    @State private var selectedTimeFrameVital: TimeFrameVital = .daily
+    @State private var currentPageForTimeFramesVital: [TimeFrameVital: Int] = [
         .hourly: 0,
         .daily: 0,
         .weekly: 0,
@@ -152,7 +150,7 @@ struct VitalChartWithTimeFramePicker: View {
     @State private var selectedDate: Date = Date()
     
     // Cache for precomputed data
-    @State private var precomputedPageData: [VitalTimeFrame: [Int: [ChartDataVital]]] = [:]
+    @State private var precomputedPageData: [TimeFrameVital: [Int: [ChartDataVital]]] = [:]
     @State private var minValue: Double = 0
     @State private var maxValue: Double = 0
 
@@ -160,167 +158,386 @@ struct VitalChartWithTimeFramePicker: View {
         VStack {
             HStack {
                 Text(getInformationText())
-                    .font(.subheadline)
-                    .padding(.top)
+                    .font(.headline)
+                    .foregroundStyle(Color.secondary)
                     .multilineTextAlignment(.center)
-
+                    .padding(2)
+                    .padding(.top, 5)
+                
                 Button(action: {
                     showInfoPopover.toggle()
                 }) {
                     Image(systemName: "info.circle")
-                        .foregroundColor(.pink)
-                        .padding(.top)
+                        .foregroundColor(.blue)
+                        .padding(.vertical)
                 }
                 .popover(isPresented: $showInfoPopover) {
-                    VStack(alignment: .leading) {
-                        Text("Additional Information")
-                            .font(.title)
-                            .padding(.bottom, 7)
-                            .foregroundStyle(Color.pink)
-                        Text("Heart rate data is measured using optical sensors on Apple devices.")
-                            .font(.body)
-                            .padding(.bottom, 3)
-                        Text("Use this data to monitor cardiovascular health, fitness, and recovery.")
-                            .font(.body)
-                            .padding(.bottom, 3)
-                    }
-                    .frame(width: 300, height: 200)
+                    popoverContent()
                 }
             }
             .padding(.horizontal)
-
-            Picker("Time Frame", selection: $selectedTimeFrame) {
-                ForEach(VitalTimeFrame.allCases, id: \.self) { timeFrame in
+            
+            Picker("Time Frame", selection: $selectedTimeFrameVital) {
+                ForEach(getAvailableTimeFrames(for: title), id: \.self) { timeFrame in
                     Text(timeFrame.rawValue).tag(timeFrame)
                 }
             }
             .pickerStyle(SegmentedPickerStyle())
-            .onChange(of: selectedTimeFrame) { _, _ in
+            .onChange(of: selectedTimeFrameVital) { _, _ in
                 updateFilteredData()
-            .padding()
-
-            // Title with clickable functionality to show date picker
+            }
+            
             Button(action: {
                 showDatePicker = true
             }) {
-                Text(getTitleForCurrentPage(timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0, startDate: startDate, endDate: endDate))
+                Text(getTitleForCurrentPage(TimeFrameVital: selectedTimeFrameVital, page: currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0, startDate: startDate, endDate: endDate))
                     .font(.title2)
-                    .padding(.bottom, 8)
             }
             .sheet(isPresented: $showDatePicker) {
-                DatePicker(
-                    "Select Date",
-                    selection: $selectedDate,
-                    in: startDate...endDate,
-                    displayedComponents: [.date]
-                )
-                .datePickerStyle(GraphicalDatePickerStyle())
-                .onChange(of: selectedDate) { _, newDate in
-                    jumpToPage(for: selectedDate)
+                VStack {
+                    if selectedTimeFrameVital == .yearly {
+                        // Yearly: Restrict to year-only
+                        DatePicker("Select Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: .date)
+                            .datePickerStyle(WheelDatePickerStyle())
+                            .labelsHidden()
+                            .onChange(of: selectedDate) { _, newDate in
+                                let calendar = Calendar.current
+                                if let selectedYear = calendar.dateComponents([.year], from: newDate).year {
+                                    // Set the date to January 1st of the selected year
+                                    selectedDate = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1)) ?? newDate
+                                    jumpToPage(for: selectedDate)
+                                }
+                            }
+                    } else if selectedTimeFrameVital == .monthly || selectedTimeFrameVital == .sixMonths {
+                        // Monthly and SixMonths: Restrict to month and year
+                        DatePicker("Select Month and Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
+                            .datePickerStyle(WheelDatePickerStyle())
+                            .labelsHidden()
+                            .onChange(of: selectedDate) { _, newDate in
+                                let calendar = Calendar.current
+                                let timeZone = TimeZone.current
+                                
+                                // Log the selected date before any modification
+                                print("Newly selected date before any adjustments: \(newDate)")
+                                
+                                // Get the year and month of the selected date directly
+                                var components = calendar.dateComponents([.year, .month], from: newDate)
+                                
+                                if let selectedYear = components.year, let selectedMonth = components.month {
+                                    
+                                    // Log the components before setting the new date
+                                    print("Selected Year: \(selectedYear), Selected Month: \(selectedMonth)")
+                                    
+                                    // Force the selected date to be the 1st of the month and set the time to midday (to avoid time zone issues)
+                                    components.day = 1
+                                    components.hour = 23
+                                    components.minute = 0
+                                    components.second = 0
+                                    components.timeZone = timeZone
+                                    
+                                    if let adjustedDate = calendar.date(from: components) {
+                                        
+                                        // Log the newly adjusted date
+                                        print("Adjusted Date to first of the month: \(adjustedDate)")
+                                        
+                                        // Update the selected date and jump to the corresponding page
+                                        selectedDate = adjustedDate
+                                        jumpToPage(for: selectedDate)
+                                    } else {
+                                        print("Failed to adjust the date correctly.")
+                                    }
+                                }
+                            }
+                    } else {
+                        // Daily and Weekly: Regular Date Picker
+                        DatePicker("Select Date", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
+                            .datePickerStyle(GraphicalDatePickerStyle())
+                            .onChange(of: selectedDate) { _, _ in
+                                jumpToPage(for: selectedDate)
+                            }
+                    }
+
+                    Button("Done") {
+                        showDatePicker = false
+                    }
+                    .foregroundStyle(Color.white)
+                    .padding() // Add padding inside the button to make the text area larger
+                    .background(Color.blue) // Set background color
+                    .cornerRadius(8) // Round the corners
+                    .padding(.horizontal, 20) // Add horizontal padding to make the button wider
+                    .padding(.vertical, 10) // Add vertical padding to make the button taller
                 }
-                .padding()
             }
 
-            let filteredData = filterAndAggregateDataForPage(
-                data,
-                timeFrame: selectedTimeFrame,
-                page: currentPageForTimeFrames[selectedTimeFrame] ?? 0,
-                startDate: startDate,
-                endDate: endDate
-            )
+            // Display the metric sum and average
+            HStack {
+                Text(getTitleForMetric(TimeFrameVital: selectedTimeFrameVital, minValue: minValue, maxValue: maxValue))
+                    .foregroundColor(.primary)
+                + Text(": ")
+                    .foregroundColor(.primary)
+                + Text(getValueText(timeFrame: selectedTimeFrameVital, minValue: minValue, maxValue: maxValue))
+                    .foregroundColor(.pink)
+            }
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 25)
 
-            let (sum, average) = calculateAverage(for: selectedTimeFrame, data: filteredData)
-
-            Text("Average Heart Rate in BPM")
-                .font(.headline)
-
-            Text(sum == 0 ? "--" : "\(String(format: "%.0f", selectedTimeFrame == .daily ? average : average)) BPM")
-                .font(.headline)
-                .foregroundStyle(Color.mint)
-
+            // Use precomputed data for TabView
             TabView(selection: Binding(
-                get: { currentPageForTimeFrames[selectedTimeFrame] ?? 0 },
-                set: { newValue in currentPageForTimeFrames[selectedTimeFrame] = newValue }
+                get: { currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0 },
+                set: { newValue in
+                    currentPageForTimeFramesVital[selectedTimeFrameVital] = newValue
+                    updateDisplayedData()
+                }
             )) {
-                if !data.isEmpty {
-                    ForEach((0..<getPageCount(for: selectedTimeFrame, startDate: startDate, endDate: endDate)), id: \.self) { page in
-                        BoxChartViewVital(data: filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrame, page: page, startDate: startDate, endDate: endDate), timeFrame: selectedTimeFrame, title: title)
+                if let pageData = precomputedPageData[selectedTimeFrameVital] {
+                    ForEach(0..<getPageCount(for: selectedTimeFrameVital, startDate: startDate, endDate: endDate), id: \.self) { page in
+                        BoxChartViewVital(data: pageData[page] ?? [], timeFrame: selectedTimeFrameVital, title: title)
                             .tag(page)
-                            .padding()
                     }
                 } else {
                     Text("No Data")
                 }
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-            .padding(.bottom)
+            .padding(.horizontal)
 
             Spacer()
         }
-        .padding()
+        .onAppear {
+            jumpToPage(for: endDate)
+        }
     }
 
+    private func getAvailableTimeFrames(for title: String) -> [TimeFrameVital] {
+        if title == "Walking Steadiness" {
+            // Exclude .daily and .weekly for "Walking Steadiness"
+            return TimeFrameVital.allCases.filter { $0 != .daily && $0 != .weekly }
+        } else {
+            // Return all time frames for other titles
+            return TimeFrameVital.allCases
+        }
+    }
+
+    // Precompute data for all pages
+    private func updateFilteredData() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            var newPrecomputedData: [Int: [ChartDataVital]] = [:]
+            let pageCount = getPageCount(for: selectedTimeFrameVital, startDate: startDate, endDate: endDate)
+
+            // Loop over each page and compute the data for it
+            for page in 0..<pageCount {
+                let filtered = filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrameVital, page: page, startDate: startDate, endDate: endDate)
+                newPrecomputedData[page] = filtered
+            }
+
+            // Compute min and max for the current page
+            let (computedMinValue, computedMaxValue) = calculateMinMax(
+                for: selectedTimeFrameVital,
+                data: newPrecomputedData[currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0] ?? [],
+                startDate: startDate,
+                endDate: endDate,
+                currentPage: currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0
+            )
+
+            // Update state on the main thread
+            DispatchQueue.main.async {
+                precomputedPageData[selectedTimeFrameVital] = newPrecomputedData
+                minValue = computedMinValue
+                maxValue = computedMaxValue
+            }
+        }
+    }
+
+    // Update displayed data based on the current page
+    private func updateDisplayedData() {
+        if let pageData = precomputedPageData[selectedTimeFrameVital]?[currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0] {
+            let (computedMinValue, computedMaxValue) = calculateMinMax(for: selectedTimeFrameVital, data: pageData, startDate: startDate, endDate: endDate, currentPage: currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0)
+            minValue = computedMinValue
+            maxValue = computedMaxValue
+        }
+    }
+
+    private func popoverContent() -> some View {
+        VStack(alignment: .leading) {
+            Text("Additional Information")
+                .font(.title)
+                .padding(.bottom, 7)
+                .foregroundStyle(Color.pink)
+            Text(measuredUsing())
+                .font(.body)
+                .padding(.bottom, 3)
+            Text(useCase())
+                .font(.body)
+                .padding(.bottom, 3)
+            Text("For more information, go to:")
+                .font(.title3)
+                .padding(.bottom, 3)
+                .foregroundStyle(Color.mint)
+            Text("https://dimesociety.org/library-of-digital-endpoints/")
+                .font(.body)
+                .padding(.bottom, 3)
+        }
+        .frame(width: 300, height: 400)
+    }
+    
+    private func getUnitForMetric(title: String) -> String {
+        switch title {
+        case "Heart Rate":
+            return "BPM"
+        default:
+            return ""
+        }
+    }
+
+    private func getValueText(timeFrame: TimeFrameVital, minValue: Double, maxValue: Double) -> String {
+        let unit = getUnitForMetric(title: title) // Get the unit based on the title
+
+        // Check if both minValue and maxValue are 0, return "--" if true
+        guard minValue != 0 || maxValue != 0 else {
+            return "-- \(unit)"
+        }
+        
+        // If minValue equals maxValue, return only minValue
+        if minValue == maxValue {
+            return "\(String(format: "%.1f", minValue)) \(unit)"
+        }
+
+        // Return formatted string showing the range between minValue and maxValue
+        return "\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)) \(unit)"
+    }
+    
     private func jumpToPage(for date: Date) {
         let calendar = Calendar.current
-        switch selectedTimeFrame {
+        switch selectedTimeFrameVital {
         case .hourly:
-            let hoursDifference = calendar.dateComponents([.hour], from: startDate, to: date).hour ?? 0
-            currentPageForTimeFrames[selectedTimeFrame] = max(hoursDifference, 0)
+            let hoursDifference = calendar.dateComponents([.hour], from: startDate, to: date).day ?? 0
+            currentPageForTimeFramesVital[selectedTimeFrameVital] = max(hoursDifference, 0)
         case .daily:
             let daysDifference = calendar.dateComponents([.day], from: startDate, to: date).day ?? 0
-            currentPageForTimeFrames[selectedTimeFrame] = max(daysDifference, 0)
+            currentPageForTimeFramesVital[selectedTimeFrameVital] = max(daysDifference, 0)
         case .weekly:
             let weeksDifference = calendar.dateComponents([.weekOfYear], from: startDate, to: date).weekOfYear ?? 0
-            currentPageForTimeFrames[selectedTimeFrame] = max(weeksDifference, 0)
+            currentPageForTimeFramesVital[selectedTimeFrameVital] = max(weeksDifference, 0)
         case .monthly:
             let monthsDifference = calendar.dateComponents([.month], from: startDate, to: date).month ?? 0
-            currentPageForTimeFrames[selectedTimeFrame] = max(monthsDifference, 0)
+            currentPageForTimeFramesVital[selectedTimeFrameVital] = max(monthsDifference, 0)
         case .sixMonths:
             let monthsDifference = calendar.dateComponents([.month], from: startDate, to: date).month ?? 0
-            currentPageForTimeFrames[selectedTimeFrame] = max(monthsDifference / 6, 0)
+            currentPageForTimeFramesVital[selectedTimeFrameVital] = max(monthsDifference / 6, 0)
         case .yearly:
             let yearsDifference = calendar.dateComponents([.year], from: startDate, to: date).year ?? 0
-            currentPageForTimeFrames[selectedTimeFrame] = max(yearsDifference, 0)
+            currentPageForTimeFramesVital[selectedTimeFrameVital] = max(yearsDifference, 0)
+        }
+    }
+        
+    private func calculateMinMax(for timeFrame: TimeFrameVital, data: [ChartDataVital], startDate: Date, endDate: Date, currentPage: Int) -> (minValue: Double, maxValue: Double) {
+        // Filter out zero values when computing the minimum
+        let nonZeroData = data.filter { $0.minValue > 0 }
+
+        // Calculate min and max from non-zero values
+        let minValue = nonZeroData.map { $0.minValue }.min() ?? 0.0
+        let maxValue = data.map { $0.maxValue }.max() ?? 0.0
+
+        return (minValue, maxValue)
+    }
+
+    private func getTitleForMetric(TimeFrameVital: TimeFrameVital, minValue: Double, maxValue: Double) -> String {
+        let description: String
+        let rangeOrValue = (minValue == maxValue) ? "Value" : "Range"  // Switch between "Range" and "Value"
+        
+        // Determine the data type and set the title based on the TimeFrameVital and the min/max values
+        switch title {
+        case "Heart Rate":
+            switch TimeFrameVital {
+            case .hourly:
+                description = "\(rangeOrValue) in this day"
+            case .daily:
+                description = "\(rangeOrValue) in this day"
+            case .weekly:
+                description = "\(rangeOrValue) in this week"
+            case .monthly:
+                description = "\(rangeOrValue) in this month"
+            case .sixMonths:
+                description = "\(rangeOrValue) in these 6 months span"
+            case .yearly:
+                description = "\(rangeOrValue) in this year"
+            }
+            
+        default:
+            switch TimeFrameVital {
+            case .hourly:
+                description = "\(rangeOrValue) in this day"
+            case .daily:
+                description = "\(rangeOrValue) in this day"
+            case .weekly:
+                description = "\(rangeOrValue) in this week"
+            case .monthly:
+                description = "\(rangeOrValue) in this month"
+            case .sixMonths:
+                description = "\(rangeOrValue) in these 6 months span"
+            case .yearly:
+                description = "\(rangeOrValue) in this year"
+            }
+        }
+        
+        return description
+    }
+    
+    // Helper function to display different text based on the selected data section
+    private func getInformationText() -> String {
+        switch title {
+        case "Heart Rate":
+            return "Heart Beats per Minute"
+        default:
+            return "Data not available."
         }
     }
     
-    private func calculateAverage(for timeFrame: VitalTimeFrame, data: [ChartDataVital]) -> (sum: Double, average: Double) {
-        let totalSum = data.map { $0.averageValue }.reduce(0, +)
-        
-        // Count only the data points that have a value greater than 0
-        let nonZeroDataCount = data.filter { $0.averageValue > 0 }.count
-        
-        let count: Int
-        count = nonZeroDataCount > 0 ? nonZeroDataCount : 1  // Avoid division by zero
-        
-        // Calculate the average only if we have valid data points
-        let average = count > 0 ? totalSum / Double(count) : 0.0
-        return (sum: totalSum, average: average)
+    // Helper function for detailed popover information
+    private func measuredUsing() -> String {
+        switch title {
+        case "Heart Rate":
+            return "MEASURED USING: Apple Watch"
+        default:
+            return "Data not available."
+        }
     }
     
-    private func getPageCount(for timeFrame: VitalTimeFrame, startDate: Date, endDate: Date) -> Int {
+    private func useCase() -> String {
+        switch title {
+        case "Heart Rate":
+            return "USE CASE: Cardiovascular, Diabetes, COPD, Neurological and Psychiatric disorders and Obesity and Metabolic syndrome"
+        default:
+            return "Data not available."
+        }
+    }
+}
+    
+    private func getPageCount(for timeFrame: TimeFrameVital, startDate: Date, endDate: Date) -> Int {
         let calendar = Calendar.current
         switch timeFrame {
         case .hourly:
             // Calculate hours between start and end dates
             let hourDifference = calendar.dateComponents([.hour], from: startDate, to: endDate).hour ?? 0
-            return max(hourDifference, 1) // Ensure at least 1 page
+            return max(hourDifference + 1, 1) // Ensure at least 1 page
         case .daily:
             // Calculate days between start and end dates
             let dayDifference = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0
-            return max(dayDifference, 1) // Ensure at least 1 page
+            return max(dayDifference + 1, 1) // Ensure at least 1 page
         case .weekly:
             // Calculate weeks between start and end dates
             let weekDifference = calendar.dateComponents([.weekOfYear], from: startDate, to: endDate).weekOfYear ?? 0
-            return max(weekDifference, 1) // Ensure at least 1 page
+            return max(weekDifference + 1, 1) // Ensure at least 1 page
         case .monthly:
             // Calculate months between start and end dates
             let monthDifference = calendar.dateComponents([.month], from: startDate, to: endDate).month ?? 0
-            return max(monthDifference, 1) // Ensure at least 1 page
+            return max(monthDifference + 1, 1) // Ensure at least 1 page
         case .sixMonths:
             // Calculate 6-month intervals between start and end dates
             let monthDifference = calendar.dateComponents([.month], from: startDate, to: endDate).month ?? 0
-            return max(monthDifference / 6, 1) // Ensure at least 1 page
+            return max((monthDifference / 6) + 1, 1) // Ensure at least 1 page
         case .yearly:
             // Calculate years between start and end dates
             let yearDifference = calendar.dateComponents([.year], from: startDate, to: endDate).year ?? 0
@@ -345,12 +562,12 @@ struct VitalChartWithTimeFramePicker: View {
     }
 
     // Function to get the title for the current page based on the time frame
-    private func getTitleForCurrentPage(timeFrame: VitalTimeFrame, page: Int, startDate: Date, endDate: Date) -> String {
+    private func getTitleForCurrentPage(TimeFrameVital: TimeFrameVital, page: Int, startDate: Date, endDate: Date) -> String {
         let calendar = Calendar.current
         let dateFormatter = DateFormatter()
         var title: String = ""
         
-        switch timeFrame {
+        switch TimeFrameVital {
         case .hourly:
             // Round the start date to the nearest full hour
             let startHour = calendar.date(byAdding: .hour, value: page, to: floorDateToHour(startDate)) ?? startDate
@@ -398,7 +615,7 @@ struct VitalChartWithTimeFramePicker: View {
     }
 
     // Function to filter and aggregate data based on the current page and time frame
-    private func filterAndAggregateDataForPage(_ data: [ChartDataVital], timeFrame: VitalTimeFrame, page: Int, startDate: Date, endDate: Date) -> [ChartDataVital] {
+    private func filterAndAggregateDataForPage(_ data: [ChartDataVital], timeFrame: TimeFrameVital, page: Int, startDate: Date, endDate: Date) -> [ChartDataVital] {
         let calendar = Calendar.current
         var filteredData: [ChartDataVital] = []
         
@@ -586,7 +803,6 @@ struct VitalChartWithTimeFramePicker: View {
     private func getInformationText() -> String {
         return "Heart Rate is measured in beats per minute (BPM)."
     }
-}
 
 struct ChartDataVital: Identifiable {
     let id = UUID()
@@ -598,7 +814,7 @@ struct ChartDataVital: Identifiable {
 
 struct BoxChartViewVital: View {
     var data: [ChartDataVital]
-    var timeFrame: VitalTimeFrame
+    var timeFrame: TimeFrameVital
     var title: String
 
     var body: some View {
@@ -679,56 +895,96 @@ struct BoxChartViewVital: View {
                 }
 
                 // Scrollable List of Data below the chart
-                ScrollView {
-                    ForEach(timeFrame == .weekly ? Array(data.prefix(7)) : data) { item in
-                        HStack {
-                            Text(formatDateForTimeFrame(item.date))
-                            Spacer()
-                            if timeFrame == .hourly {
-                                // For the hourly view, display the raw heart rate value
-                                Text("\(String(format: "%.0f", item.averageValue)) BPM")  // Display the raw heart rate value
-                            } else {
-                                // For other views, show min-max range
-                                if item.minValue == 0 && item.maxValue == 0 {
-                                    Text("-- BPM")
-                                } else {
-                                    Text("\(String(format: "%.0f", item.minValue)) - \(String(format: "%.0f", item.maxValue)) BPM")
-                                }
-                            }
-                        }
-                        .padding()
-                        .background(Color(UIColor.secondarySystemBackground))
-                        .cornerRadius(8)
-                        .shadow(radius: 3)
-                        .padding(.horizontal)
-                    }
-                }
-                .frame(maxHeight: 200)
+                Text(getDynamicTitle())
+                    .font(.callout)
+
+                // Scrollable List of Data below the chart
+                               ScrollView {
+                                   ForEach(timeFrame == .weekly ? Array(data.prefix(7)) : data) { item in
+                                       HStack {
+                                           Text(formatDateForTimeFrame(item.date)) // Display date formatted based on time frame
+                                           Spacer()
+                                           Text(getFormattedText(minValue: item.minValue, maxValue: item.maxValue))
+                                       }
+                                       .padding()
+                                       .background(Color(UIColor.systemBackground))
+                                       .cornerRadius(8)
+                                       .padding(.horizontal)
+                                       .foregroundStyle(Color.primary)
+                                   }
+                               }
+                               .frame(maxHeight: 200) // Restrict the height of the scrollable list
+                           }
+                       }
+                       .padding()
+                       .background(Color(UIColor.secondarySystemBackground))
+                       .cornerRadius(25)
+                   }
+
+        // Helper function to format the text based on the title
+        private func getFormattedText(minValue: Double, maxValue: Double) -> String {
+            guard minValue != 0 || maxValue != 0 else {
+                return "--"
+            }
+
+            let unit: String
+            switch title {
+            case "Heart Rate":
+                unit = "BPM"
+            default:
+                unit = ""
+            }
+
+            // Check if minValue is equal to maxValue
+            if minValue == maxValue {
+                return "\(String(format: "%.1f", maxValue)) \(unit)"
+            } else {
+                return "\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)) \(unit)"
             }
         }
-        .padding()
-        .background(Color(UIColor.secondarySystemBackground))
-        .cornerRadius(8)
-        .shadow(radius: 5)
-    }
-
-    private func getOffsetForTimeFrame(_ timeFrame: VitalTimeFrame) -> CGFloat {
-        switch timeFrame {
-        case .hourly:
-            return 8
-        case .daily:
-            return 6
-        case .weekly:
-            return 20
-        case .monthly:
-            return 5
-        case .sixMonths:
-            return 0
-        case .yearly:
-            return 10
+    
+    // Helper function to get the dynamic title based on data type and time frame
+        private func getDynamicTitle() -> String {
+            switch title {
+            case "Heart Rate":
+                switch timeFrame {
+                case .sixMonths:
+                    return "Heart rate range (weekly)"
+                case .yearly:
+                    return "Heart rate range (monthly)"
+                default:
+                    return "Heart rate"
+                }
+                
+            default:
+                switch timeFrame {
+                case .sixMonths:
+                    return "6-Month Data Overview"
+                case .yearly:
+                    return "Yearly Data Overview"
+                default:
+                    return "Data"
+                }
+            }
         }
-    }
+    
+    // Function to get the offset based on the time frame. Offset to set the position of the X-Axis Label
+    private func getOffsetForTimeFrame(_ timeFrame: TimeFrameMobility) -> CGFloat {
+            switch timeFrame {
+            case .daily:
+                return 6 // Offset for daily view
+            case .weekly:
+                return 20 // Offset for weekly view
+            case .monthly:
+                return 5 // Offset for monthly view
+            case .sixMonths:
+                return 0 // Offset for 6 months view
+            case .yearly:
+                return 11.5 // No offset for yearly view
+            }
+        }
 
+    // Helper function to format the date based on the selected time frame
     private func formatDateForTimeFrame(_ date: Date) -> String {
         let formatter = DateFormatter()
         let calendar = Calendar.current
@@ -739,28 +995,44 @@ struct BoxChartViewVital: View {
             formatter.dateFormat = "HH:mm"
             return formatter.string(from: date)
         case .daily:
+            // Format as "HH-HH Hours" for daily view
             formatter.dateFormat = "HH"
             let startHour = formatter.string(from: date)
             let endHour = formatter.string(from: calendar.date(byAdding: .hour, value: 1, to: date) ?? date)
             return "\(startHour)-\(endHour)"
+        
         case .weekly:
+            // Format as day of the week (e.g., Monday, Tuesday)
             formatter.dateFormat = "EEEE"
             return formatter.string(from: date)
+        
         case .monthly:
+            // Format as day of the month (e.g., 1st, 2nd, etc.)
             formatter.dateFormat = "d"
             let day = formatter.string(from: date)
             return day + ordinalSuffix(for: day)
+        
         case .sixMonths:
+            // Display the week span (start and end dates of the week)
             let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: date)?.start ?? date
-            let endOfWeek = calendar.date(byAdding: .day, value: 6, to: startOfWeek) ?? date
+            let endOfWeek = calendar.date(byAdding: .day, value: 6, to: startOfWeek) ?? date  // Change 13 to 6
             formatter.dateFormat = "MMM dd"
-            return "\(formatter.string(from: startOfWeek)) - \(formatter.string(from: endOfWeek))"
+
+            // Format start and end dates correctly
+            let startDate = formatter.string(from: startOfWeek)
+            let endDate = formatter.string(from: endOfWeek)
+
+            // Return the correct week span
+            return "\(startDate) - \(endDate)"
+        
         case .yearly:
+            // Format as month (e.g., Jan, Feb)
             formatter.dateFormat = "MMM"
             return formatter.string(from: date)
         }
     }
 
+    // Helper function to provide the ordinal suffix for day (1st, 2nd, 3rd, etc.)
     private func ordinalSuffix(for day: String) -> String {
         guard let dayInt = Int(day) else { return "" }
         switch dayInt {
@@ -776,58 +1048,26 @@ struct BoxChartViewVital: View {
             return "th"
         }
     }
-    
-    // Function to round the date down to the nearest hour
-    private func floorDateToHour(_ date: Date) -> Date {
-        let calendar = Calendar.current
-        // Round down the date to the nearest full hour (setting minutes and seconds to 0)
-        return calendar.date(bySettingHour: calendar.component(.hour, from: date), minute: 0, second: 0, of: date) ?? date
-    }
-
-    // Function to round the date up to the next full hour
-    private func ceilDateToHour(_ date: Date) -> Date {
-        let calendar = Calendar.current
-        // Round the date up to the next full hour
-        let flooredDate = floorDateToHour(date)
-        if date > flooredDate {
-            return calendar.date(byAdding: .hour, value: 1, to: flooredDate) ?? date
-        }
-        return flooredDate
-    }
-
+    // Function to extend the X-axis range based on the data for monthly time frame
     private func getXScaleDomain() -> ClosedRange<Date> {
         let calendar = Calendar.current
         guard let firstDate = data.first?.date, let lastDate = data.last?.date else {
-            // No data case, default to showing the current hour
-            let now = Date()
-            let startOfCurrentHour = floorDateToHour(now)
-            let endOfCurrentHour = calendar.date(byAdding: .hour, value: 1, to: startOfCurrentHour)!
-            return startOfCurrentHour...endOfCurrentHour
+            return Date()...Date() // Fallback to current date
         }
-
-        if timeFrame == .hourly {
-            // Calculate the specific hour to start at the earliest data point
-            let startHour = floorDateToHour(firstDate)
-            
-            // Calculate the end hour as 1 hour after the last data point
-            let endHour = ceilDateToHour(lastDate)
-            
-            // Return the startHour...endHour for the X-axis domain
-            return startHour...endHour
-        }
-        if timeFrame == .monthly {
+        
+        switch timeFrame {
+        case .monthly:
             let adjustedLastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
             return firstDate...adjustedLastDate
-        }
-        if timeFrame == .sixMonths {
+        case .sixMonths:
             let adjustedLastDate = calendar.date(byAdding: .day, value: 15, to: lastDate) ?? lastDate
             return firstDate...adjustedLastDate
-        }
-        if timeFrame == .yearly {
+        case .yearly:
             let adjustedLastDate = calendar.date(byAdding: .month, value: 1, to: lastDate) ?? lastDate
             return firstDate...adjustedLastDate
+        default:
+            return firstDate...lastDate
         }
-        return firstDate...lastDate
     }
 }
 

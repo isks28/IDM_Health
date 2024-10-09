@@ -10,18 +10,6 @@ import SwiftUI
 struct healthKitView: View {
     @State private var selectedView: String? = nil
     
-    init() {
-            // Customize navigation bar appearance
-            let appearance = UINavigationBarAppearance()
-        
-                appearance.titleTextAttributes = [.foregroundColor: UIColor.secondarySystemFill]  // Title color
-                appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.black]  // Large title color
-            
-                UINavigationBar.appearance().standardAppearance = appearance
-                UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        
-        }
-    
     var body: some View {
         NavigationSplitView {
             List(selection: $selectedView) {

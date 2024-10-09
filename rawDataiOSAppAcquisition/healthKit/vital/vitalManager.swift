@@ -37,12 +37,9 @@ class VitalManager: ObservableObject {
     }
     
     func requestAuthorization() {
-        guard let heartRate = HKQuantityType.quantityType(forIdentifier: .heartRate) else {
-            print("Heart Rate Data is not available")
-            return
-        }
-        
-        let typesToRead: Set = [heartRate]
+        let typesToRead: Set<HKQuantityType> = [
+            .quantityType(forIdentifier: .heartRate)!
+        ]
         
         healthStore.requestAuthorization(toShare: nil, read: typesToRead) { success, error in
             if !success {
@@ -57,9 +54,9 @@ class VitalManager: ObservableObject {
         // Clear cache for new data fetch
         dataCache.removeAll()
         
-        // Fetch each mobility-related data type without aggregation
+        // Fetch heart rate data
         fetchData(identifier: .heartRate, startDate: startDate, endDate: endDate) { [weak self] result in
-            let statistics = self?.convertSamplesToStatistics(samples: result, unit: HKUnit.percent())
+            let statistics = self?.convertSamplesToStatistics(samples: result, unit: HKUnit.count().unitDivided(by: HKUnit.minute()))
             DispatchQueue.main.async {
                 self?.heartRateData = statistics ?? []
             }
@@ -67,21 +64,24 @@ class VitalManager: ObservableObject {
     }
     
     private func convertSamplesToStatistics(samples: [HKQuantitySample], unit: HKUnit) -> [VitalStatistics] {
-        return samples.map { sample in
-            let value = sample.quantity.doubleValue(for: unit)
+        // Group samples by date or desired interval, and calculate min, max, and average
+        var statistics: [VitalStatistics] = []
+        
+        // Process samples and calculate min, max, and average
+        for sample in samples {
+            let heartRateValue = sample.quantity.doubleValue(for: unit)  // Value in BPM
             
-            // Check for heart rate unit
-            switch unit {
-            case HKUnit.count().unitDivided(by: HKUnit.minute()): // Heart rate in beats per minute
-                // No conversion needed for BPM, just use the value as is
-                break
-            default:
-                break // No conversion for other units
-            }
-
-            // Use both startDate and endDate of the sample
-            return VitalStatistics(startDate: sample.startDate, endDate: sample.endDate, minValue: value, maxValue: value, averageValue: value)
+            let vitalStat = VitalStatistics(
+                startDate: sample.startDate,
+                endDate: sample.endDate,
+                minValue: heartRateValue,
+                maxValue: heartRateValue,
+                averageValue: heartRateValue
+            )
+            statistics.append(vitalStat)
         }
+        
+        return statistics
     }
     
     private func fetchData(identifier: HKQuantityTypeIdentifier, startDate: Date, endDate: Date, completion: @escaping ([HKQuantitySample]) -> Void) {
@@ -123,16 +123,21 @@ class VitalManager: ObservableObject {
     }
     
     private func saveCSV(for samples: [VitalStatistics], fileName: String, unitLabel: String) {
-        var csvString = "Date,Value (\(unitLabel))\n"
+        // Add headers for the CSV
+        var csvString = "Recorded Date and Time,Value (\(unitLabel))\n"
         
-        let dateFormatter = ISO8601DateFormatter()
+        let dateFormatter = ISO8601DateFormatter()  // ISO8601 for formatting dates
+        dateFormatter.timeZone = TimeZone.current
         
         for sample in samples {
-            let dateString = dateFormatter.string(from: sample.endDate)
-            let roundedValue = String(format: "%.0f", sample.averageValue)  // Rounding the value to 0 decimal places
-            csvString += "\(dateString),\(roundedValue)\n"
+            let endDateString = dateFormatter.string(from: sample.endDate)
+            let minValueString = String(format: "%.0f", sample.minValue)  // Format min value to 2 decimal places
+            
+            // Add the data to the CSV string
+            csvString += "\(endDateString),\(minValueString)\n"
         }
         
+        // Save the CSV file in the app's Documents directory
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             print("Documents directory not found")
             return

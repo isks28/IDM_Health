@@ -139,7 +139,7 @@ class ActivityManager: ObservableObject {
     }
     
     private func saveCSV(for samples: [HKQuantitySample], fileName: String, valueUnit: HKUnit, multiplier: Double = 1.0, unitLabel: String) {
-        var csvString = "Date,Value (\(unitLabel))\n"
+        var csvString = "Recorded Date and Time,Value (\(unitLabel))\n"
         
         let dateFormatter = ISO8601DateFormatter()
         dateFormatter.timeZone = TimeZone.current
