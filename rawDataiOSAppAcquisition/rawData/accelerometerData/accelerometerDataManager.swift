@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreMotion
+import UserNotifications
 
 class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
@@ -27,6 +28,31 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
     override init() {
         super.init()
         setupLocationManager()
+        requestNotificationPermissions()
+        setupAppLifecycleObservers() // Add lifecycle observers
+    }
+    
+    // App lifecycle event observers
+    private func setupAppLifecycleObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
+    
+    @objc private func appDidEnterBackground() {
+        print("App entered background")
+        if isCollectingData {
+            showDataCollectionNotification()  // Show notification when app enters background
+        }
+    }
+    
+    @objc private func appWillEnterForeground() {
+        print("App will enter foreground")
+        removeDataCollectionNotification()  // Remove notification when app enters foreground
+    }
+    
+    @objc private func appDidBecomeActive() {
+        print("App became active")
     }
     
     private func setupLocationManager() {
@@ -34,9 +60,63 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         locationManager?.delegate = self
         locationManager?.requestAlwaysAuthorization()
         locationManager?.allowsBackgroundLocationUpdates = true
-        locationManager?.startUpdatingLocation()
+        locationManager?.startMonitoringSignificantLocationChanges()
+    }
+
+    // Request Notification permissions
+    private func requestNotificationPermissions() {
+        let center = UNUserNotificationCenter.current()
+        
+        // Requesting permissions for alerts, sounds, and badges on the lock screen.
+        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if granted {
+                print("Notification permission granted.")
+            } else {
+                print("Notification permission denied.")
+            }
+        }
+
+        // Ensure notifications are allowed
+        center.getNotificationSettings { settings in
+            if settings.authorizationStatus == .authorized {
+                DispatchQueue.main.async {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+            } else {
+                print("Notifications are not allowed.")
+            }
+        }
     }
     
+    // Show a notification on the lock screen when data collection starts
+    func showDataCollectionNotification() {
+        let state = UIApplication.shared.applicationState
+        if state == .background || state == .inactive {
+            print("App is in background, showing notification")
+        } else {
+            print("App is in foreground")
+        }
+        
+        let content = UNMutableNotificationContent()
+        content.title = "Data Collection Running"
+        content.body = "Accelerometer data collection is active."
+        content.sound = .default
+        
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let request = UNNotificationRequest(identifier: "dataCollectionNotification", content: content, trigger: trigger)
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Error showing notification: \(error)")
+            }
+        }
+    }
+
+    // Remove the notification when data collection stops
+    func removeDataCollectionNotification() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dataCollectionNotification"])
+    }
+
     func startAccelerometerDataCollection(realTime: Bool) {
         guard !isCollectingData else { return }
         
@@ -48,6 +128,7 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         recordingMode = realTime ? "RealTime" : "TimeInterval"
         
         startBackgroundTask()
+        showDataCollectionNotification() // Show the notification
         
         if accelerometerManager.isDeviceMotionAvailable {
             accelerometerManager.deviceMotionUpdateInterval = 1.0 / currentSamplingRate // Apply the current sampling rate
@@ -75,6 +156,7 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         
         accelerometerManager.stopDeviceMotionUpdates()
         endBackgroundTask()
+        removeDataCollectionNotification() // Remove the notification
         saveDataToCSV()
     }
     
@@ -138,9 +220,10 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
                 }
                 Thread.sleep(forTimeInterval: 1)
             }
+            self.endBackgroundTask()
         }
     }
-    
+
     private func endBackgroundTask() {
         if backgroundTask != .invalid {
             UIApplication.shared.endBackgroundTask(backgroundTask)

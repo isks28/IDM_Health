@@ -33,6 +33,7 @@
 		5A554EAB2C87069D0081747B /* cameraBasedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAA2C87069D0081747B /* cameraBasedView.swift */; };
 		5A554EAD2C8706AA0081747B /* cameraBasedController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAC2C8706AA0081747B /* cameraBasedController.swift */; };
 		5A554EAF2C8706BE0081747B /* cameraBasedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */; };
+		5A5A4BEB2CB7FA0D0089ECF6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A5A4BEA2CB7FA0D0089ECF6 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -84,6 +85,7 @@
 		5A554EAC2C8706AA0081747B /* cameraBasedController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedController.swift; sourceTree = "<group>"; };
 		5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedManager.swift; sourceTree = "<group>"; };
 		5A554EB02C8708AA0081747B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5A5A4BEA2CB7FA0D0089ECF6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -227,6 +229,7 @@
 			children = (
 				5A554E9A2C8706310081747B /* accelerometerDataView.swift */,
 				5A554E9C2C87063D0081747B /* accelerometerDataManager.swift */,
+				5A5A4BEA2CB7FA0D0089ECF6 /* AppDelegate.swift */,
 			);
 			path = accelerometerData;
 			sourceTree = "<group>";
@@ -398,6 +401,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A5A4BEB2CB7FA0D0089ECF6 /* AppDelegate.swift in Sources */,
 				5A554E972C8706110081747B /* mobilityManager.swift in Sources */,
 				5A45C7182C9C0FDB00F6E14E /* vitalView.swift in Sources */,
 				5A554EA12C87065A0081747B /* gyroscopeDataManager.swift in Sources */,
