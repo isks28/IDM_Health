@@ -14,11 +14,10 @@ class GyroscopeManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let gyroscopeManager = CMMotionManager()
     @Published var isCollectingData = false
     @Published var gyroscopeData: [String] = []
-    @Published var savedFilePath: String?
-    
     @Published var gyroscopeDataPointsX: [Double] = []
     @Published var gyroscopeDataPointsY: [Double] = []
     @Published var gyroscopeDataPointsZ: [Double] = []
+    @Published var savedFilePath: String?
     
     private var locationManager: CLLocationManager?
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid

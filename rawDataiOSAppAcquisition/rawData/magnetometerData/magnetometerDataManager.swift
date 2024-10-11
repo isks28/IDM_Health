@@ -14,6 +14,9 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
     private let magnetometerManager = CMMotionManager()
     @Published var isCollectingData = false
     @Published var magnetometerData: [String] = []
+    @Published var magnetometerDataPointsX: [Double] = []
+    @Published var magnetometerDataPointsY: [Double] = []
+    @Published var magnetometerDataPointsZ: [Double] = []
     @Published var savedFilePath: String?
     
     private var locationManager: CLLocationManager?
@@ -117,6 +120,9 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
         
         isCollectingData = true
         magnetometerData = []
+        magnetometerDataPointsX = []
+        magnetometerDataPointsY = []
+        magnetometerDataPointsZ = []
         recordingMode = realTime ? "RealTime" : "TimeInterval"
         
         startBackgroundTask()
@@ -129,6 +135,13 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
                     let timestamp = validData.timestamp
                     let userMagnetometerString = "UserMagnetometer,\(timestamp),\(validData.magneticField.field.x),\(validData.magneticField.field.y),\(validData.magneticField.field.z)"
                     self?.magnetometerData.append(userMagnetometerString)
+                    
+                    let dataPointX = validData.magneticField.field.x
+                    self?.magnetometerDataPointsX.append(dataPointX)
+                    let dataPointY = validData.magneticField.field.y
+                    self?.magnetometerDataPointsY.append(dataPointY)
+                    let dataPointZ = validData.magneticField.field.z
+                    self?.magnetometerDataPointsZ.append(dataPointZ)
                 }
             }
         }
