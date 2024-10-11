@@ -33,6 +33,8 @@
 		5A554EAB2C87069D0081747B /* cameraBasedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAA2C87069D0081747B /* cameraBasedView.swift */; };
 		5A554EAD2C8706AA0081747B /* cameraBasedController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAC2C8706AA0081747B /* cameraBasedController.swift */; };
 		5A554EAF2C8706BE0081747B /* cameraBasedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */; };
+		86419FE62CB97E2B0071151C /* StepCountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE52CB97E2B0071151C /* StepCountManager.swift */; };
+		86419FE82CB97E800071151C /* StepCountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE72CB97E800071151C /* StepCountView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -84,6 +86,8 @@
 		5A554EAC2C8706AA0081747B /* cameraBasedController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedController.swift; sourceTree = "<group>"; };
 		5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedManager.swift; sourceTree = "<group>"; };
 		5A554EB02C8708AA0081747B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		86419FE52CB97E2B0071151C /* StepCountManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountManager.swift; sourceTree = "<group>"; };
+		86419FE72CB97E800071151C /* StepCountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -218,6 +222,7 @@
 				5A554E8A2C8705970081747B /* gyroscopeData */,
 				5A554E8B2C87059F0081747B /* magnetometerData */,
 				5A554E8C2C8705A60081747B /* rawDataAll */,
+				86419FE42CB97E090071151C /* stepCountsAll */,
 			);
 			path = rawData;
 			sourceTree = "<group>";
@@ -266,6 +271,15 @@
 				5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */,
 			);
 			path = cameraBased;
+			sourceTree = "<group>";
+		};
+		86419FE42CB97E090071151C /* stepCountsAll */ = {
+			isa = PBXGroup;
+			children = (
+				86419FE72CB97E800071151C /* StepCountView.swift */,
+				86419FE52CB97E2B0071151C /* StepCountManager.swift */,
+			);
+			path = stepCountsAll;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -405,6 +419,8 @@
 				5A554E9B2C8706310081747B /* accelerometerDataView.swift in Sources */,
 				5A45C71A2C9C0FE600F6E14E /* vitalManager.swift in Sources */,
 				5A554E8F2C8705DB0081747B /* healthKitView.swift in Sources */,
+				86419FE82CB97E800071151C /* StepCountView.swift in Sources */,
+				86419FE62CB97E2B0071151C /* StepCountManager.swift in Sources */,
 				5A554E912C8705ED0081747B /* activityView.swift in Sources */,
 				5A554E992C87061E0081747B /* rawDataView.swift in Sources */,
 				5A554E5D2C8705080081747B /* ContentView.swift in Sources */,
