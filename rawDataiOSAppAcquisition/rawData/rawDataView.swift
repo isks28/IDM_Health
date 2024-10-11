@@ -69,17 +69,6 @@ struct rawDataView: View {
                         .font(.title)
                 }
                         .tag("RawDataAll")
-                HStack{
-                    Image(systemName: "shoeprints.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 100, height: 50)
-                        .foregroundStyle(Color.blue)
-                    Text("Step Counts")
-                        .foregroundStyle(Color.primary)
-                        .font(.title)
-                }
-                        .tag("StepCounts")
         
             }
             .navigationTitle("Raw Data")
@@ -92,9 +81,7 @@ struct rawDataView: View {
                 magnetometerDataView()
             } else if selectedView == "RawDataAll" {
                 rawDataAllView()
-            } else if selectedView == "StepCounts" {
-                StepCountView()
-            } else {
+            }  else {
                 Text("Select a view")
                     .font(.largeTitle)
             }

@@ -15,6 +15,9 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var isCollectingData = false
     @Published var stepCount: Int = 0
     @Published var distance: Double? // Distance in meters, if available
+    @Published var averageActivePace: Double? // Average active pace in meters per second
+    @Published var currentPace: Double? // Current pace in meters per second
+    @Published var currentCadence: Double? // Current cadence in steps per second
     @Published var savedFilePath: String?
     
     private var locationManager: CLLocationManager?
@@ -118,6 +121,9 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         isCollectingData = true
         stepCount = 0
         distance = nil
+        averageActivePace = nil
+        currentPace = nil
+        currentCadence = nil
         
         startBackgroundTask()
         showDataCollectionNotification() // Show the notification
@@ -138,6 +144,15 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 if let distance = pedometerData.distance?.doubleValue {
                     self?.distance = distance
                 }
+                if let averageActivePace = pedometerData.averageActivePace?.doubleValue {
+                    self?.averageActivePace = averageActivePace
+                }
+                if let currentPace = pedometerData.currentPace?.doubleValue {
+                    self?.currentPace = currentPace
+                }
+                if let currentCadence = pedometerData.currentCadence?.doubleValue {
+                    self?.currentCadence = currentCadence
+                }
             }
         }
     }
@@ -153,6 +168,31 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         saveDataToCSV()
     }
 
+    // Method to update current pace and cadence
+    func updateCurrentPaceAndCadence() {
+        guard CMPedometer.isPaceAvailable(), CMPedometer.isCadenceAvailable() else {
+            print("Pace or Cadence is not available on this device")
+            return
+        }
+
+        let now = Date()
+        pedometer.queryPedometerData(from: now.addingTimeInterval(-1), to: now) { [weak self] pedometerData, error in
+            guard let pedometerData = pedometerData, error == nil else {
+                print("Error fetching pedometer data: \(String(describing: error))")
+                return
+            }
+
+            DispatchQueue.main.async {
+                if let currentPace = pedometerData.currentPace?.doubleValue {
+                    self?.currentPace = currentPace
+                }
+                if let currentCadence = pedometerData.currentCadence?.doubleValue {
+                    self?.currentCadence = currentCadence
+                }
+            }
+        }
+    }
+    
     private func saveDataToCSV() {
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             print("Documents directory not found")
@@ -176,8 +216,8 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             fileURL = folderURL.appendingPathComponent("StepCountData_\(fileNumber).csv")
         }
         
-        let csvHeader = "StepCount,Distance\n"
-        let csvData = "\(stepCount),\(distance ?? 0)"
+        let csvHeader = "StepCount,Distance,AverageActivePace,CurrentPace,CurrentCadence\n"
+        let csvData = "\(stepCount),\(distance ?? 0),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0)"
         let csvString = csvHeader + csvData
         
         do {

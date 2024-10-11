@@ -59,6 +59,13 @@ struct ContentView: View {
                     Text("Raw Data")
                 }
             
+            processedDataView()
+                .tag("CoreMotionProcessed")
+                .tabItem{
+                    Image(systemName: "desktopcomputer")
+                    Text("Processed Data")
+                }
+            
             cameraBasedView()
                 .tag("AVFoundation")
                 .tabItem{
