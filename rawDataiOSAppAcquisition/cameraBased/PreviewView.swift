@@ -49,7 +49,7 @@ struct PreviewView: View {
                                 .stroke(Color.blue, lineWidth: 2)  // Outline color and width
                         )
                 }
-                .padding(.bottom, 115) // Adjust padding as needed for UI
+                .padding(.bottom, 116) // Adjust padding as needed for UI
             }
         }
     }
