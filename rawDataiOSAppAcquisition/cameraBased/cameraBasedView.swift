@@ -94,49 +94,6 @@ struct cameraBasedView: View {
     }
 }
 
-struct PreviewView: View {
-    var image: UIImage?
-    var videoURL: URL?
-    var onDismiss: () -> Void
-    
-    var body: some View {
-        ZStack {
-            Color.black.edgesIgnoringSafeArea(.all)
-            
-            if let image = image {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let videoURL = videoURL {
-                VideoPlayer(player: AVPlayer(url: videoURL))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .onAppear {
-                        AVPlayer(url: videoURL).play()
-                    }
-            }
-            
-            VStack {
-                Text("Preview screen")
-                    .font(.title2)
-                    .foregroundStyle(Color(.systemMint))
-                    .padding(.top, 100)
-                Spacer()
-                Button(action: onDismiss) {
-                    Text("Close")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.pink.opacity(0.25))
-                        .cornerRadius(25)
-                }
-                .padding(.bottom, 180) // Adjust padding as needed for UI
-            }
-        }
-    }
-}
-
-
 #Preview {
     cameraBasedView()
 }

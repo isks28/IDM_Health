@@ -36,6 +36,7 @@
 		86419FE62CB97E2B0071151C /* StepCountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE52CB97E2B0071151C /* StepCountManager.swift */; };
 		86419FE82CB97E800071151C /* StepCountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE72CB97E800071151C /* StepCountView.swift */; };
 		86419FEC2CB988BF0071151C /* processedDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FEB2CB988BF0071151C /* processedDataView.swift */; };
+		86419FEE2CBA8CE20071151C /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FED2CBA8CE20071151C /* PreviewView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -90,6 +91,7 @@
 		86419FE52CB97E2B0071151C /* StepCountManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountManager.swift; sourceTree = "<group>"; };
 		86419FE72CB97E800071151C /* StepCountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountView.swift; sourceTree = "<group>"; };
 		86419FEB2CB988BF0071151C /* processedDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = processedDataView.swift; sourceTree = "<group>"; };
+		86419FED2CBA8CE20071151C /* PreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -269,6 +271,7 @@
 			isa = PBXGroup;
 			children = (
 				5A554EAA2C87069D0081747B /* cameraBasedView.swift */,
+				86419FED2CBA8CE20071151C /* PreviewView.swift */,
 				5A554EAC2C8706AA0081747B /* cameraBasedController.swift */,
 				5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */,
 			);
@@ -451,6 +454,7 @@
 				5A554EAB2C87069D0081747B /* cameraBasedView.swift in Sources */,
 				5A554EAF2C8706BE0081747B /* cameraBasedManager.swift in Sources */,
 				5A554EA52C8706730081747B /* magnetometerDataManager.swift in Sources */,
+				86419FEE2CBA8CE20071151C /* PreviewView.swift in Sources */,
 				5A554E932C8705F70081747B /* activityManager.swift in Sources */,
 				5A554E5B2C8705080081747B /* rawDataiOSAppAcquisitionApp.swift in Sources */,
 				5A554E9F2C8706470081747B /* gyroscopeDataView.swift in Sources */,
