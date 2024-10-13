@@ -30,9 +30,9 @@ struct rawDataAllView: View {
     
     var body: some View {
         VStack {
-            Text("Raw Data All Acquisition")
+            Text("Raw Data All")
                 .font(.title)
-                .foregroundStyle(Color.mint)
+                .foregroundStyle(Color.primary)
                 .padding(.top, 5)
             
             // Segmented Picker to choose data type
@@ -77,8 +77,11 @@ struct rawDataAllView: View {
                         .frame(height: 100)
                     }
                 } else {
-                    Text("No Accelerometer Data")
-                        .padding()
+                    Text("Set the desired Time")
+                        .padding(.bottom, 300)
+                        .font(.headline)
+                        .foregroundStyle(Color.secondary)
+                        .multilineTextAlignment(.center)
                 }
                 
             case .gyroscope:
@@ -109,8 +112,11 @@ struct rawDataAllView: View {
                         .frame(height: 100)
                     }
                 } else {
-                    Text("No Gyroscope Data")
-                        .padding()
+                    Text("Set the desired Time")
+                        .padding(.bottom, 300)
+                        .font(.headline)
+                        .foregroundStyle(Color.secondary)
+                        .multilineTextAlignment(.center)
                 }
                 
             case .magnetometer:
@@ -141,8 +147,11 @@ struct rawDataAllView: View {
                         .frame(height: 100)
                     }
                 } else {
-                    Text("No Magnetometer Data")
-                        .padding()
+                    Text("Set the desired Time")
+                        .padding(.bottom, 300)
+                        .font(.headline)
+                        .foregroundStyle(Color.secondary)
+                        .multilineTextAlignment(.center)
                 }
             }
             

@@ -22,9 +22,9 @@ struct magnetometerDataView: View {
     
     var body: some View {
         VStack {
-            Text("Magnetometer Data Acquisition")
+            Text("Magnetometer")
                 .font(.title)
-                .foregroundStyle(Color.mint)
+                .foregroundStyle(Color.primary)
                 .padding(.top, 5)
             Spacer()
             
@@ -34,8 +34,11 @@ struct magnetometerDataView: View {
                     .foregroundStyle(Color.pink)
                     .padding()
             } else {
-                Text("No Data")
+                Text("Set the desired Time")
                     .padding()
+                    .font(.headline)
+                    .foregroundStyle(Color.secondary)
+                    .multilineTextAlignment(.center)
             }
             
             // Simple Graph View

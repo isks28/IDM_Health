@@ -22,66 +22,112 @@ struct StepCountView: View {
     
     var body: some View {
         VStack {
-            Text("Step Count Data Acquisition")
-                .font(.title)
-                .foregroundStyle(Color.mint)
+            Text("Put the phone in the pocket after setting the time and start walking")
+                .font(.title3)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(Color.secondary)
                 .padding(.top, 5)
+                .padding(.horizontal)
             Spacer()
             
             // Step Count Display
             VStack {
-                if stepManager.stepCount > 0 {
-                    Text("Step Count")
-                        .font(.title2)
-                        .foregroundStyle(Color.pink)
-                        .padding()
-                    
-                    Text("Steps: \(stepManager.stepCount)")
-                        .font(.title)
-                        .padding()
-                    
-                    if let distance = stepManager.distance {
-                        Text(String(format: "Distance: %.2f meters", distance))
-                            .font(.title3)
-                            .padding()
-                    } else {
-                        Text("Distance: Not available")
-                            .font(.title3)
-                            .padding()
-                    }
-                    
-                    if let averageActivePace = stepManager.averageActivePace {
-                        Text(String(format: "Average Active Pace: %.2f meters/second", averageActivePace))
-                            .font(.title3)
-                            .padding()
-                    } else {
-                        Text("Average Active Pace: Not available")
-                            .font(.title3)
-                            .padding()
-                    }
-                    
-                    if let currentPace = stepManager.currentPace {
-                        Text(String(format: "Current Pace: %.2f meters/second", currentPace))
-                            .font(.title3)
-                            .padding()
-                    } else {
-                        Text("Current Pace: Not available")
-                            .font(.title3)
-                            .padding()
-                    }
-                    
-                    if let currentCadence = stepManager.currentCadence {
-                        Text(String(format: "Current Cadence: %.2f steps/second", currentCadence))
-                            .font(.title3)
-                            .padding()
-                    } else {
-                        Text("Current Cadence: Not available")
-                            .font(.title3)
-                            .padding()
+                if stepManager.stepCount == 0 {
+                    Grid {
+                        // Step Count
+                        GridRow {
+                            Text("Steps:")
+                                .font(.largeTitle)
+                                .foregroundStyle(Color.white)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 15)
+                                .gridCellAnchor(.leading)
+                                .background(.secondary)
+                                .cornerRadius(25)
+                            Text("\(stepManager.stepCount)")
+                                .font(.largeTitle)
+                                .foregroundColor(.blue)
+                                .gridCellAnchor(.trailing)
+                        }
+                        .padding(.bottom, 250)
+
+                        // Distance
+                        GridRow {
+                            Text("Distance:")
+                                .font(.title3)
+                                .gridCellAnchor(.leading) // Align label to the left
+                            if let distance = stepManager.distance {
+                                Text(String(format: "%.2f meters", distance))
+                                    .font(.title3)
+                                    .foregroundColor(.blue)
+                                    .gridCellAnchor(.trailing) // Align value to the right
+                            } else {
+                                Text("Not available")
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
+                                    .gridCellAnchor(.trailing) // Align value to the right
+                            }
+                        }
+
+                        // Average Active Pace
+                        GridRow {
+                            Text("Average Active Pace:")
+                                .font(.title3)
+                                .gridCellAnchor(.leading) // Align label to the left
+                            if let averageActivePace = stepManager.averageActivePace {
+                                Text(String(format: "%.2f meters/second", averageActivePace))
+                                    .font(.title3)
+                                    .foregroundColor(.blue)
+                                    .gridCellAnchor(.trailing) // Align value to the right
+                            } else {
+                                Text("Not available")
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
+                                    .gridCellAnchor(.trailing) // Align value to the right
+                            }
+                        }
+
+                        // Current Pace
+                        GridRow {
+                            Text("Current Pace:")
+                                .font(.title3)
+                                .gridCellAnchor(.leading) // Align label to the left
+                            if let currentPace = stepManager.currentPace {
+                                Text(String(format: "%.2f meters/second", currentPace))
+                                    .font(.title3)
+                                    .foregroundColor(.blue)
+                                    .gridCellAnchor(.trailing) // Align value to the right
+                            } else {
+                                Text("Not available")
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
+                                    .gridCellAnchor(.trailing) // Align value to the right
+                            }
+                        }
+
+                        // Current Cadence
+                        GridRow {
+                            Text("Current Cadence:")
+                                .font(.title3)
+                                .gridCellAnchor(.leading) // Align label to the left
+                            if let currentCadence = stepManager.currentCadence {
+                                Text(String(format: "%.2f steps/second", currentCadence))
+                                    .font(.title3)
+                                    .foregroundColor(.blue)
+                                    .gridCellAnchor(.trailing) // Align value to the right
+                            } else {
+                                Text("Not available")
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
+                                    .gridCellAnchor(.trailing) // Align value to the right
+                            }
+                        }
                     }
                 } else {
-                    Text("No Data")
-                        .padding()
+                    Text("Set the desired Time")
+                        .font(.headline)
+                        .foregroundStyle(Color.secondary)
+                        .multilineTextAlignment(.center)
                 }
             }
             

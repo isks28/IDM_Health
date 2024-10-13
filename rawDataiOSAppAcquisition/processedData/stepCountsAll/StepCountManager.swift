@@ -199,7 +199,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             return
         }
         
-        let folderURL = documentsDirectory.appendingPathComponent("StepCount Data")
+        let folderURL = documentsDirectory.appendingPathComponent("Processed Data")
         
         do {
             try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
