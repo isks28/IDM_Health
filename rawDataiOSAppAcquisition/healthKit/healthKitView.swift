@@ -9,6 +9,7 @@ import SwiftUI
 
 struct healthKitView: View {
     @State private var selectedView: String? = nil
+    @State private var showingInfo = false // State to show the info sheet
     
     var body: some View {
         NavigationSplitView {
@@ -22,9 +23,10 @@ struct healthKitView: View {
                     Text("Activity Data")
                         .foregroundStyle(Color.primary)
                         .font(.title)
-                        }
-                        .tag("Activity")
-                HStack{
+                }
+                .tag("Activity")
+                
+                HStack {
                     Image(systemName: "shoeprints.fill")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
@@ -34,8 +36,9 @@ struct healthKitView: View {
                         .foregroundStyle(Color.primary)
                         .font(.title)
                 }
-                        .tag("Mobility")
-                HStack{
+                .tag("Mobility")
+                
+                HStack {
                     Image(systemName: "heart.circle.fill")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
@@ -45,10 +48,30 @@ struct healthKitView: View {
                         .foregroundStyle(Color.primary)
                         .font(.title)
                 }
-                        .tag("Vital")
-        
+                .tag("Vital")
             }
             .navigationTitle("HealthKit Data")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showingInfo.toggle() // Show the info sheet when button is tapped
+                    }) {
+                        Image(systemName: "info.circle")
+                    }
+                    .sheet(isPresented: $showingInfo) {
+                        VStack {
+                            Text("HealthKit Information")
+                                .font(.largeTitle)
+                                .padding()
+                            Text("HealthKit only fetch the available data collected by the iOS Health App. HealthKit can't record any new data. ")
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                        }
+                        .padding()
+                    }
+                }
+            }
         } detail: {
             if selectedView == "Activity" {
                 activityView()

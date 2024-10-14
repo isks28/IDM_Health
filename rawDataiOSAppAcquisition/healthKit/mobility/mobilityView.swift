@@ -24,6 +24,8 @@ struct mobilityView: View {
     @State private var startDate = Date()
     @State private var endDate = Date()
     
+    @State private var savedFilePath: String? = nil
+    
     // State variables to control sheet presentation
     @State private var showingChart: [String: Bool] = [
         "WalkingDoubleSupport": false,
@@ -79,13 +81,18 @@ struct mobilityView: View {
             HStack {
                 Button(action: {
                     if isRecording {
-                        healthKitManager.saveDataAsCSV()
+                        // Define the server URL
+                        let serverURL = URL(string: "http://192.168.0.199:8888")!
+
+                        // Call saveDataAsCSV with the server URL
+                        healthKitManager.saveDataAsCSV(serverURL: serverURL)
                     } else {
                         healthKitManager.fetchMobilityData(startDate: startDate, endDate: endDate)
+                        print("Data fetched, refreshing graph")
                     }
                     isRecording.toggle()
                 }) {
-                    Text(isRecording ? "Save Data" : "Fetch Data")
+                    Text(isRecording ? "Save and Upload Data" : "Fetch Data")
                         .padding()
                         .background(isRecording ? Color.secondary : Color.blue)
                         .foregroundColor(.white)
@@ -109,11 +116,7 @@ struct mobilityView: View {
             .font(.title3)) {
             HStack {
                 if !isRecording {
-                    // Show this message if the "Fetch Data" button hasn't been clicked
-                    Text("Set the date to fetch data")
-                        .font(.footnote)
-                        .foregroundStyle(Color.secondary)
-                        .multilineTextAlignment(.center)
+                    
                 } else {
                     // Show data availability information after fetching data
                     if dataAvailable {

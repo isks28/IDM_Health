@@ -23,7 +23,10 @@ struct activityView: View {
     @State private var isRecording = false
     @State private var startDate = Date()
     @State private var endDate = Date()
-
+    
+    @State private var savedFilePath: String? = nil
+    
+    @State private var showingInfo = false
     // New state to trigger the graph refresh
     @State private var refreshGraph = UUID() // Use UUID for forcing refresh
     
@@ -45,11 +48,6 @@ struct activityView: View {
     
     var body: some View {
         VStack {
-            Text("Activity Health Data")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
-            
             ScrollView(.vertical) {
                 VStack(spacing: 10) {
                     dataSection(title: "Step Count", dataAvailable: !healthKitManager.stepCountData.isEmpty, chartKey: "StepCount", data: healthKitManager.stepCountData, unit: HKUnit.count(), chartTitle: "Step Count")
@@ -73,8 +71,8 @@ struct activityView: View {
                 refreshGraph = UUID() // Force refresh whenever stepCountData changes
             }
             
-            Text("Set Start and End-Date of Data to be fetched:")
-                .font(.headline)
+            Text("Set Start and End-Date to fetched available data:")
+                .font(.subheadline)
             
             DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
                 .onChange(of: startDate) {
@@ -91,30 +89,62 @@ struct activityView: View {
             HStack {
                 Button(action: {
                     if isRecording {
-                        healthKitManager.saveDataAsCSV()
+                        // Define the server URL
+                        let serverURL = URL(string: "http://192.168.0.199:8888")!
+
+                        // Call saveDataAsCSV with the server URL
+                        healthKitManager.saveDataAsCSV(serverURL: serverURL)
                     } else {
                         healthKitManager.fetchActivityData(startDate: startDate, endDate: endDate)
-                            print("Data fetched, refreshing graph")
-                            refreshGraph = UUID() // Force the chart to refresh after data is fetched
-                        
+                        print("Data fetched, refreshing graph")
                     }
                     isRecording.toggle()
                 }) {
-                    Text(isRecording ? "Save Data" : "Fetch Data")
+                    Text(isRecording ? "Save and Upload Data" : "Fetch Data")
                         .padding()
                         .background(isRecording ? Color.secondary : Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 }
                 .padding()
-                
-                if healthKitManager.savedFilePath != nil {
-                    Text("File saved")
+
+                if let savedFilePath = savedFilePath {
+                    Text("File saved at \(savedFilePath)")
                         .font(.footnote)
                 }
             }
         }
         .padding()
+        .navigationTitle("Activity Health Data")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingInfo.toggle()
+                }) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.blue)
+                }
+                .sheet(isPresented: $showingInfo) {
+                    VStack {
+                        Text("Activity Data Information")
+                            .font(.largeTitle)
+                            .padding()
+                        Text("Star and End date can only fetch the history or collected data from iOS Health App")
+                            .font(.body)
+                            .padding()
+                        .padding()
+                        .background(Color.secondary)
+                        .foregroundStyle(Color.primary)
+                        .cornerRadius(25)
+                        .overlay(  // Adding black outline
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(Color.primary, lineWidth: 2)  // Outline color and width
+                        )
+                    }
+                    .padding()
+                }
+            }
+        }
     }
     
     // Modular function for creating data sections
@@ -124,11 +154,7 @@ struct activityView: View {
             .font(.title3)) {
             HStack {
                 if !isRecording {
-                    // Show this message if the "Fetch Data" button hasn't been clicked
-                    Text("Set the date to fetch data")
-                        .font(.footnote)
-                        .foregroundStyle(Color.secondary)
-                        .multilineTextAlignment(.center)
+                    
                 } else {
                     // Show data availability information after fetching data
                     if dataAvailable {
@@ -225,101 +251,103 @@ struct ChartWithTimeFramePicker: View {
                 updateFilteredData()
             }
             
-            Button(action: {
-                showDatePicker = true
-            }) {
-                Text(getTitleForCurrentPage(timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0, startDate: startDate, endDate: endDate))
-                    .font(.title2)
-            }
-            .sheet(isPresented: $showDatePicker) {
-                VStack {
-                    if selectedTimeFrame == .yearly {
-                        // Yearly: Restrict to year-only
-                        DatePicker("Select Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: .date)
-                            .datePickerStyle(WheelDatePickerStyle())
-                            .labelsHidden()
-                            .onChange(of: selectedDate) { _, newDate in
-                                let calendar = Calendar.current
-                                if let selectedYear = calendar.dateComponents([.year], from: newDate).year {
-                                    // Set the date to January 1st of the selected year
-                                    selectedDate = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1)) ?? newDate
-                                    jumpToPage(for: selectedDate)
-                                }
-                            }
-                    } else if selectedTimeFrame == .monthly || selectedTimeFrame == .sixMonths {
-                        // Monthly and SixMonths: Restrict to month and year
-                        DatePicker("Select Month and Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
-                            .datePickerStyle(WheelDatePickerStyle())
-                            .labelsHidden()
-                            .onChange(of: selectedDate) { _, newDate in
-                                let calendar = Calendar.current
-                                let timeZone = TimeZone.current
-                                
-                                // Log the selected date before any modification
-                                print("Newly selected date before any adjustments: \(newDate)")
-                                
-                                // Get the year and month of the selected date directly
-                                var components = calendar.dateComponents([.year, .month], from: newDate)
-                                
-                                if let selectedYear = components.year, let selectedMonth = components.month {
-                                    
-                                    // Log the components before setting the new date
-                                    print("Selected Year: \(selectedYear), Selected Month: \(selectedMonth)")
-                                    
-                                    // Force the selected date to be the 1st of the month and set the time to midday (to avoid time zone issues)
-                                    components.day = 1
-                                    components.hour = 23
-                                    components.minute = 0
-                                    components.second = 0
-                                    components.timeZone = timeZone
-                                    
-                                    if let adjustedDate = calendar.date(from: components) {
-                                        
-                                        // Log the newly adjusted date
-                                        print("Adjusted Date to first of the month: \(adjustedDate)")
-                                        
-                                        // Update the selected date and jump to the corresponding page
-                                        selectedDate = adjustedDate
-                                        jumpToPage(for: selectedDate)
-                                    } else {
-                                        print("Failed to adjust the date correctly.")
-                                    }
-                                }
-                            }
-                    } else {
-                        // Daily and Weekly: Regular Date Picker
-                        DatePicker("Select Date", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
-                            .datePickerStyle(GraphicalDatePickerStyle())
-                            .onChange(of: selectedDate) { _, _ in
-                                jumpToPage(for: selectedDate)
-                            }
-                    }
-
-                    Button("Done") {
-                        showDatePicker = false
-                    }
-                    .foregroundStyle(Color.white)
-                    .padding() // Add padding inside the button to make the text area larger
-                    .background(Color.blue) // Set background color
-                    .cornerRadius(8) // Round the corners
-                    .padding(.horizontal, 20) // Add horizontal padding to make the button wider
-                    .padding(.vertical, 10) // Add vertical padding to make the button taller
-                }
-            }
-
-            // Display the metric sum and average
             HStack {
                 Text(getTitleForMetric(timeFrame: selectedTimeFrame))
+                    .font(.footnote)
                     .foregroundColor(.primary)
-                + Text(": ")
+                
+                Button(action: {
+                    showDatePicker = true
+                }) {
+                    Text(getTitleForCurrentPage(timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0, startDate: startDate, endDate: endDate))
+                        .foregroundColor(.blue)
+                        .padding(.vertical, 5)
+                        .padding(.horizontal, 10)
+                        .background(.white)
+                        .cornerRadius(25)
+                        .overlay(  // Adding black outline
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(Color.blue, lineWidth: 2)  // Outline color and width
+                        )
+                }
+                .sheet(isPresented: $showDatePicker) {
+                    VStack {
+                        if selectedTimeFrame == .yearly {
+                            // Yearly: Restrict to year-only
+                            DatePicker("Select Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: .date)
+                                .datePickerStyle(WheelDatePickerStyle())
+                                .labelsHidden()
+                                .onChange(of: selectedDate) { _, newDate in
+                                    let calendar = Calendar.current
+                                    if let selectedYear = calendar.dateComponents([.year], from: newDate).year {
+                                        selectedDate = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1)) ?? newDate
+                                        jumpToPage(for: selectedDate)
+                                    }
+                                }
+                        } else if selectedTimeFrame == .monthly || selectedTimeFrame == .sixMonths {
+                            // Monthly and SixMonths: Restrict to month and year
+                            DatePicker("Select Month and Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
+                                .datePickerStyle(WheelDatePickerStyle())
+                                .labelsHidden()
+                                .onChange(of: selectedDate) { _, newDate in
+                                    let calendar = Calendar.current
+                                    let timeZone = TimeZone.current
+                                    
+                                    // Log the selected date before any modification
+                                    print("Newly selected date before any adjustments: \(newDate)")
+                                    
+                                    // Get the year and month of the selected date directly
+                                    var components = calendar.dateComponents([.year, .month], from: newDate)
+                                    
+                                    if let selectedYear = components.year, let selectedMonth = components.month {
+                                        
+                                        // Log the components before setting the new date
+                                        print("Selected Year: \(selectedYear), Selected Month: \(selectedMonth)")
+                                        
+                                        // Force the selected date to be the 1st of the month and set the time to midday (to avoid time zone issues)
+                                        components.day = 1
+                                        components.hour = 23
+                                        components.minute = 0
+                                        components.second = 0
+                                        components.timeZone = timeZone
+                                        
+                                        if let adjustedDate = calendar.date(from: components) {
+                                            selectedDate = adjustedDate
+                                            jumpToPage(for: selectedDate)
+                                        }
+                                    }
+                                }
+                        } else {
+                            // Daily and Weekly: Regular Date Picker
+                            DatePicker("Select Date", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
+                                .datePickerStyle(GraphicalDatePickerStyle())
+                                .onChange(of: selectedDate) { _, _ in
+                                    jumpToPage(for: selectedDate)
+                                }
+                        }
+
+                        Button("Done") {
+                            showDatePicker = false
+                        }
+                        .foregroundStyle(Color.white)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(8)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                    }
+                }
+
+                Text(": ")
                     .foregroundColor(.primary)
-                + Text(getValueText(timeFrame: selectedTimeFrame, sum: sum, average: average))
+                
+                Text(getValueText(timeFrame: selectedTimeFrame, sum: sum, average: average))
                     .foregroundColor(.pink)
             }
             .font(.headline)
             .frame(maxWidth: .infinity)
             .multilineTextAlignment(.center)
-            .padding(.horizontal, 25)
+            .padding(.horizontal, 5)
 
             // Use precomputed data for TabView
             TabView(selection: Binding(
@@ -500,85 +528,99 @@ struct ChartWithTimeFramePicker: View {
         case "Step Count":
             switch timeFrame {
             case .daily:
-                description = "Total in this day"
+                description = "Total in "
+            case .weekly:
+                description = "Daily average from "
             case .sixMonths:
-                description = "Daily average in this six months span"
+                description = "Daily average from "
             case .yearly:
-                description = "Daily average in this one year span"
+                description = "Daily average in "
             default:
-                description = "Daily average in this time span"
+                description = "Daily average in "
             }
             
         case "Active Energy Burned in KiloCalorie":
             switch timeFrame {
             case .daily:
-                description = "Total in this day"
+                description = "Total in "
+            case .weekly:
+                description = "Daily average from "
             case .sixMonths:
-                description = "Daily average in these six months span"
+                description = "Daily average from "
             case .yearly:
-                description = "Daily average in one year span"
+                description = "Daily average in "
             default:
-                description = "Daily average in this time span"
+                description = "Daily average in "
             }
             
         case "Move Time (min)":
             switch timeFrame {
             case .daily:
-                description = "Total in this day"
+                description = "Total in "
+            case .weekly:
+                description = "Daily average from "
             case .sixMonths:
-                description = "Daily average in these six months span"
+                description = "Daily average from "
             case .yearly:
-                description = "Daily average in one year span"
+                description = "Daily average in "
             default:
-                description = "Daily average in this time span"
+                description = "Daily average in "
             }
             
         case "Stand Time (min)":
             switch timeFrame {
             case .daily:
-                description = "Total in this day"
+                description = "Total in "
+            case .weekly:
+                description = "Daily average from "
             case .sixMonths:
-                description = "Daily average in these six months span"
+                description = "Daily average from "
             case .yearly:
-                description = "Daily average in one year span"
+                description = "Daily average in "
             default:
-                description = "Daily average in this time span"
+                description = "Daily average in "
             }
             
         case "Distance Walking/Running (Km)":
             switch timeFrame {
             case .daily:
-                description = "Total in this day"
+                description = "Total in "
+            case .weekly:
+                description = "Daily average from "
             case .sixMonths:
-                description = "Daily average in these six months span"
+                description = "Daily average from "
             case .yearly:
-                description = "Daily average in one year span"
+                description = "Daily average in "
             default:
-                description = "Daily average in this time span"
+                description = "Daily average in "
             }
             
         case "Exercise Time (min)":
             switch timeFrame {
             case .daily:
-                description = "Total in this day"
+                description = "Total in "
+            case .weekly:
+                description = "Daily average from "
             case .sixMonths:
-                description = "Daily average in these six months span"
+                description = "Daily average from "
             case .yearly:
-                description = "Daily average in one year span"
+                description = "Daily average in "
             default:
-                description = "Daily average in this time span"
+                description = "Daily average in "
             }
             
         default:
             switch timeFrame {
             case .daily:
-                description = "Total in this day"
+                description = "Total in "
+            case .weekly:
+                description = "Daily average from "
             case .sixMonths:
-                description = "Daily average in these six months span"
+                description = "Daily average from "
             case .yearly:
-                description = "Daily average in one year span"
+                description = "Daily average in "
             default:
-                description = "Daily average in this time span"
+                description = "Daily average in "
             }
         }
         
@@ -1024,10 +1066,6 @@ struct BoxChartViewActivity: View {
                     }
                 }
 
-                Text(getDynamicTitle())
-                    .font(.callout)
-                    .multilineTextAlignment(.trailing)
-
                 ScrollView {
                     ForEach(timeFrame == .weekly ? Array(data.prefix(7)) : data) { item in
                         HStack {
@@ -1035,10 +1073,40 @@ struct BoxChartViewActivity: View {
                             Spacer()
                             
                             if title == "Active Energy Burned in KiloCalorie" {
-                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value / 1000)) kcal")
+                                VStack {
+                                    // Check the time frame and display either "Daily average" or "Total"
+                                    if timeFrame == .yearly || timeFrame == .sixMonths {
+                                        Text("Daily average")
+                                            .font(.caption2)
+                                    } else if timeFrame == .monthly || timeFrame == .weekly || timeFrame == .daily {
+                                        Text("Total")
+                                            .font(.caption2)
+                                    }
+
+                                    // Display the value and the unit (kcal)
+                                    HStack {
+                                        Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value / 1000))")
+                                        Text("kcal")
+                                    }
+                                }
                             }
                             if title == "Step Count" {
-                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) Steps")
+                                VStack {
+                                    // Check the time frame and display either "Daily average" or "Total"
+                                    if timeFrame == .yearly || timeFrame == .sixMonths {
+                                        Text("Daily average")
+                                            .font(.caption2)
+                                    } else if timeFrame == .monthly || timeFrame == .weekly || timeFrame == .daily {
+                                        Text("Total")
+                                            .font(.caption2)
+                                    }
+
+                                    // Display the value and the unit (Steps)
+                                    HStack {
+                                        Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value))")
+                                        Text("Steps")
+                                    }
+                                }
                             }
                             if title == "Move Time (min)" {
                                 Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) Minutes")
@@ -1072,79 +1140,79 @@ struct BoxChartViewActivity: View {
     }
     
     // Helper function to get the dynamic title based on data type and time frame
-        private func getDynamicTitle() -> String {
-            switch title {
-            case "Step Count":
-                switch timeFrame {
-                case .sixMonths:
-                    return "Daily average step counts (weekly)"
-                case .yearly:
-                    return "Daily average step counts (monthly)"
-                default:
-                    return "Total Step Counts"
-                }
-                
-            case "Active Energy Burned in KiloCalorie":
-                switch timeFrame {
-                case .sixMonths:
-                    return "Daily average Active energy burned (weekly)"
-                case .yearly:
-                    return "Daily average Active energy burned (monthly)"
-                default:
-                    return "Active Energy Burned in KCal"
-                }
-                
-            case "Move Time (min)":
-                switch timeFrame {
-                case .sixMonths:
-                    return "Daily average Move time (weekly)"
-                case .yearly:
-                    return "Daily average Move time (monthly)"
-                default:
-                    return "Move Time in seconds"
-                }
-                
-            case "Stand Time (min)":
-                switch timeFrame {
-                case .sixMonths:
-                    return "Daily average Stand time (weekly)"
-                case .yearly:
-                    return "Daily average Stand time (monthly)"
-                default:
-                    return "Stand Time in seconds"
-                }
-                
-            case "Distance Walking/Running (Km)":
-                switch timeFrame {
-                case .sixMonths:
-                    return "Daily average Distance Walking/Running (weekly)"
-                case .yearly:
-                    return "Daily average Distance Walking/Running (monthly)"
-                default:
-                    return "Distance Walking/Running in meters"
-                }
-                
-            case "Exercise Time (min)":
-                switch timeFrame {
-                case .sixMonths:
-                    return "Daily average Exercise time (weekly)"
-                case .yearly:
-                    return "Daily average Exercise time (monthly)"
-                default:
-                    return "Exercise Time in seconds"
-                }
-                
-            default:
-                switch timeFrame {
-                case .sixMonths:
-                    return "6-Month Data Overview"
-                case .yearly:
-                    return "Yearly Data Overview"
-                default:
-                    return "Data"
-                }
-            }
-        }
+//        private func getDynamicTitle() -> String {
+//            switch title {
+//            case "Step Count":
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "Daily average step counts (weekly)"
+//                case .yearly:
+//                    return "Daily average step counts (monthly)"
+//                default:
+//                    return "Total Step Counts"
+//                }
+//                
+//            case "Active Energy Burned in KiloCalorie":
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "Daily average Active energy burned (weekly)"
+//                case .yearly:
+//                    return "Daily average Active energy burned (monthly)"
+//                default:
+//                    return "Active Energy Burned in KCal"
+//                }
+//                
+//            case "Move Time (min)":
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "Daily average Move time (weekly)"
+//                case .yearly:
+//                    return "Daily average Move time (monthly)"
+//                default:
+//                    return "Move Time in seconds"
+//                }
+//                
+//            case "Stand Time (min)":
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "Daily average Stand time (weekly)"
+//                case .yearly:
+//                    return "Daily average Stand time (monthly)"
+//                default:
+//                    return "Stand Time in seconds"
+//                }
+//                
+//            case "Distance Walking/Running (Km)":
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "Daily average Distance Walking/Running (weekly)"
+//                case .yearly:
+//                    return "Daily average Distance Walking/Running (monthly)"
+//                default:
+//                    return "Distance Walking/Running in meters"
+//                }
+//                
+//            case "Exercise Time (min)":
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "Daily average Exercise time (weekly)"
+//                case .yearly:
+//                    return "Daily average Exercise time (monthly)"
+//                default:
+//                    return "Exercise Time in seconds"
+//                }
+//                
+//            default:
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "6-Month Data Overview"
+//                case .yearly:
+//                    return "Yearly Data Overview"
+//                default:
+//                    return "Data"
+//                }
+//            }
+//        }
     
     // Function to get the offset based on the time frame. Offset to set the position of the X-Axis Label
         private func getOffsetForTimeFrame(_ timeFrame: TimeFrame) -> CGFloat {
@@ -1173,7 +1241,7 @@ struct BoxChartViewActivity: View {
             formatter.dateFormat = "HH"
             let startHour = formatter.string(from: date)
             let endHour = formatter.string(from: calendar.date(byAdding: .hour, value: 1, to: date) ?? date)
-            return "\(startHour)-\(endHour)"
+            return "\(startHour) - \(endHour)"
         
         case .weekly:
             // Format as day of the week (e.g., Monday, Tuesday)

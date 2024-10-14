@@ -20,6 +20,8 @@ class ActivityManager: ObservableObject {
     @Published var appleExerciseTimeData: [HKQuantitySample] = []
     @Published var savedFilePath: String?
     
+    let baseFolder: String = "ActivityData"
+    
     @Published var startDate: Date
     @Published var endDate: Date
     
@@ -127,54 +129,89 @@ class ActivityManager: ObservableObject {
         }
     }
     
-    func saveDataAsCSV() {
+    func saveDataAsCSV(serverURL: URL) {
         backgroundQueue.async {
-            self.saveCSV(for: self.stepCountData, fileName: "step_count_data.csv", valueUnit: HKUnit.count(), unitLabel: "Count")
-            self.saveCSV(for: self.activeEnergyBurnedData, fileName: "active_energy_burned_data.csv", valueUnit: HKUnit.largeCalorie(), multiplier: 1.0, unitLabel: "Kilo Calories")
-            self.saveCSV(for: self.appleMoveTimeData, fileName: "move_time_data.csv", valueUnit: HKUnit.minute(), unitLabel: "Minutes")
-            self.saveCSV(for: self.appleStandTimeData, fileName: "apple_stand_time_data.csv", valueUnit: HKUnit.minute(), unitLabel: "Minutes")
-            self.saveCSV(for: self.distanceWalkingRunningData, fileName: "distance_walking_running_data.csv", valueUnit: HKUnit.meterUnit(with: .kilo), unitLabel: "KiloMeters")
-            self.saveCSV(for: self.appleExerciseTimeData, fileName: "exercise_time_data.csv", valueUnit: HKUnit.minute(), unitLabel: "Minutes")
+            self.saveCSV(for: self.stepCountData, fileName: "step_count_data.csv", valueUnit: HKUnit.count(), unitLabel: "Count", serverURL: serverURL, baseFolder: self.baseFolder)
+            self.saveCSV(for: self.activeEnergyBurnedData, fileName: "active_energy_burned_data.csv", valueUnit: HKUnit.largeCalorie(), multiplier: 1.0, unitLabel: "Kilo Calories", serverURL: serverURL, baseFolder: self.baseFolder)
+            self.saveCSV(for: self.appleMoveTimeData, fileName: "move_time_data.csv", valueUnit: HKUnit.minute(), unitLabel: "Minutes", serverURL: serverURL, baseFolder: self.baseFolder)
+            self.saveCSV(for: self.appleStandTimeData, fileName: "apple_stand_time_data.csv", valueUnit: HKUnit.minute(), unitLabel: "Minutes", serverURL: serverURL, baseFolder: self.baseFolder)
+            self.saveCSV(for: self.distanceWalkingRunningData, fileName: "distance_walking_running_data.csv", valueUnit: HKUnit.meterUnit(with: .kilo), unitLabel: "KiloMeters", serverURL: serverURL, baseFolder: self.baseFolder)
+            self.saveCSV(for: self.appleExerciseTimeData, fileName: "exercise_time_data.csv", valueUnit: HKUnit.minute(), unitLabel: "Minutes", serverURL: serverURL, baseFolder: self.baseFolder)
         }
     }
     
-    private func saveCSV(for samples: [HKQuantitySample], fileName: String, valueUnit: HKUnit, multiplier: Double = 1.0, unitLabel: String) {
-        var csvString = "Recorded Date and Time,Value (\(unitLabel))\n"
-        
-        let dateFormatter = ISO8601DateFormatter()
-        dateFormatter.timeZone = TimeZone.current
-        
-        for sample in samples {
-            let value = sample.quantity.doubleValue(for: valueUnit) * multiplier
-            let date = sample.endDate
-            let dateString = dateFormatter.string(from: date)
-            csvString += "\(dateString),\(value)\n"
-        }
-        
-        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            print("Documents directory not found")
-            return
-        }
-        
-        let folderURL = documentsDirectory.appendingPathComponent("ActivityData")
-        
-        do {
-            try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
-        } catch {
-            print("Failed to create directory: \(error)")
-            return
-        }
-        
-        let fileURL = folderURL.appendingPathComponent(fileName)
-        
-        do {
-            try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
-            DispatchQueue.main.async {
-                print("File saved at \(fileURL.path)")
-                self.savedFilePath = fileURL.path
+    private func saveCSV(for samples: [HKQuantitySample], fileName: String, valueUnit: HKUnit, multiplier: Double = 1.0, unitLabel: String, serverURL: URL, baseFolder: String) {
+            var csvString = "Recorded Date and Time,Value (\(unitLabel))\n"
+            
+            let dateFormatter = ISO8601DateFormatter()
+            dateFormatter.timeZone = TimeZone.current
+            
+            for sample in samples {
+                let value = sample.quantity.doubleValue(for: valueUnit) * multiplier
+                let date = sample.endDate
+                let dateString = dateFormatter.string(from: date)
+                csvString += "\(dateString),\(value)\n"
             }
-        } catch {
-            print("Failed to save file: \(error)")
+            
+            guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+                print("Documents directory not found")
+                return
+            }
+            
+            // Use the baseFolder parameter to define where to save the file
+            let folderURL = documentsDirectory.appendingPathComponent(baseFolder)
+            
+            do {
+                try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
+            } catch {
+                print("Failed to create directory: \(error)")
+                return
+            }
+            
+            let fileURL = folderURL.appendingPathComponent(fileName)
+            
+            do {
+                try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
+                DispatchQueue.main.async {
+                    print("File saved locally at \(fileURL.path)")
+                    self.savedFilePath = fileURL.path
+                    
+                    self.uploadFile(fileURL: fileURL, serverURL: serverURL, category: self.baseFolder)
+                }
+            } catch {
+                print("Failed to save file locally: \(error)")
+            }
         }
+    
+    func uploadFile(fileURL: URL, serverURL: URL, category: String) {
+        var request = URLRequest(url: serverURL)
+        request.httpMethod = "POST"
+        
+        let boundary = UUID().uuidString
+        let fileName = fileURL.lastPathComponent
+        let mimeType = "text/csv"  // Assuming you're uploading CSV files
+        
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        var body = Data()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"category\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(category)\r\n".data(using: .utf8)!)
+        
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append(try! Data(contentsOf: fileURL))
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        let task = URLSession.shared.uploadTask(with: request, from: body) { data, response, error in
+            if let error = error {
+                print("Error uploading file: \(error)")
+                return
+            }
+            print("File uploaded successfully to server")
+        }
+        
+        task.resume()
     }
 }

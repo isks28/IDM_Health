@@ -135,14 +135,17 @@ struct accelerometerDataView: View {
             .padding()
             
             VStack {
+                // Timed interval recording
                 if isRecordingInterval && !isRecording {
                     DatePicker("Start Date and Time", selection: $startDate)
                         .datePickerStyle(CompactDatePickerStyle())
-                    
+
                     DatePicker("End Date and Time", selection: $endDate)
                         .datePickerStyle(CompactDatePickerStyle())
                 }
+
                 HStack {
+                    // Toggle for timed recording
                     if isRecordingInterval {
                         Toggle(isOn: $isRecording) {
                             Text(isRecording ? "Data will be fetched according to set time interval" : "Start timed recording")
@@ -154,11 +157,15 @@ struct accelerometerDataView: View {
                         }
                         .onChange(of: isRecording) { _, newValue in
                             motionManager.savedFilePath = nil // Reset "File saved" text
+
                             if newValue {
-                                motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate) {
+                                // Define the server URL
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+
+                                motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL) {
                                     DispatchQueue.main.async {
                                         isRecording = false
-                                        motionManager.removeDataCollectionNotification() // Remove notification
+                                        motionManager.removeDataCollectionNotification() // Remove notification when recording stops
                                     }
                                 }
                                 motionManager.showDataCollectionNotification() // Show notification on start
@@ -167,25 +174,32 @@ struct accelerometerDataView: View {
                                 motionManager.removeDataCollectionNotification() // Remove notification on stop
                             }
                         }
-                        
+
                         if motionManager.savedFilePath != nil {
-                            Text("File saved")
+                            Text("File saved at \(motionManager.savedFilePath ?? "")")  // Display the saved file path
                                 .font(.footnote)
                                 .foregroundStyle(Color(.blue))
                         }
                     }
                 }
-                
+
                 HStack {
+                    // Real-time recording
                     if isRecordingRealTime {
                         Button(action: {
                             motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
-                            
+
                             if isRecording {
                                 motionManager.stopAccelerometerDataCollection()
                                 motionManager.removeDataCollectionNotification() // Remove notification on stop
+                                
+                                // Define the server URL
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+                                motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "RealTimeData")
                             } else {
-                                motionManager.startAccelerometerDataCollection(realTime: true)
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!
+                                
+                                motionManager.startAccelerometerDataCollection(realTime: true, serverURL: serverURL)
                                 motionManager.showDataCollectionNotification() // Show notification on start
                             }
                             isRecording.toggle()
@@ -196,9 +210,9 @@ struct accelerometerDataView: View {
                                 .foregroundColor(.white)
                                 .cornerRadius(15)
                         }
-                        
+
                         if motionManager.savedFilePath != nil {
-                            Text("File saved")
+                            Text("File saved at \(motionManager.savedFilePath ?? "")")
                                 .font(.footnote)
                         }
                     }

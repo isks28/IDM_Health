@@ -25,6 +25,8 @@ struct vitalView: View {
     @State private var startDate = Date()
     @State private var endDate = Date()
     
+    @State private var savedFilePath: String? = nil
+    
     // State variable to control sheet presentation
     @State private var showingHeartRateChart = false
     
@@ -63,15 +65,20 @@ struct vitalView: View {
             HStack {
                 Button(action: {
                     if isRecording {
-                        vitalManager.saveDataAsCSV()
+                        // Define the server URL
+                        let serverURL = URL(string: "http://192.168.0.199:8888")!
+
+                        // Call saveDataAsCSV with the server URL
+                        vitalManager.saveDataAsCSV(serverURL: serverURL)
                     } else {
                         vitalManager.fetchVitalData(startDate: startDate, endDate: endDate)
+                        print("Data fetched, refreshing graph")
                     }
                     isRecording.toggle()
                 }) {
-                    Text(isRecording ? "Save Data" : "Fetch Data")
+                    Text(isRecording ? "Save and Upload Data" : "Fetch Data")
                         .padding()
-                        .background(isRecording ? Color.gray : Color.mint)
+                        .background(isRecording ? Color.secondary : Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 }
@@ -91,10 +98,7 @@ struct vitalView: View {
         Section(header: Text(title).font(.title3)) {
             HStack {
                 if !isRecording {
-                    Text("Set the date to fetch data")
-                        .font(.footnote)
-                        .foregroundStyle(Color.secondary)
-                        .multilineTextAlignment(.center)
+                    
                 } else {
                     if dataAvailable {
                         Button(action: {

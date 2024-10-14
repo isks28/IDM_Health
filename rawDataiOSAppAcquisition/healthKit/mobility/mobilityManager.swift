@@ -28,6 +28,8 @@ class HealthKitMobilityManager: ObservableObject {
     @Published var walkingSteadinessData: [MobilityStatistics] = []
     @Published var savedFilePath: String?
     
+    let baseFolder: String = "MobilityData"
+    
     @Published var startDate: Date
     @Published var endDate: Date
     
@@ -173,15 +175,15 @@ class HealthKitMobilityManager: ObservableObject {
         }
     }
     
-    func saveDataAsCSV() {
-        saveCSV(for: walkingDoubleSupportData, fileName: "walking_double_support_data.csv", unitLabel: "%")
-        saveCSV(for: walkingAsymmetryData, fileName: "walking_asymmetry_data.csv", unitLabel: "%")
-        saveCSV(for: walkingSpeedData, fileName: "walking_speed_data.csv", unitLabel: "km/h")
-        saveCSV(for: walkingStepLengthData, fileName: "walking_step_length_data.csv", unitLabel: "cm")
-        saveCSV(for: walkingSteadinessData, fileName: "walking_steadiness_data.csv", unitLabel: "%")
+    func saveDataAsCSV(serverURL: URL) {
+        saveCSV(for: walkingDoubleSupportData, fileName: "walking_double_support_data.csv", unitLabel: "%", serverURL: serverURL, baseFolder: self.baseFolder)
+        saveCSV(for: walkingAsymmetryData, fileName: "walking_asymmetry_data.csv", unitLabel: "%", serverURL: serverURL, baseFolder: self.baseFolder)
+        saveCSV(for: walkingSpeedData, fileName: "walking_speed_data.csv", unitLabel: "km/h", serverURL: serverURL, baseFolder: self.baseFolder)
+        saveCSV(for: walkingStepLengthData, fileName: "walking_step_length_data.csv", unitLabel: "cm", serverURL: serverURL, baseFolder: self.baseFolder)
+        saveCSV(for: walkingSteadinessData, fileName: "walking_steadiness_data.csv", unitLabel: "%", serverURL: serverURL, baseFolder: self.baseFolder)
     }
     
-    private func saveCSV(for samples: [MobilityStatistics], fileName: String, unitLabel: String) {
+    private func saveCSV(for samples: [MobilityStatistics], fileName: String, unitLabel: String, serverURL: URL, baseFolder: String) {
         var csvString = "Recorded Date and Time,Value (\(unitLabel))\n"  // Updated header to only include the value
         
         let dateFormatter = ISO8601DateFormatter()
@@ -199,7 +201,8 @@ class HealthKitMobilityManager: ObservableObject {
             return
         }
         
-        let folderURL = documentsDirectory.appendingPathComponent("MobilityData")
+        // Use the baseFolder parameter to define where to save the file (e.g., "ActivityData" or "MobilityData")
+        let folderURL = documentsDirectory.appendingPathComponent(baseFolder)
         
         do {
             try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
@@ -210,12 +213,48 @@ class HealthKitMobilityManager: ObservableObject {
         
         let fileURL = folderURL.appendingPathComponent(fileName)
         
+        // Save the CSV file locally
         do {
             try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
-            print("File saved at \(fileURL.path)")
+            print("File saved locally at \(fileURL.path)")
             savedFilePath = fileURL.path
+            
+            // After saving locally, upload the file to the web server
+            self.uploadFile(fileURL: fileURL, serverURL: serverURL, category: baseFolder)
         } catch {
-            print("Failed to save file: \(error)")
+            print("Failed to save file locally: \(error)")
         }
+    }
+
+    func uploadFile(fileURL: URL, serverURL: URL, category: String) {
+        var request = URLRequest(url: serverURL)
+        request.httpMethod = "POST"
+        
+        let boundary = UUID().uuidString
+        let fileName = fileURL.lastPathComponent
+        let mimeType = "text/csv"  // Assuming you're uploading CSV files
+        
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        var body = Data()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"category\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(category)\r\n".data(using: .utf8)!)
+        
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append(try! Data(contentsOf: fileURL))
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        let task = URLSession.shared.uploadTask(with: request, from: body) { data, response, error in
+            if let error = error {
+                print("Error uploading file: \(error)")
+                return
+            }
+            print("File uploaded successfully to server")
+        }
+        
+        task.resume()
     }
 }

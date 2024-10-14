@@ -24,6 +24,8 @@ class VitalManager: ObservableObject {
     @Published var heartRateData: [VitalStatistics] = []  // Heart rate data storage for min, max, average
     @Published var savedFilePath: String?
     
+    let baseFolder: String = "VitalData"
+    
     @Published var startDate: Date
     @Published var endDate: Date
     
@@ -118,11 +120,13 @@ class VitalManager: ObservableObject {
         }
     }
     
-    func saveDataAsCSV() {
-        saveCSV(for: heartRateData, fileName: "heart_rate_data.csv", unitLabel: "BPM")
+    func saveDataAsCSV(serverURL: URL) {
+        backgroundQueue.async{
+            self.saveCSV(for: self.heartRateData, fileName: "heart_rate_data.csv", unitLabel: "BPM", serverURL: serverURL, baseFolder: self.baseFolder)
+        }
     }
     
-    private func saveCSV(for samples: [VitalStatistics], fileName: String, unitLabel: String) {
+    private func saveCSV(for samples: [VitalStatistics], fileName: String, unitLabel: String, serverURL: URL, baseFolder: String) {
         // Add headers for the CSV
         var csvString = "Recorded Date and Time,Value (\(unitLabel))\n"
         
@@ -131,19 +135,19 @@ class VitalManager: ObservableObject {
         
         for sample in samples {
             let endDateString = dateFormatter.string(from: sample.endDate)
-            let minValueString = String(format: "%.0f", sample.minValue)  // Format min value to 2 decimal places
-            
-            // Add the data to the CSV string
-            csvString += "\(endDateString),\(minValueString)\n"
+            // averageValue is actually the actualValue recorded
+            let actualValueString = String(format: "%.0f", sample.averageValue)
+            csvString += "\(endDateString),\(actualValueString)\n"
         }
         
-        // Save the CSV file in the app's Documents directory
+        // Get the local documents directory to save locally
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             print("Documents directory not found")
             return
         }
         
-        let folderURL = documentsDirectory.appendingPathComponent("VitalData")
+        // Use the baseFolder parameter to define where to save the file (e.g., "VitalData", "ActivityData")
+        let folderURL = documentsDirectory.appendingPathComponent(baseFolder)
         
         do {
             try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
@@ -154,12 +158,48 @@ class VitalManager: ObservableObject {
         
         let fileURL = folderURL.appendingPathComponent(fileName)
         
+        // Save the CSV file locally
         do {
             try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
-            print("File saved at \(fileURL.path)")
+            print("File saved locally at \(fileURL.path)")
             savedFilePath = fileURL.path
+            
+            // After saving locally, upload the file to the web server
+            self.uploadFile(fileURL: fileURL, serverURL: serverURL, category: baseFolder)
         } catch {
-            print("Failed to save file: \(error)")
+            print("Failed to save file locally: \(error)")
         }
+    }
+
+    func uploadFile(fileURL: URL, serverURL: URL, category: String) {
+        var request = URLRequest(url: serverURL)
+        request.httpMethod = "POST"
+        
+        let boundary = UUID().uuidString
+        let fileName = fileURL.lastPathComponent
+        let mimeType = "text/csv"  // Assuming you're uploading CSV files
+        
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        var body = Data()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"category\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(category)\r\n".data(using: .utf8)!)
+        
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append(try! Data(contentsOf: fileURL))
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        let task = URLSession.shared.uploadTask(with: request, from: body) { data, response, error in
+            if let error = error {
+                print("Error uploading file: \(error)")
+                return
+            }
+            print("File uploaded successfully to server")
+        }
+        
+        task.resume()
     }
 }

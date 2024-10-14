@@ -32,7 +32,7 @@ struct StepCountView: View {
             
             // Step Count Display
             VStack {
-                if stepManager.stepCount == 0 {
+                if stepManager.stepCount > 0 {
                     Grid {
                         // Step Count
                         GridRow {
@@ -158,6 +158,7 @@ struct StepCountView: View {
                     }
             }
             .padding()
+            .padding(.top, 25)
             
             // Start/Stop buttons for recording
             VStack {

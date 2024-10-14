@@ -9,6 +9,7 @@ import SwiftUI
 
 struct rawDataView: View {
     @State private var selectedView: String? = nil
+    @State private var showingInfo = false // State to show the info sheet
     
     init() {
             // Customize navigation bar appearance
@@ -72,6 +73,43 @@ struct rawDataView: View {
         
             }
             .navigationTitle("Raw Data")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showingInfo.toggle() // Show the info sheet when button is tapped
+                    }) {
+                        Image(systemName: "info.circle")
+                    }
+                    .sheet(isPresented: $showingInfo) {
+                        VStack {
+                            Text("Raw Data information")
+                                .font(.largeTitle)
+                                .padding()
+                            Text("Raw Data fetch unprocessed health related data.")
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                            Text("Accelerometer: measures acceleration of body in different directions")
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                            Text("Gyroscope: measures rotation or orientation of body around its axes")
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                            Text("Magnetometer: measures magnetic field of body to detect direction like digital compass")
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                            Text("Raw Data All: measures accelerometer, gyroscope and magnetometer all at the same time")
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                        }
+                        .padding()
+                    }
+                }
+            }
         } detail: {
             if selectedView == "Accelerometer Data" {
                 accelerometerDataView()

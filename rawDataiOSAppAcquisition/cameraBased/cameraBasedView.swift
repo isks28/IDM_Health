@@ -42,7 +42,7 @@ struct cameraBasedView: View {
                 .edgesIgnoringSafeArea(.all)
             
             VStack {
-                Text("Press the Button to start Recording or Capturing")
+                Text("Visual Data collection")
                     .font(.largeTitle)
                     .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
