@@ -182,7 +182,11 @@ struct StepCountView: View {
                         .onChange(of: isRecording) { _, newValue in
                             stepManager.savedFilePath = nil // Reset "File saved" text
                             if newValue {
-                                stepManager.scheduleStepCountCollection(startDate: startDate, endDate: endDate) {
+                                
+                                // Define the server URL
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+                                
+                                stepManager.scheduleStepCountCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "ProcessedStepCountsData") {
                                     DispatchQueue.main.async {
                                         isRecording = false
                                         stopTimer() // Stop the timer
@@ -214,8 +218,13 @@ struct StepCountView: View {
                                 stepManager.stopStepCountCollection()
                                 stopTimer() // Stop the timer
                                 stepManager.removeDataCollectionNotification() // Remove notification on stop
+                                // Define the server URL
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+                                stepManager.saveDataToCSV(serverURL: serverURL, baseFolder: "ProcessedStepCountsData", recordingMode: "RealTime")
                             } else {
-                                stepManager.startStepCountCollection()
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!
+                                
+                                stepManager.startStepCountCollection(realTime: true, serverURL: serverURL)
                                 startTimer() // Start the timer to update current pace and cadence every second
                                 stepManager.showDataCollectionNotification() // Show notification on start
                             }

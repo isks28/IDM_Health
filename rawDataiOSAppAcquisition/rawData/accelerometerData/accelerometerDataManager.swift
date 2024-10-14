@@ -158,7 +158,7 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         removeDataCollectionNotification() // Remove the notification
 
         if let serverURL = serverURL {
-            saveDataToCSV(serverURL: serverURL, baseFolder: self.baseFolder)
+            saveDataToCSV(serverURL: serverURL, baseFolder: self.baseFolder, recordingMode: self.recordingMode)
         }
     }
 
@@ -170,13 +170,13 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         }
     }
 
-    func saveDataToCSV(serverURL: URL, baseFolder: String) {
+    func saveDataToCSV(serverURL: URL, baseFolder: String, recordingMode: String) {
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             print("Documents directory not found")
             return
         }
 
-        let folderURL = documentsDirectory.appendingPathComponent(baseFolder)
+        let folderURL = documentsDirectory.appendingPathComponent(baseFolder).appendingPathComponent(recordingMode)
 
         do {
             try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
@@ -185,17 +185,21 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
             return
         }
 
-        var fileNumber = 1
-        var fileURL = folderURL.appendingPathComponent("AccelerometerData_\(fileNumber)_\(recordingMode).csv")
-
-        while FileManager.default.fileExists(atPath: fileURL.path) {
-            fileNumber += 1
-            fileURL = folderURL.appendingPathComponent("AccelerometerData_\(fileNumber)_\(recordingMode).csv")
-        }
-
         let csvHeader = "DataType,TimeStamp,x,y,z\n"
         let csvData = accelerometerData.joined(separator: "\n")
         let csvString = csvHeader + csvData
+        
+        // Compute a hash of the current data to see if it's already been saved
+        let dataHash = csvString.hashValue
+        
+        // Check if the file with the same data (hash) already exists
+        let fileURL = folderURL.appendingPathComponent("AccelerometerData_\(dataHash)_\(recordingMode).csv")
+        
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            print("File with the same data already exists: \(fileURL.path)")
+            savedFilePath = fileURL.path
+            return
+        }
 
         do {
             print("Attempting to save file at \(fileURL.path)")
@@ -267,25 +271,28 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         }
     }
 
-    func scheduleDataCollection(startDate: Date, endDate: Date, serverURL: URL, completion: @escaping () -> Void) {
-        let now = Date()
-        stopTime = endDate
+    func scheduleDataCollection(startDate: Date, endDate: Date, serverURL: URL, baseFolder: String, completion: @escaping () -> Void) {
+            let now = Date()
+            stopTime = endDate
 
-        if startDate > now {
-            let startInterval = startDate.timeIntervalSince(now)
-            Timer.scheduledTimer(withTimeInterval: startInterval, repeats: false) { [weak self] _ in
-                self?.startAccelerometerDataCollection(realTime: true, serverURL: serverURL)
+            // Since this is scheduled, set the recording mode to "ScheduledTime"
+            recordingMode = "TimeInterval"
+
+            if startDate > now {
+                let startInterval = startDate.timeIntervalSince(now)
+                Timer.scheduledTimer(withTimeInterval: startInterval, repeats: false) { [weak self] _ in
+                    self?.startAccelerometerDataCollection(realTime: false, serverURL: serverURL)
+                }
+            } else {
+                startAccelerometerDataCollection(realTime: false, serverURL: serverURL)
             }
-        } else {
-            startAccelerometerDataCollection(realTime: true, serverURL: serverURL)
-        }
 
-        let endInterval = endDate.timeIntervalSince(now)
-        Timer.scheduledTimer(withTimeInterval: endInterval, repeats: false) { [weak self] _ in
-            self?.stopAccelerometerDataCollection()
-            completion()
+            let endInterval = endDate.timeIntervalSince(now)
+            Timer.scheduledTimer(withTimeInterval: endInterval, repeats: false) { [weak self] _ in
+                self?.stopAccelerometerDataCollection()
+                completion()
+            }
         }
-    }
 
     // CLLocationManagerDelegate method
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {

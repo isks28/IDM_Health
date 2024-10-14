@@ -154,11 +154,15 @@ struct gyroscopeDataView: View {
                         }
                         .onChange(of: isRecording) { _, newValue in
                             motionManager.savedFilePath = nil // Reset "File saved" text
+
                             if newValue {
-                                motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate) {
+                                // Define the server URL
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+
+                                motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "GyroscopeData") {
                                     DispatchQueue.main.async {
                                         isRecording = false
-                                        motionManager.removeDataCollectionNotification() // Remove notification
+                                        motionManager.removeDataCollectionNotification() // Remove notification when recording stops
                                     }
                                 }
                                 motionManager.showDataCollectionNotification() // Show notification on start
@@ -167,9 +171,9 @@ struct gyroscopeDataView: View {
                                 motionManager.removeDataCollectionNotification() // Remove notification on stop
                             }
                         }
-                        
+
                         if motionManager.savedFilePath != nil {
-                            Text("File saved")
+                            Text("File saved")  // Display the saved file path
                                 .font(.footnote)
                                 .foregroundStyle(Color(.blue))
                         }
@@ -180,12 +184,18 @@ struct gyroscopeDataView: View {
                     if isRecordingRealTime {
                         Button(action: {
                             motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
-                            
+
                             if isRecording {
                                 motionManager.stopGyroscopeDataCollection()
                                 motionManager.removeDataCollectionNotification() // Remove notification on stop
+                                
+                                // Define the server URL
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+                                motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "GyroscopeData", recordingMode: "RealTime")
                             } else {
-                                motionManager.startGyroscopeDataCollection(realTime: true)
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!
+                                
+                                motionManager.startGyroscopeDataCollection(realTime: true, serverURL: serverURL)
                                 motionManager.showDataCollectionNotification() // Show notification on start
                             }
                             isRecording.toggle()

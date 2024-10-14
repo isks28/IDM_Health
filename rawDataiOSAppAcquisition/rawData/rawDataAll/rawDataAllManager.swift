@@ -34,11 +34,14 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     @Published var savedFilePath: String?
     
+    let baseFolder: String = "RawDataAll"
+    
     private var locationManager: CLLocationManager?
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
     private var stopTime: Date?
     private var recordingMode: String = "RealTime"
     private var currentSamplingRate: Double = 60.0
+    private var serverURL: URL?
     
     override init() {
         super.init()
@@ -130,9 +133,10 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dataCollectionNotification"])
     }
 
-    func startRawDataAllCollection(realTime: Bool) {
+    func startRawDataAllCollection(realTime: Bool, serverURL: URL) {
         guard !isCollectingData else { return }
         
+        self.serverURL = serverURL
         isCollectingData = true
         userAccelerometerData = []
         rotationalData = []
@@ -190,52 +194,93 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         rawDataAllManager.stopDeviceMotionUpdates()
         endBackgroundTask()
         removeDataCollectionNotification()  // Remove the notification
-        saveDataToCSV()
+        
+        if let serverURL = serverURL {
+            saveDataToCSV(serverURL: serverURL, baseFolder: self.baseFolder, recordingMode: self.recordingMode)
+        }
     }
     
     func updateSamplingRate(rate: Double) {
         currentSamplingRate = rate
         if isCollectingData {
             stopRawDataAllCollection()
-            startRawDataAllCollection(realTime: recordingMode == "RealTime")
+            startRawDataAllCollection(realTime: recordingMode == "RealTime", serverURL: self.serverURL!)
         }
     }
     
-    private func saveDataToCSV() {
+    func saveDataToCSV(serverURL: URL, baseFolder: String, recordingMode: String) {
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             print("Documents directory not found")
             return
         }
-        
-        let folderURL = documentsDirectory.appendingPathComponent("IMU-Data")
-        
+
+        let folderURL = documentsDirectory.appendingPathComponent(baseFolder).appendingPathComponent(recordingMode)
+
         do {
             try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
         } catch {
             print("Failed to create directory: \(error)")
             return
         }
-        
-        var fileNumber = 1
-        var fileURL = folderURL.appendingPathComponent("RawDataAll_\(fileNumber)_\(recordingMode).csv")
-        
-        while FileManager.default.fileExists(atPath: fileURL.path) {
-            fileNumber += 1
-            fileURL = folderURL.appendingPathComponent("RawDataAll_\(fileNumber)_\(recordingMode).csv")
-        }
-        
+
         let csvHeader = "DataType,TimeStamp,x,y,z\n"
         let csvData = (userAccelerometerData + rotationalData + magneticFieldData).joined(separator: "\n")
         let csvString = csvHeader + csvData
         
+        // Compute a hash of the current data to see if it's already been saved
+        let dataHash = csvString.hashValue
+        
+        // Check if the file with the same data (hash) already exists
+        let fileURL = folderURL.appendingPathComponent("RawDataAll\(dataHash)_\(recordingMode).csv")
+        
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            print("File with the same data already exists: \(fileURL.path)")
+            savedFilePath = fileURL.path
+            return
+        }
+
         do {
             print("Attempting to save file at \(fileURL.path)")
             try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
             print("File saved at \(fileURL.path)")
             savedFilePath = fileURL.path
+
+            self.uploadFile(fileURL: fileURL, serverURL: serverURL, category: baseFolder)
         } catch {
             print("Failed to save file: \(error)")
         }
+    }
+    
+    func uploadFile(fileURL: URL, serverURL: URL, category: String) {
+        var request = URLRequest(url: serverURL)
+        request.httpMethod = "POST"
+
+        let boundary = UUID().uuidString
+        let fileName = fileURL.lastPathComponent
+        let mimeType = "text/csv"  // Assuming you're uploading CSV files
+
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        var body = Data()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"category\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(category)\r\n".data(using: .utf8)!)
+
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append(try! Data(contentsOf: fileURL))
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+
+        let task = URLSession.shared.uploadTask(with: request, from: body) { data, response, error in
+            if let error = error {
+                print("Error uploading file: \(error)")
+                return
+            }
+            print("File uploaded successfully to server")
+        }
+
+        task.resume()
     }
     
     private func startBackgroundTask() {
@@ -264,17 +309,19 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    func scheduleDataCollection(startDate: Date, endDate: Date, completion: @escaping () -> Void) {
+    func scheduleDataCollection(startDate: Date, endDate: Date, serverURL: URL, baseFolder: String, completion: @escaping () -> Void) {
         let now = Date()
         stopTime = endDate
+        
+        recordingMode = "TimeInterval"
         
         if startDate > now {
             let startInterval = startDate.timeIntervalSince(now)
             Timer.scheduledTimer(withTimeInterval: startInterval, repeats: false) { [weak self] _ in
-                self?.startRawDataAllCollection(realTime: true)
+                self?.startRawDataAllCollection(realTime: false, serverURL: serverURL)
             }
         } else {
-            startRawDataAllCollection(realTime: true)
+            startRawDataAllCollection(realTime: false, serverURL: serverURL)
         }
         
         let endInterval = endDate.timeIntervalSince(now)

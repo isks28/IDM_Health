@@ -162,7 +162,7 @@ struct accelerometerDataView: View {
                                 // Define the server URL
                                 let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
 
-                                motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL) {
+                                motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "AccelerometerData") {
                                     DispatchQueue.main.async {
                                         isRecording = false
                                         motionManager.removeDataCollectionNotification() // Remove notification when recording stops
@@ -176,7 +176,7 @@ struct accelerometerDataView: View {
                         }
 
                         if motionManager.savedFilePath != nil {
-                            Text("File saved at \(motionManager.savedFilePath ?? "")")  // Display the saved file path
+                            Text("File saved")  // Display the saved file path
                                 .font(.footnote)
                                 .foregroundStyle(Color(.blue))
                         }
@@ -195,7 +195,8 @@ struct accelerometerDataView: View {
                                 
                                 // Define the server URL
                                 let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
-                                motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "RealTimeData")
+                                
+                                motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "AccelerometerData", recordingMode: "RealTime")
                             } else {
                                 let serverURL = URL(string: "http://192.168.0.199:8888")!
                                 
@@ -212,7 +213,7 @@ struct accelerometerDataView: View {
                         }
 
                         if motionManager.savedFilePath != nil {
-                            Text("File saved at \(motionManager.savedFilePath ?? "")")
+                            Text("File saved")
                                 .font(.footnote)
                         }
                     }

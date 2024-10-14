@@ -241,10 +241,13 @@ struct rawDataAllView: View {
                         .onChange(of: isRecording) { _, newValue in
                             motionManager.savedFilePath = nil // Reset "File saved" text
                             if newValue {
-                                motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate) {
+                                // Define the server URL
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+
+                                motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "RawDataAll") {
                                     DispatchQueue.main.async {
                                         isRecording = false
-                                        motionManager.removeDataCollectionNotification() // Remove notification
+                                        motionManager.removeDataCollectionNotification() // Remove notification when recording stops
                                     }
                                 }
                                 motionManager.showDataCollectionNotification() // Show notification on start
@@ -270,8 +273,13 @@ struct rawDataAllView: View {
                             if isRecording {
                                 motionManager.stopRawDataAllCollection()
                                 motionManager.removeDataCollectionNotification() // Remove notification on stop
+                                // Define the server URL
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+                                motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "RawDataAll", recordingMode: "RealTime")
                             } else {
-                                motionManager.startRawDataAllCollection(realTime: true)
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!
+                                
+                                motionManager.startRawDataAllCollection(realTime: true, serverURL: serverURL)
                                 motionManager.showDataCollectionNotification() // Show notification on start
                             }
                             isRecording.toggle()

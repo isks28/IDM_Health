@@ -70,78 +70,6 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
         videoOutput?.stopRecording()
     }
     
-    private func savePhotoToDocuments(_ image: UIImage) {
-        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            print("Documents directory not found")
-            return
-        }
-
-        // Define the folder name
-        let folderName = "Recorded Photo and Video"
-        let folderURL = documentsDirectory.appendingPathComponent(folderName)
-
-        // Create the folder if it doesn't exist
-        if !FileManager.default.fileExists(atPath: folderURL.path) {
-            do {
-                try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
-                print("Created folder: \(folderURL.path)")
-            } catch {
-                print("Failed to create folder: \(error)")
-                return
-            }
-        }
-
-        // Generate a unique filename for the photo
-        let filename = UUID().uuidString + ".jpg"
-        let fileURL = folderURL.appendingPathComponent(filename)
-
-        // Save the photo data to the specified file path
-        guard let data = image.jpegData(compressionQuality: 1.0) else { return }
-
-        do {
-            try data.write(to: fileURL)
-            print("Saved photo to: \(fileURL.path)")
-            onPhotoCaptured?(image)
-        } catch {
-            print("Failed to save photo: \(error)")
-        }
-    }
-
-    private func saveVideoToDocuments(_ videoURL: URL) {
-        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            print("Documents directory not found")
-            return
-        }
-
-        // Define the folder name
-        let folderName = "Recorded Photo and Video"
-        let folderURL = documentsDirectory.appendingPathComponent(folderName)
-
-        // Create the folder if it doesn't exist
-        if !FileManager.default.fileExists(atPath: folderURL.path) {
-            do {
-                try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
-                print("Created folder: \(folderURL.path)")
-            } catch {
-                print("Failed to create folder: \(error)")
-                return
-            }
-        }
-
-        // Generate a unique filename for the video
-        let filename = UUID().uuidString + ".mp4"
-        let fileURL = folderURL.appendingPathComponent(filename)
-
-        // Move the video to the new location
-        do {
-            try FileManager.default.moveItem(at: videoURL, to: fileURL)
-            print("Saved video to: \(fileURL.path)")
-            onVideoRecorded?(fileURL)
-        } catch {
-            print("Failed to save video: \(error)")
-        }
-    }
-
     // MARK: - AVCaptureFileOutputRecordingDelegate
 
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
@@ -150,7 +78,7 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
             return
         }
         
-        saveVideoToDocuments(outputFileURL)
+        onVideoRecorded?(outputFileURL)  // Pass the video URL to the view for preview
     }
 }
 
@@ -166,6 +94,8 @@ extension CameraBasedManager: AVCapturePhotoCaptureDelegate {
             return
         }
         
-        savePhotoToDocuments(image)
+        onPhotoCaptured?(image)  // Pass the photo to the view for preview
     }
 }
+
+

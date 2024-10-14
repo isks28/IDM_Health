@@ -15,7 +15,8 @@ struct cameraBasedView: View {
     @State private var capturedVideoURL: URL?
     @State private var shouldTakePhoto = false
     @State private var flashOverlayOpacity = 0.0
-
+    var serverURL: URL? // Server URL for uploading
+    
     var body: some View {
         ZStack {
             CameraBasedController(
@@ -74,6 +75,10 @@ struct cameraBasedView: View {
                     videoURL: capturedVideoURL,
                     onDismiss: {
                         showPhoto = false
+                    },
+                    onSaveAndUpload: { image, videoURL in
+                        saveAndUploadData(image: image, videoURL: videoURL)
+                        showPhoto = false
                     }
                 )
                 .transition(.move(edge: .bottom))
@@ -92,8 +97,124 @@ struct cameraBasedView: View {
         let generator = UIImpactFeedbackGenerator(style: .heavy)
         generator.impactOccurred()
     }
+    
+    private func saveAndUploadData(image: UIImage?, videoURL: URL?) {
+        if let image = image {
+            // Save and upload the captured image
+            savePhotoToDocuments(image, serverURL: URL(string: "http://192.168.0.199:8888")!)
+        } else if let videoURL = videoURL {
+            // Save and upload the recorded video
+            saveVideoToDocuments(videoURL, serverURL: URL(string: "http://192.168.0.199:8888")!)
+        }
+    }
+    
+    // Save a captured photo and upload it to the server
+    func savePhotoToDocuments(_ image: UIImage, serverURL: URL) {
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            print("Documents directory not found")
+            return
+        }
+
+        let folderURL = documentsDirectory.appendingPathComponent("Recorded Photo and Video")
+
+        if !FileManager.default.fileExists(atPath: folderURL.path) {
+            do {
+                try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
+                print("Created folder: \(folderURL.path)")
+            } catch {
+                print("Failed to create folder: \(error)")
+                return
+            }
+        }
+
+        let filename = UUID().uuidString + ".jpg"
+        let fileURL = folderURL.appendingPathComponent(filename)
+
+        guard let data = image.jpegData(compressionQuality: 1.0) else { return }
+
+        do {
+            try data.write(to: fileURL)
+            print("Saved photo to: \(fileURL.path)")
+            uploadFile(fileURL: fileURL, serverURL: serverURL, category: "Photo")
+        } catch {
+            print("Failed to save photo: \(error)")
+        }
+    }
+
+    // Save a recorded video and upload it to the server
+    func saveVideoToDocuments(_ videoURL: URL, serverURL: URL) {
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            print("Documents directory not found")
+            return
+        }
+
+        let folderURL = documentsDirectory.appendingPathComponent("Recorded Photo and Video")
+
+        if !FileManager.default.fileExists(atPath: folderURL.path) {
+            do {
+                try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
+                print("Created folder: \(folderURL.path)")
+            } catch {
+                print("Failed to create folder: \(error)")
+                return
+            }
+        }
+
+        let filename = UUID().uuidString + ".mp4"
+        let fileURL = folderURL.appendingPathComponent(filename)
+
+        do {
+            try FileManager.default.moveItem(at: videoURL, to: fileURL)
+            print("Saved video to: \(fileURL.path)")
+            uploadFile(fileURL: fileURL, serverURL: serverURL, category: "Video")
+        } catch {
+            print("Failed to save video: \(error)")
+        }
+    }
+
+    // Upload the file (supports both JPEG, MP4, and CSV)
+    func uploadFile(fileURL: URL, serverURL: URL, category: String) {
+        var request = URLRequest(url: serverURL)
+        request.httpMethod = "POST"
+
+        let boundary = UUID().uuidString
+        let fileName = fileURL.lastPathComponent
+        let mimeType: String
+
+        if fileURL.pathExtension == "jpg" {
+            mimeType = "image/jpeg"
+        } else if fileURL.pathExtension == "mp4" {
+            mimeType = "video/mp4"
+        } else {
+            mimeType = "text/csv"
+        }
+
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        var body = Data()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"category\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(category)\r\n".data(using: .utf8)!)
+
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append(try! Data(contentsOf: fileURL))
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+
+        let task = URLSession.shared.uploadTask(with: request, from: body) { data, response, error in
+            if let error = error {
+                print("Error uploading file: \(error)")
+                return
+            }
+            print("File uploaded successfully to server")
+        }
+
+        task.resume()
+    }
 }
 
 #Preview {
     cameraBasedView()
 }
+

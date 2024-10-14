@@ -141,6 +141,7 @@ struct magnetometerDataView: View {
                     DatePicker("End Date and Time", selection: $endDate)
                         .datePickerStyle(CompactDatePickerStyle())
                 }
+                
                 HStack {
                     if isRecordingInterval {
                         Toggle(isOn: $isRecording) {
@@ -153,11 +154,15 @@ struct magnetometerDataView: View {
                         }
                         .onChange(of: isRecording) { _, newValue in
                             motionManager.savedFilePath = nil // Reset "File saved" text
+
                             if newValue {
-                                motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate) {
+                                // Define the server URL
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+
+                                motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "MagnetometerData") {
                                     DispatchQueue.main.async {
                                         isRecording = false
-                                        motionManager.removeDataCollectionNotification() // Remove notification
+                                        motionManager.removeDataCollectionNotification() // Remove notification when recording stops
                                     }
                                 }
                                 motionManager.showDataCollectionNotification() // Show notification on start
@@ -179,12 +184,18 @@ struct magnetometerDataView: View {
                     if isRecordingRealTime {
                         Button(action: {
                             motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
-                            
+
                             if isRecording {
                                 motionManager.stopMagnetometerDataCollection()
                                 motionManager.removeDataCollectionNotification() // Remove notification on stop
+                                
+                                // Define the server URL
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+                                motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "MagnetometerData", recordingMode: "RealTime")
                             } else {
-                                motionManager.startMagnetometerDataCollection(realTime: true)
+                                let serverURL = URL(string: "http://192.168.0.199:8888")!
+                                
+                                motionManager.startMagnetometerDataCollection(realTime: true, serverURL: serverURL)
                                 motionManager.showDataCollectionNotification() // Show notification on start
                             }
                             isRecording.toggle()
