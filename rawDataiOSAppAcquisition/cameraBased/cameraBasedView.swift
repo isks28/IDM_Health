@@ -101,10 +101,10 @@ struct cameraBasedView: View {
     private func saveAndUploadData(image: UIImage?, videoURL: URL?) {
         if let image = image {
             // Save and upload the captured image
-            savePhotoToDocuments(image, serverURL: URL(string: "http://192.168.0.199:8888")!)
+            savePhotoToDocuments(image, serverURL: ServerConfig.serverURL)
         } else if let videoURL = videoURL {
             // Save and upload the recorded video
-            saveVideoToDocuments(videoURL, serverURL: URL(string: "http://192.168.0.199:8888")!)
+            saveVideoToDocuments(videoURL, serverURL: ServerConfig.serverURL)
         }
     }
     

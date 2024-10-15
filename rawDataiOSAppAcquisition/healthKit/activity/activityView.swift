@@ -63,7 +63,7 @@ struct activityView: View {
                 print("View appeared, forcing data fetch and refresh")
                 // Re-fetch data and force refresh on view appear
                 healthKitManager.fetchActivityData(startDate: startDate, endDate: endDate)
-                    refreshGraph = UUID() // Force refresh with UUID
+                refreshGraph = UUID() // Force refresh with UUID
                 
             }
             .onChange(of: healthKitManager.stepCountData) { _, newData in
@@ -83,15 +83,15 @@ struct activityView: View {
                 .onChange(of: endDate) {
                     healthKitManager.endDate = endDate
                 }
-
+            
             Spacer()
-
+            
             HStack {
                 Button(action: {
                     if isRecording {
                         // Define the server URL
-                        let serverURL = URL(string: "http://192.168.0.199:8888")!
-
+                        let serverURL = ServerConfig.serverURL
+                        
                         // Call saveDataAsCSV with the server URL
                         healthKitManager.saveDataAsCSV(serverURL: serverURL)
                     } else {
@@ -107,7 +107,7 @@ struct activityView: View {
                         .cornerRadius(8)
                 }
                 .padding()
-
+                
                 if let savedFilePath = savedFilePath {
                     Text("File saved at \(savedFilePath)")
                         .font(.footnote)
@@ -128,18 +128,15 @@ struct activityView: View {
                     VStack {
                         Text("Activity Data Information")
                             .font(.largeTitle)
-                            .padding()
-                        Text("Star and End date can only fetch the history or collected data from iOS Health App")
+                        Text("Start and End date can only fetch the history or collected data from iOS Health App and not collecting future or unrecorded data.")
                             .font(.body)
                             .padding()
-                        .padding()
-                        .background(Color.secondary)
-                        .foregroundStyle(Color.primary)
-                        .cornerRadius(25)
-                        .overlay(  // Adding black outline
-                            RoundedRectangle(cornerRadius: 25)
-                                .stroke(Color.primary, lineWidth: 2)  // Outline color and width
-                        )
+                            .padding()
+                            .foregroundStyle(Color.primary)
+                            .overlay(  // Adding black outline
+                                RoundedRectangle(cornerRadius: 15)
+                                    .stroke(Color.secondary, lineWidth: 2)  // Outline color and width
+                            )
                     }
                     .padding()
                 }

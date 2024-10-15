@@ -157,7 +157,7 @@ struct magnetometerDataView: View {
 
                             if newValue {
                                 // Define the server URL
-                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+                                let serverURL = ServerConfig.serverURL  // Update this URL as needed
 
                                 motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "MagnetometerData") {
                                     DispatchQueue.main.async {
@@ -190,10 +190,10 @@ struct magnetometerDataView: View {
                                 motionManager.removeDataCollectionNotification() // Remove notification on stop
                                 
                                 // Define the server URL
-                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+                                let serverURL = ServerConfig.serverURL // Update this URL as needed
                                 motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "MagnetometerData", recordingMode: "RealTime")
                             } else {
-                                let serverURL = URL(string: "http://192.168.0.199:8888")!
+                                let serverURL = ServerConfig.serverURL
                                 
                                 motionManager.startMagnetometerDataCollection(realTime: true, serverURL: serverURL)
                                 motionManager.showDataCollectionNotification() // Show notification on start

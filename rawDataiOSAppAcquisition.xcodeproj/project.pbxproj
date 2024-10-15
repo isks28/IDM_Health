@@ -37,6 +37,7 @@
 		86419FE82CB97E800071151C /* StepCountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE72CB97E800071151C /* StepCountView.swift */; };
 		86419FEC2CB988BF0071151C /* processedDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FEB2CB988BF0071151C /* processedDataView.swift */; };
 		86419FEE2CBA8CE20071151C /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FED2CBA8CE20071151C /* PreviewView.swift */; };
+		86B0DE662CBE973C00003F50 /* ServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0DE652CBE973C00003F50 /* ServerConfig.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -92,6 +93,7 @@
 		86419FE72CB97E800071151C /* StepCountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountView.swift; sourceTree = "<group>"; };
 		86419FEB2CB988BF0071151C /* processedDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = processedDataView.swift; sourceTree = "<group>"; };
 		86419FED2CBA8CE20071151C /* PreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
+		86B0DE652CBE973C00003F50 /* ServerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerConfig.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,6 +154,7 @@
 			isa = PBXGroup;
 			children = (
 				5A554EB02C8708AA0081747B /* Info.plist */,
+				86B0DE652CBE973C00003F50 /* ServerConfig.swift */,
 				5A554E5A2C8705080081747B /* rawDataiOSAppAcquisitionApp.swift */,
 				5A554E5C2C8705080081747B /* ContentView.swift */,
 				5A554E852C87053B0081747B /* healthKit */,
@@ -448,6 +451,7 @@
 				5A554E5D2C8705080081747B /* ContentView.swift in Sources */,
 				5A554E952C8706080081747B /* mobilityView.swift in Sources */,
 				5A554EA72C8706810081747B /* rawDataAllView.swift in Sources */,
+				86B0DE662CBE973C00003F50 /* ServerConfig.swift in Sources */,
 				5A554E9D2C87063D0081747B /* accelerometerDataManager.swift in Sources */,
 				86419FEC2CB988BF0071151C /* processedDataView.swift in Sources */,
 				5A554EA92C87068D0081747B /* rawDataAllManager.swift in Sources */,

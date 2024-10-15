@@ -242,7 +242,7 @@ struct rawDataAllView: View {
                             motionManager.savedFilePath = nil // Reset "File saved" text
                             if newValue {
                                 // Define the server URL
-                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+                                let serverURL = ServerConfig.serverURL  // Update this URL as needed
 
                                 motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "RawDataAll") {
                                     DispatchQueue.main.async {
@@ -274,10 +274,10 @@ struct rawDataAllView: View {
                                 motionManager.stopRawDataAllCollection()
                                 motionManager.removeDataCollectionNotification() // Remove notification on stop
                                 // Define the server URL
-                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+                                let serverURL = ServerConfig.serverURL  // Update this URL as needed
                                 motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "RawDataAll", recordingMode: "RealTime")
                             } else {
-                                let serverURL = URL(string: "http://192.168.0.199:8888")!
+                                let serverURL = ServerConfig.serverURL
                                 
                                 motionManager.startRawDataAllCollection(realTime: true, serverURL: serverURL)
                                 motionManager.showDataCollectionNotification() // Show notification on start

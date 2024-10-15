@@ -66,7 +66,7 @@ struct vitalView: View {
                 Button(action: {
                     if isRecording {
                         // Define the server URL
-                        let serverURL = URL(string: "http://192.168.0.199:8888")!
+                        let serverURL = ServerConfig.serverURL
 
                         // Call saveDataAsCSV with the server URL
                         vitalManager.saveDataAsCSV(serverURL: serverURL)

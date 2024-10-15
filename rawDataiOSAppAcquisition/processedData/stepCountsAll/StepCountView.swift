@@ -184,7 +184,7 @@ struct StepCountView: View {
                             if newValue {
                                 
                                 // Define the server URL
-                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+                                let serverURL = ServerConfig.serverURL  // Update this URL as needed
                                 
                                 stepManager.scheduleStepCountCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "ProcessedStepCountsData") {
                                     DispatchQueue.main.async {
@@ -219,10 +219,10 @@ struct StepCountView: View {
                                 stopTimer() // Stop the timer
                                 stepManager.removeDataCollectionNotification() // Remove notification on stop
                                 // Define the server URL
-                                let serverURL = URL(string: "http://192.168.0.199:8888")!  // Update this URL as needed
+                                let serverURL = ServerConfig.serverURL  // Update this URL as needed
                                 stepManager.saveDataToCSV(serverURL: serverURL, baseFolder: "ProcessedStepCountsData", recordingMode: "RealTime")
                             } else {
-                                let serverURL = URL(string: "http://192.168.0.199:8888")!
+                                let serverURL = ServerConfig.serverURL
                                 
                                 stepManager.startStepCountCollection(realTime: true, serverURL: serverURL)
                                 startTimer() // Start the timer to update current pace and cadence every second
