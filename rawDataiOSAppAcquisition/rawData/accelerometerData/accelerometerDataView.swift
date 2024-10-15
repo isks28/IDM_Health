@@ -21,54 +21,54 @@ struct accelerometerDataView: View {
     @State private var canControlSamplingRate = false
     @State private var showingAuthenticationError = false
     
+    @State private var showingInfo = false
+    // New state to trigger the graph refresh
+    @State private var refreshGraph = UUID()
+    
     var body: some View {
         VStack {
-            Text("Accelerometer")
-                .font(.title)
-                .foregroundStyle(Color.primary)
-                .padding(.top, 5)
-            Spacer()
+            Spacer() // Push content to the bottom
             
             if motionManager.accelerometerData.last != nil {
-                Text("UserAcceleration Data")
-                    .font(.title2)
-                    .foregroundStyle(Color.pink)
-                    .padding()
+                // No need to show any message
             } else {
-                Text("Set the desired Time")
+                Text("No data")
                     .padding()
-                    .font(.headline)
+                    .font(.title3)
                     .foregroundStyle(Color.secondary)
                     .multilineTextAlignment(.center)
             }
-            
+
             // Simple Graph View
             VStack {
                 if motionManager.accelerometerData.last != nil {
                     Text("X-Axis")
-                        .font(.title3)
-                        .foregroundStyle(Color.gray)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.secondary)
                 }
                 AccelerometerGraphView(dataPoints: motionManager.accelerometerDataPointsX, lineColor: .red.opacity(0.5))
-                    .frame(height: 90)
-                
+                    .frame(height: 100)
+
                 if motionManager.accelerometerData.last != nil {
                     Text("Y-Axis")
-                        .font(.title3)
-                        .foregroundStyle(Color.gray)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.secondary)
                 }
                 AccelerometerGraphView(dataPoints: motionManager.accelerometerDataPointsY, lineColor: .green.opacity(0.5))
-                    .frame(height: 90)
-                
+                    .frame(height: 100)
+
                 if motionManager.accelerometerData.last != nil {
                     Text("Z-Axis")
-                        .font(.title3)
-                        .foregroundStyle(Color.gray)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.secondary)
                 }
                 AccelerometerGraphView(dataPoints: motionManager.accelerometerDataPointsZ, lineColor: .blue.opacity(0.5))
-                    .frame(height: 90)
+                    .frame(height: 100)
             }
             
+            Spacer()
+            Spacer()
+
             if !isRecording && !isRecordingInterval && !isRecordingRealTime {
                 VStack {
                     Toggle(isOn: $canControlSamplingRate) {
@@ -91,7 +91,7 @@ struct accelerometerDataView: View {
                 }
                 .padding()
             }
-            
+
             if canControlSamplingRate && !isRecording && !isRecordingInterval && !isRecordingRealTime {
                 VStack {
                     Text("Sampling Rate: \(Int(samplingRate)) Hz")
@@ -102,38 +102,50 @@ struct accelerometerDataView: View {
                         }
                 }
             }
-            
+
             if showingAuthenticationError && !isRecording && !isRecordingInterval && !isRecordingRealTime {
                 Text("Authentication Failed. Unable to control sampling rate.")
                     .foregroundColor(.red)
                     .font(.caption2)
             }
-            
-            HStack {
+
+            HStack(alignment: .bottom) {
                 Toggle("Real-Time", isOn: $isRecordingRealTime)
                     .onChange(of: isRecordingRealTime) { _, newValue in
                         isRecording = false
                         motionManager.stopAccelerometerDataCollection()
                         motionManager.savedFilePath = nil // Reset "File saved" text
                         
+                        // Reset accelerometer data
+                        motionManager.accelerometerData = []
+                        motionManager.accelerometerDataPointsX = []
+                        motionManager.accelerometerDataPointsY = []
+                        motionManager.accelerometerDataPointsZ = []
+
                         if newValue {
                             isRecordingInterval = false
                         }
                     }
-                
+
                 Toggle("Time-Interval", isOn: $isRecordingInterval)
                     .onChange(of: isRecordingInterval) { _, newValue in
                         isRecording = false
                         motionManager.stopAccelerometerDataCollection()
                         motionManager.savedFilePath = nil // Reset "File saved" text
                         
+                        // Reset accelerometer data
+                        motionManager.accelerometerData = []
+                        motionManager.accelerometerDataPointsX = []
+                        motionManager.accelerometerDataPointsY = []
+                        motionManager.accelerometerDataPointsZ = []
+
                         if newValue {
                             isRecordingRealTime = false
                         }
                     }
             }
-            .padding()
-            
+            .padding(.horizontal)
+
             VStack {
                 // Timed interval recording
                 if isRecordingInterval && !isRecording {
@@ -144,7 +156,7 @@ struct accelerometerDataView: View {
                         .datePickerStyle(CompactDatePickerStyle())
                 }
 
-                HStack {
+                HStack(alignment: .bottom) {
                     // Toggle for timed recording
                     if isRecordingInterval {
                         Toggle(isOn: $isRecording) {
@@ -159,7 +171,6 @@ struct accelerometerDataView: View {
                             motionManager.savedFilePath = nil // Reset "File saved" text
 
                             if newValue {
-                                // Define the server URL
                                 let serverURL = ServerConfig.serverURL // Update this URL as needed
 
                                 motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "AccelerometerData") {
@@ -176,14 +187,15 @@ struct accelerometerDataView: View {
                         }
 
                         if motionManager.savedFilePath != nil {
-                            Text("File saved")  // Display the saved file path
+                            Text("File saved")
                                 .font(.footnote)
                                 .foregroundStyle(Color(.blue))
+                                .padding()
                         }
                     }
                 }
 
-                HStack {
+                HStack(alignment: .bottom) {
                     // Real-time recording
                     if isRecordingRealTime {
                         Button(action: {
@@ -192,14 +204,13 @@ struct accelerometerDataView: View {
                             if isRecording {
                                 motionManager.stopAccelerometerDataCollection()
                                 motionManager.removeDataCollectionNotification() // Remove notification on stop
-                                
-                                // Define the server URL
+
                                 let serverURL = ServerConfig.serverURL // Update this URL as needed
-                                
+
                                 motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "AccelerometerData", recordingMode: "RealTime")
                             } else {
                                 let serverURL = ServerConfig.serverURL
-                                
+
                                 motionManager.startAccelerometerDataCollection(realTime: true, serverURL: serverURL)
                                 motionManager.showDataCollectionNotification() // Show notification on start
                             }
@@ -215,14 +226,52 @@ struct accelerometerDataView: View {
                         if motionManager.savedFilePath != nil {
                             Text("File saved")
                                 .font(.footnote)
+                                .foregroundStyle(Color.blue)
+                                .padding()
                         }
                     }
                 }
             }
             .padding()
         }
+        .navigationTitle("Accelerometer")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingInfo.toggle()
+                }) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.blue)
+                }
+                .sheet(isPresented: $showingInfo) {
+                    VStack {
+                        Text("Data Information")
+                            .font(.largeTitle)
+                        Text("SAMPLING RATE CONTROL can only be accessed by authorized personal")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                        Text("REAL-TIME record the data immediately and stop on-demand")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                        Text("TIME-INTERVAL record the data automatically. Set the start and end date, turn on the Start timed recording, and the recording will stop automatically after the end time is up")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                    }
+                    .padding()
+                }
+            }
+        }
     }
-    
+
     // Function to authenticate the user using Face ID/Touch ID or passcode
     func authenticateUser(completion: @escaping (Bool) -> Void) {
         let context = LAContext()
@@ -230,7 +279,7 @@ struct accelerometerDataView: View {
 
         if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
             let reason = "Authenticate to enable sampling rate control."
-            
+
             context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, authenticationError in
                 DispatchQueue.main.async {
                     if success {

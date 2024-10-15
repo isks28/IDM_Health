@@ -20,9 +20,12 @@ struct healthKitView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
                         .foregroundStyle(Color.blue)
-                    Text("Activity Data")
+                    Text("Activity")
                         .foregroundStyle(Color.primary)
                         .font(.title)
+                    Spacer()
+                    Image(systemName: "arrowtriangle.right")
+                        .foregroundStyle(Color.primary)
                 }
                 .tag("Activity")
                 
@@ -32,9 +35,12 @@ struct healthKitView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
                         .foregroundStyle(Color.blue)
-                    Text("Mobility Data")
+                    Text("Mobility")
                         .foregroundStyle(Color.primary)
                         .font(.title)
+                    Spacer()
+                    Image(systemName: "arrowtriangle.right")
+                        .foregroundStyle(Color.primary)
                 }
                 .tag("Mobility")
                 
@@ -44,9 +50,12 @@ struct healthKitView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
                         .foregroundStyle(Color.blue)
-                    Text("Vital Data")
+                    Text("Vital")
                         .foregroundStyle(Color.primary)
                         .font(.title)
+                    Spacer()
+                    Image(systemName: "arrowtriangle.right")
+                        .foregroundStyle(Color.primary)
                 }
                 .tag("Vital")
             }

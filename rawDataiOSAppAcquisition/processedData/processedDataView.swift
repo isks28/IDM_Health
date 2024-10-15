@@ -9,6 +9,7 @@ import SwiftUI
 
 struct processedDataView: View {
     @State private var selectedView: String? = nil
+    @State private var showingInfo = false // State to show the info sheet
     
     init() {
             // Customize navigation bar appearance
@@ -38,6 +39,28 @@ struct processedDataView: View {
                         .tag("StepCounts")
             }
             .navigationTitle("Processed Data")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showingInfo.toggle()
+                    }) {
+                        Image(systemName: "info.circle")
+                            .foregroundColor(.blue)
+                    }
+                    .sheet(isPresented: $showingInfo) {
+                        VStack {
+                            Text("Data Information")
+                                .font(.largeTitle)
+                            Text("Start and End date can only fetch the history or collected data from iOS Health App and not collecting future or unrecorded data.")
+                                .font(.body)
+                                .padding()
+                                .padding()
+                                .foregroundStyle(Color.primary)
+                        }
+                        .padding()
+                    }
+                }
+            }
         } detail: {
             if selectedView == "StepCounts" {
                 StepCountView()

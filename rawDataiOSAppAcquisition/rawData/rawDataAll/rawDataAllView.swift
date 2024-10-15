@@ -28,12 +28,12 @@ struct rawDataAllView: View {
     @State private var showingAuthenticationError = false
     @State private var selectedDataType: DataType = .accelerometer // Default data type
     
+    @State private var showingInfo = false
+    // New state to trigger the graph refresh
+    @State private var refreshGraph = UUID()
+    
     var body: some View {
         VStack {
-            Text("Raw Data All")
-                .font(.title)
-                .foregroundStyle(Color.primary)
-                .padding(.top, 5)
             
             // Segmented Picker to choose data type
             Picker("Select Data", selection: $selectedDataType) {
@@ -54,32 +54,29 @@ struct rawDataAllView: View {
                     VStack {
                         RawDataGraphView(
                             dataPoints: motionManager.accelerometerDataPointsX,
-                            lineColor: .red,
-                            axisLabel: "X-Axis",
+                            lineColor: .red.opacity(0.5),
                             graphTitle: "Accelerometer X-Axis"
                         )
                         .frame(height: 100)
 
                         RawDataGraphView(
                             dataPoints: motionManager.accelerometerDataPointsY,
-                            lineColor: .green,
-                            axisLabel: "Y-Axis",
+                            lineColor: .green.opacity(0.5),
                             graphTitle: "Accelerometer Y-Axis"
                         )
                         .frame(height: 100)
 
                         RawDataGraphView(
                             dataPoints: motionManager.accelerometerDataPointsZ,
-                            lineColor: .blue,
-                            axisLabel: "Z-Axis",
+                            lineColor: .blue.opacity(0.5),
                             graphTitle: "Accelerometer Z-Axis"
                         )
                         .frame(height: 100)
                     }
                 } else {
-                    Text("Set the desired Time")
+                    Text("No data")
                         .padding(.bottom, 300)
-                        .font(.headline)
+                        .font(.title3)
                         .foregroundStyle(Color.secondary)
                         .multilineTextAlignment(.center)
                 }
@@ -89,32 +86,29 @@ struct rawDataAllView: View {
                     VStack {
                         RawDataGraphView(
                             dataPoints: motionManager.rotationalDataPointsX,
-                            lineColor: .red,
-                            axisLabel: "X-Axis",
+                            lineColor: .red.opacity(0.5),
                             graphTitle: "Gyroscope X-Axis"
                         )
                         .frame(height: 100)
 
                         RawDataGraphView(
                             dataPoints: motionManager.rotationalDataPointsY,
-                            lineColor: .green,
-                            axisLabel: "Y-Axis",
+                            lineColor: .green.opacity(0.5),
                             graphTitle: "Gyroscope Y-Axis"
                         )
                         .frame(height: 100)
 
                         RawDataGraphView(
                             dataPoints: motionManager.rotationalDataPointsZ,
-                            lineColor: .blue,
-                            axisLabel: "Z-Axis",
+                            lineColor: .blue.opacity(0.5),
                             graphTitle: "Gyroscope Z-Axis"
                         )
                         .frame(height: 100)
                     }
                 } else {
-                    Text("Set the desired Time")
+                    Text("No data")
                         .padding(.bottom, 300)
-                        .font(.headline)
+                        .font(.title3)
                         .foregroundStyle(Color.secondary)
                         .multilineTextAlignment(.center)
                 }
@@ -124,36 +118,36 @@ struct rawDataAllView: View {
                     VStack {
                         RawDataGraphView(
                             dataPoints: motionManager.magneticDataPointsX,
-                            lineColor: .red,
-                            axisLabel: "X-Axis",
+                            lineColor: .red.opacity(0.5),
                             graphTitle: "Magnetometer X-Axis"
                         )
                         .frame(height: 100)
 
                         RawDataGraphView(
                             dataPoints: motionManager.magneticDataPointsY,
-                            lineColor: .green,
-                            axisLabel: "Y-Axis",
+                            lineColor: .green.opacity(0.5),
                             graphTitle: "Magnetometer Y-Axis"
                         )
                         .frame(height: 100)
 
                         RawDataGraphView(
                             dataPoints: motionManager.magneticDataPointsZ,
-                            lineColor: .blue,
-                            axisLabel: "Z-Axis",
+                            lineColor: .blue.opacity(0.5),
                             graphTitle: "Magnetometer Z-Axis"
                         )
                         .frame(height: 100)
                     }
                 } else {
-                    Text("Set the desired Time")
+                    Text("No data")
                         .padding(.bottom, 300)
-                        .font(.headline)
+                        .font(.title3)
                         .foregroundStyle(Color.secondary)
                         .multilineTextAlignment(.center)
                 }
             }
+            
+            Spacer()
+            Spacer()
             
             if !isRecording && !isRecordingInterval && !isRecordingRealTime {
                 VStack {
@@ -195,12 +189,26 @@ struct rawDataAllView: View {
                     .font(.caption2)
             }
             
-            HStack {
+            HStack(alignment: .bottom) {
                 Toggle("Real-Time", isOn: $isRecordingRealTime)
                     .onChange(of: isRecordingRealTime) { _, newValue in
                         isRecording = false
                         motionManager.stopRawDataAllCollection()
                         motionManager.savedFilePath = nil // Reset "File saved" text
+                        
+                        // Reset accelerometer data
+                        motionManager.userAccelerometerData = []
+                        motionManager.rotationalData = []
+                        motionManager.magneticFieldData = []
+                        motionManager.accelerometerDataPointsX = []
+                        motionManager.accelerometerDataPointsY = []
+                        motionManager.accelerometerDataPointsZ = []
+                        motionManager.rotationalDataPointsX = []
+                        motionManager.rotationalDataPointsY = []
+                        motionManager.rotationalDataPointsZ = []
+                        motionManager.magneticDataPointsX = []
+                        motionManager.magneticDataPointsY = []
+                        motionManager.magneticDataPointsZ = []
                         
                         if newValue {
                             isRecordingInterval = false
@@ -213,12 +221,26 @@ struct rawDataAllView: View {
                         motionManager.stopRawDataAllCollection()
                         motionManager.savedFilePath = nil // Reset "File saved" text
                         
+                        // Reset accelerometer data
+                        motionManager.userAccelerometerData = []
+                        motionManager.rotationalData = []
+                        motionManager.magneticFieldData = []
+                        motionManager.accelerometerDataPointsX = []
+                        motionManager.accelerometerDataPointsY = []
+                        motionManager.accelerometerDataPointsZ = []
+                        motionManager.rotationalDataPointsX = []
+                        motionManager.rotationalDataPointsY = []
+                        motionManager.rotationalDataPointsZ = []
+                        motionManager.magneticDataPointsX = []
+                        motionManager.magneticDataPointsY = []
+                        motionManager.magneticDataPointsZ = []
+                        
                         if newValue {
                             isRecordingRealTime = false
                         }
                     }
             }
-            .padding()
+            .padding(.horizontal)
             
             VStack {
                 if isRecordingInterval && !isRecording {
@@ -261,11 +283,12 @@ struct rawDataAllView: View {
                             Text("File saved")
                                 .font(.footnote)
                                 .foregroundStyle(Color(.blue))
+                                .padding()
                         }
                     }
                 }
                 
-                HStack {
+                HStack(alignment: .bottom) {
                     if isRecordingRealTime {
                         Button(action: {
                             motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
@@ -294,11 +317,49 @@ struct rawDataAllView: View {
                         if motionManager.savedFilePath != nil {
                             Text("File saved")
                                 .font(.footnote)
+                                .foregroundStyle(Color.blue)
+                                .padding()
                         }
                     }
                 }
             }
             .padding()
+        }
+        .navigationTitle("Raw Data All")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingInfo.toggle()
+                }) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.blue)
+                }
+                .sheet(isPresented: $showingInfo) {
+                    VStack {
+                        Text("Data Information")
+                            .font(.largeTitle)
+                        Text("SAMPLING RATE CONTROL can only be accessed by authorized personal")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                        Text("REAL-TIME record the data immediately and stop on-demand")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                        Text("TIME-INTERVAL record the data automatically. Set the start and end date, turn on the Start timed recording, and the recording will stop automatically after the end time is up")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                    }
+                    .padding()
+                }
+            }
         }
     }
     
@@ -329,13 +390,13 @@ struct rawDataAllView: View {
 struct RawDataGraphView: View {
     var dataPoints: [Double]
     var lineColor: Color
-    var axisLabel: String
     var graphTitle: String
     
     var body: some View {
         VStack {
             Text(graphTitle)
-                .font(.title3)
+                .font(.subheadline)
+                .foregroundStyle(Color.secondary)
                 .padding(.bottom, 5)
             
             GeometryReader { geometry in
@@ -359,11 +420,6 @@ struct RawDataGraphView: View {
                 }
                 .stroke(lineColor, lineWidth: 2)
             }
-            
-            Text(axisLabel)
-                .font(.caption)
-                .foregroundColor(lineColor)
-                .padding(.top, 2)
         }
     }
 }

@@ -108,8 +108,8 @@ struct activityView: View {
                 }
                 .padding()
                 
-                if let savedFilePath = savedFilePath {
-                    Text("File saved at \(savedFilePath)")
+                if healthKitManager.savedFilePath != nil {
+                    Text("File saved")
                         .font(.footnote)
                 }
             }
@@ -126,17 +126,13 @@ struct activityView: View {
                 }
                 .sheet(isPresented: $showingInfo) {
                     VStack {
-                        Text("Activity Data Information")
+                        Text("Data Information")
                             .font(.largeTitle)
                         Text("Start and End date can only fetch the history or collected data from iOS Health App and not collecting future or unrecorded data.")
                             .font(.body)
                             .padding()
                             .padding()
                             .foregroundStyle(Color.primary)
-                            .overlay(  // Adding black outline
-                                RoundedRectangle(cornerRadius: 15)
-                                    .stroke(Color.secondary, lineWidth: 2)  // Outline color and width
-                            )
                     }
                     .padding()
                 }

@@ -11,18 +11,6 @@ struct rawDataView: View {
     @State private var selectedView: String? = nil
     @State private var showingInfo = false // State to show the info sheet
     
-    init() {
-            // Customize navigation bar appearance
-            let appearance = UINavigationBarAppearance()
-        
-        appearance.titleTextAttributes = [.foregroundColor: UIColor.secondarySystemFill]  // Title color
-        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.black]  // Large title color
-    
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        
-        }
-    
     var body: some View {
         NavigationSplitView {
             List(selection: $selectedView) {
@@ -32,9 +20,12 @@ struct rawDataView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
                         .foregroundStyle(Color.blue)
-                    Text("Accelerometer Data")
+                    Text("Accelerometer")
                         .foregroundStyle(Color.primary)
                         .font(.title)
+                    Spacer()
+                    Image(systemName: "arrowtriangle.right")
+                        .foregroundStyle(Color.primary)
                         }
                         .tag("Accelerometer Data")
                 HStack {
@@ -43,9 +34,12 @@ struct rawDataView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
                         .foregroundStyle(Color.blue)
-                    Text("Gyroscope Data")
+                    Text("Gyroscope")
                         .foregroundStyle(Color.primary)
                         .font(.title)
+                    Spacer()
+                    Image(systemName: "arrowtriangle.right")
+                        .foregroundStyle(Color.primary)
                         }
                         .tag("Gyroscope Data")
                 HStack {
@@ -54,9 +48,12 @@ struct rawDataView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
                         .foregroundStyle(Color.blue)
-                    Text("Magnetometer Data")
+                    Text("Magnetometer")
                         .foregroundStyle(Color.primary)
                         .font(.title)
+                    Spacer()
+                    Image(systemName: "arrowtriangle.right")
+                        .foregroundStyle(Color.primary)
                         }
                         .tag("Magnetometer Data")
                 HStack{
@@ -68,6 +65,9 @@ struct rawDataView: View {
                     Text("Raw Data All")
                         .foregroundStyle(Color.primary)
                         .font(.title)
+                    Spacer()
+                    Image(systemName: "arrowtriangle.right")
+                        .foregroundStyle(Color.primary)
                 }
                         .tag("RawDataAll")
         

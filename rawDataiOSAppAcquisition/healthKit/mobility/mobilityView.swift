@@ -26,6 +26,10 @@ struct mobilityView: View {
     
     @State private var savedFilePath: String? = nil
     
+    @State private var showingInfo = false
+    // New state to trigger the graph refresh
+    @State private var refreshGraph = UUID()
+    
     // State variables to control sheet presentation
     @State private var showingChart: [String: Bool] = [
         "WalkingDoubleSupport": false,
@@ -43,10 +47,6 @@ struct mobilityView: View {
     
     var body: some View {
         VStack {
-            Text("Mobility Health Data")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
             
             ScrollView(.vertical) {
                 VStack(spacing: 10) {
@@ -107,6 +107,29 @@ struct mobilityView: View {
             }
         }
         .padding()
+        .navigationTitle("Mobility Health Data")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingInfo.toggle()
+                }) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.blue)
+                }
+                .sheet(isPresented: $showingInfo) {
+                    VStack {
+                        Text("Data Information")
+                            .font(.largeTitle)
+                        Text("Start and End date can only fetch the history or collected data from iOS Health App and not collecting future or unrecorded data.")
+                            .font(.body)
+                            .padding()
+                            .padding()
+                            .foregroundStyle(Color.primary)
+                    }
+                    .padding()
+                }
+            }
+        }
     }
     
     // Modular function for creating data sections

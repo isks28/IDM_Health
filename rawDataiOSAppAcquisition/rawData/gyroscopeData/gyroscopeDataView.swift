@@ -21,23 +21,20 @@ struct gyroscopeDataView: View {
     @State private var canControlSamplingRate = false
     @State private var showingAuthenticationError = false
     
+    @State private var showingInfo = false
+    // New state to trigger the graph refresh
+    @State private var refreshGraph = UUID()
+    
     var body: some View {
         VStack {
-            Text("Gyroscope")
-                .font(.title)
-                .foregroundStyle(Color.primary)
-                .padding(.top, 5)
             Spacer()
             
             if motionManager.gyroscopeData.last != nil {
-                Text("Gyroscope Data")
-                    .font(.title2)
-                    .foregroundStyle(Color.pink)
-                    .padding()
+                
             } else {
-                Text("Set the desired Time")
+                Text("No data")
                     .padding()
-                    .font(.headline)
+                    .font(.title3)
                     .foregroundStyle(Color.secondary)
                     .multilineTextAlignment(.center)
             }
@@ -50,7 +47,7 @@ struct gyroscopeDataView: View {
                         .foregroundStyle(Color.gray)
                 }
                 GyroscopeGraphView(dataPoints: motionManager.gyroscopeDataPointsX, lineColor: .red.opacity(0.5))
-                    .frame(height: 90)
+                    .frame(height: 100)
                 
                 if motionManager.gyroscopeData.last != nil {
                     Text("Y-Axis")
@@ -58,7 +55,7 @@ struct gyroscopeDataView: View {
                         .foregroundStyle(Color.gray)
                 }
                 GyroscopeGraphView(dataPoints: motionManager.gyroscopeDataPointsY, lineColor: .green.opacity(0.5))
-                    .frame(height: 90)
+                    .frame(height: 100)
                 
                 if motionManager.gyroscopeData.last != nil {
                     Text("Z-Axis")
@@ -66,8 +63,11 @@ struct gyroscopeDataView: View {
                         .foregroundStyle(Color.gray)
                 }
                 GyroscopeGraphView(dataPoints: motionManager.gyroscopeDataPointsZ, lineColor: .blue.opacity(0.5))
-                    .frame(height: 90)
+                    .frame(height: 100)
             }
+            
+            Spacer()
+            Spacer()
             
             if !isRecording && !isRecordingInterval && !isRecordingRealTime {
                 VStack {
@@ -109,12 +109,18 @@ struct gyroscopeDataView: View {
                     .font(.caption2)
             }
             
-            HStack {
+            HStack(alignment: .bottom) {
                 Toggle("Real-Time", isOn: $isRecordingRealTime)
                     .onChange(of: isRecordingRealTime) { _, newValue in
                         isRecording = false
                         motionManager.stopGyroscopeDataCollection()
                         motionManager.savedFilePath = nil // Reset "File saved" text
+                        
+                        // Reset accelerometer data
+                        motionManager.gyroscopeData = []
+                        motionManager.gyroscopeDataPointsX = []
+                        motionManager.gyroscopeDataPointsY = []
+                        motionManager.gyroscopeDataPointsZ = []
                         
                         if newValue {
                             isRecordingInterval = false
@@ -127,12 +133,18 @@ struct gyroscopeDataView: View {
                         motionManager.stopGyroscopeDataCollection()
                         motionManager.savedFilePath = nil // Reset "File saved" text
                         
+                        // Reset accelerometer data
+                        motionManager.gyroscopeData = []
+                        motionManager.gyroscopeDataPointsX = []
+                        motionManager.gyroscopeDataPointsY = []
+                        motionManager.gyroscopeDataPointsZ = []
+                        
                         if newValue {
                             isRecordingRealTime = false
                         }
                     }
             }
-            .padding()
+            .padding(.horizontal)
             
             VStack {
                 if isRecordingInterval && !isRecording {
@@ -142,7 +154,7 @@ struct gyroscopeDataView: View {
                     DatePicker("End Date and Time", selection: $endDate)
                         .datePickerStyle(CompactDatePickerStyle())
                 }
-                HStack {
+                HStack(alignment: .bottom) {
                     if isRecordingInterval {
                         Toggle(isOn: $isRecording) {
                             Text(isRecording ? "Data will be fetched according to set time interval" : "Start timed recording")
@@ -180,7 +192,7 @@ struct gyroscopeDataView: View {
                     }
                 }
                 
-                HStack {
+                HStack(alignment: .bottom) {
                     if isRecordingRealTime {
                         Button(action: {
                             motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
@@ -215,6 +227,42 @@ struct gyroscopeDataView: View {
                 }
             }
             .padding()
+        }
+        .navigationTitle("Gyroscope")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingInfo.toggle()
+                }) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.blue)
+                }
+                .sheet(isPresented: $showingInfo) {
+                    VStack {
+                        Text("Data Information")
+                            .font(.largeTitle)
+                        Text("SAMPLING RATE CONTROL can only be accessed by authorized personal")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                        Text("REAL-TIME record the data immediately and stop on-demand")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                        Text("TIME-INTERVAL record the data automatically. Set the start and end date, turn on the Start timed recording, and the recording will stop automatically after the end time is up")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                    }
+                    .padding()
+                }
+            }
         }
     }
     

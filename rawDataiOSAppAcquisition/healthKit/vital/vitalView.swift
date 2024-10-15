@@ -27,6 +27,10 @@ struct vitalView: View {
     
     @State private var savedFilePath: String? = nil
     
+    @State private var showingInfo = false
+    // New state to trigger the graph refresh
+    @State private var refreshGraph = UUID()
+    
     // State variable to control sheet presentation
     @State private var showingHeartRateChart = false
     
@@ -36,10 +40,6 @@ struct vitalView: View {
     
     var body: some View {
         VStack {
-            Text("Vital Health Data")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
             
             ScrollView(.vertical) {
                 VStack(spacing: 10) {
@@ -91,6 +91,29 @@ struct vitalView: View {
             }
         }
         .padding()
+        .navigationTitle("Vital Health Data")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingInfo.toggle()
+                }) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.blue)
+                }
+                .sheet(isPresented: $showingInfo) {
+                    VStack {
+                        Text("Data Information")
+                            .font(.largeTitle)
+                        Text("Start and End date can only fetch the history or collected data from iOS Health App and not collecting future or unrecorded data.")
+                            .font(.body)
+                            .padding()
+                            .padding()
+                            .foregroundStyle(Color.primary)
+                    }
+                    .padding()
+                }
+            }
+        }
     }
     
     @ViewBuilder

@@ -20,23 +20,20 @@ struct magnetometerDataView: View {
     @State private var canControlSamplingRate = false
     @State private var showingAuthenticationError = false
     
+    @State private var showingInfo = false
+    // New state to trigger the graph refresh
+    @State private var refreshGraph = UUID()
+    
     var body: some View {
         VStack {
-            Text("Magnetometer")
-                .font(.title)
-                .foregroundStyle(Color.primary)
-                .padding(.top, 5)
             Spacer()
             
             if motionManager.magnetometerData.last != nil {
-                Text("Magnetometer Data")
-                    .font(.title2)
-                    .foregroundStyle(Color.pink)
-                    .padding()
+                
             } else {
-                Text("Set the desired Time")
+                Text("No data")
                     .padding()
-                    .font(.headline)
+                    .font(.title3)
                     .foregroundStyle(Color.secondary)
                     .multilineTextAlignment(.center)
             }
@@ -49,7 +46,7 @@ struct magnetometerDataView: View {
                         .foregroundStyle(Color.gray)
                 }
                 MagnetometerGraphView(dataPoints: motionManager.magnetometerDataPointsX, lineColor: .red.opacity(0.5))
-                    .frame(height: 90)
+                    .frame(height: 100)
                 
                 if motionManager.magnetometerData.last != nil {
                     Text("Y-Axis")
@@ -57,7 +54,7 @@ struct magnetometerDataView: View {
                         .foregroundStyle(Color.gray)
                 }
                 MagnetometerGraphView(dataPoints: motionManager.magnetometerDataPointsY, lineColor: .green.opacity(0.5))
-                    .frame(height: 90)
+                    .frame(height: 100)
                 
                 if motionManager.magnetometerData.last != nil {
                     Text("Z-Axis")
@@ -65,8 +62,11 @@ struct magnetometerDataView: View {
                         .foregroundStyle(Color.gray)
                 }
                 MagnetometerGraphView(dataPoints: motionManager.magnetometerDataPointsZ, lineColor: .blue.opacity(0.5))
-                    .frame(height: 90)
+                    .frame(height: 100)
             }
+            
+            Spacer()
+            Spacer()
             
             if !isRecording && !isRecordingInterval && !isRecordingRealTime {
                 VStack {
@@ -108,12 +108,18 @@ struct magnetometerDataView: View {
                     .font(.caption2)
             }
             
-            HStack {
+            HStack(alignment: .bottom) {
                 Toggle("Real-Time", isOn: $isRecordingRealTime)
                     .onChange(of: isRecordingRealTime) { _, newValue in
                         isRecording = false
                         motionManager.stopMagnetometerDataCollection()
                         motionManager.savedFilePath = nil // Reset "File saved" text
+                        
+                        // Reset accelerometer data
+                        motionManager.magnetometerData = []
+                        motionManager.magnetometerDataPointsX = []
+                        motionManager.magnetometerDataPointsY = []
+                        motionManager.magnetometerDataPointsZ = []
                         
                         if newValue {
                             isRecordingInterval = false
@@ -142,7 +148,7 @@ struct magnetometerDataView: View {
                         .datePickerStyle(CompactDatePickerStyle())
                 }
                 
-                HStack {
+                HStack(alignment: .bottom) {
                     if isRecordingInterval {
                         Toggle(isOn: $isRecording) {
                             Text(isRecording ? "Data will be fetched according to set time interval" : "Start timed recording")
@@ -176,11 +182,12 @@ struct magnetometerDataView: View {
                             Text("File saved")
                                 .font(.footnote)
                                 .foregroundStyle(Color(.blue))
+                                .padding()
                         }
                     }
                 }
                 
-                HStack {
+                HStack(alignment: .bottom) {
                     if isRecordingRealTime {
                         Button(action: {
                             motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
@@ -210,11 +217,49 @@ struct magnetometerDataView: View {
                         if motionManager.savedFilePath != nil {
                             Text("File saved")
                                 .font(.footnote)
+                                .foregroundStyle(Color.blue)
+                                .padding()
                         }
                     }
                 }
             }
             .padding()
+        }
+        .navigationTitle("Magnetometer")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingInfo.toggle()
+                }) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.blue)
+                }
+                .sheet(isPresented: $showingInfo) {
+                    VStack {
+                        Text("Data Information")
+                            .font(.largeTitle)
+                        Text("SAMPLING RATE CONTROL can only be accessed by authorized personal")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                        Text("REAL-TIME record the data immediately and stop on-demand")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                        Text("TIME-INTERVAL record the data automatically. Set the start and end date, turn on the Start timed recording, and the recording will stop automatically after the end time is up")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                    }
+                    .padding()
+                }
+            }
         }
     }
     

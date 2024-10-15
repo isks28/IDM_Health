@@ -20,9 +20,13 @@ struct StepCountView: View {
     @State private var showingAuthenticationError = false
     @State private var timer: Timer? // Timer to update current pace and cadence
     
+    @State private var showingInfo = false
+    // New state to trigger the graph refresh
+    @State private var refreshGraph = UUID()
+    
     var body: some View {
         VStack {
-            Text("Put the phone in the pocket after setting the time and start walking")
+            Text("Put the phone in the pocket after clicking start")
                 .font(.title3)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.secondary)
@@ -245,6 +249,42 @@ struct StepCountView: View {
                 }
             }
             .padding()
+        }
+        .navigationTitle("Step Counts")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingInfo.toggle()
+                }) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.blue)
+                }
+                .sheet(isPresented: $showingInfo) {
+                    VStack {
+                        Text("Data Information")
+                            .font(.largeTitle)
+                        Text("SAMPLING RATE CONTROL can only be accessed by authorized personal")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                        Text("REAL-TIME record the data immediately and stop on-demand")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                        Text("TIME-INTERVAL record the data automatically. Set the start and end date, turn on the Start timed recording, and the recording will stop automatically after the end time is up")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.primary)
+                    }
+                    .padding()
+                }
+            }
         }
     }
     
