@@ -47,8 +47,8 @@ struct vitalView: View {
                 }
                 .padding()
             }
-            Text("Set Start and End-Date of Data to be fetched:")
-                .font(.headline)
+            Text("Set Start and End-Date to fetched available data:")
+                .font(.subheadline)
             
             DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
                 .onChange(of: startDate) { _, newDate in

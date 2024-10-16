@@ -8,5 +8,5 @@
 import Foundation
 
 struct ServerConfig {
-    static let serverURL = URL(string: "http://172.17.218.179:8888")!
+    static let serverURL = URL(string: "http://137.248.250.41:1234")!
 }

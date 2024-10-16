@@ -91,6 +91,7 @@ struct activityView: View {
                     if isRecording {
                         // Define the server URL
                         let serverURL = ServerConfig.serverURL
+                        print("serverURL is \(serverURL)")
                         
                         // Call saveDataAsCSV with the server URL
                         healthKitManager.saveDataAsCSV(serverURL: serverURL)
