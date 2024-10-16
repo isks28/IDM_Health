@@ -193,7 +193,7 @@ struct ChartWithTimeFramePicker: View {
     var startDate: Date
     var endDate: Date
 
-    @State private var selectedTimeFrame: TimeFrame = .daily
+    @State private var selectedTimeFrame: TimeFrame = .yearly
     @State private var currentPageForTimeFrames: [TimeFrame: Int] = [
         .daily: 0,
         .weekly: 0,

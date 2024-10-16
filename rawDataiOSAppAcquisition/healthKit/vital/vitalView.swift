@@ -163,7 +163,7 @@ struct VitalChartWithTimeFramePicker: View {
     var startDate: Date
     var endDate: Date
     
-    @State private var selectedTimeFrameVital: TimeFrameVital = .daily
+    @State private var selectedTimeFrameVital: TimeFrameVital = .yearly
     @State private var currentPageForTimeFramesVital: [TimeFrameVital: Int] = [
         .hourly: 0,
         .daily: 0,

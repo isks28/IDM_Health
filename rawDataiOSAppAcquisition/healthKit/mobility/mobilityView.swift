@@ -185,7 +185,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
     var startDate: Date
     var endDate: Date
 
-    @State private var selectedTimeFrameMobility: TimeFrameMobility = .daily
+    @State private var selectedTimeFrameMobility: TimeFrameMobility = .yearly
     @State private var currentPageForTimeFrameMobilitys: [TimeFrameMobility: Int] = [
         .daily: 0,
         .weekly: 0,
