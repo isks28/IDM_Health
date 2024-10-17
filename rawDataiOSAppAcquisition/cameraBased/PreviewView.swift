@@ -12,45 +12,54 @@ struct PreviewView: View {
     var image: UIImage?
     var videoURL: URL?
     var onDismiss: () -> Void
-    var onSaveAndUpload: (UIImage?, URL?) -> Void  // New callback for saving and uploading
+    var onSaveAndUpload: (UIImage?, URL?) -> Void
+    
+    @State private var player: AVPlayer?  // State to hold the AVPlayer instance
     
     var body: some View {
         ZStack {
-            Color(UIColor.black).edgesIgnoringSafeArea(.all)
-            
-            if let image = image {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let videoURL = videoURL {
-                VideoPlayer(player: AVPlayer(url: videoURL))
-                    .background(Color(UIColor.systemBackground))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .onAppear {
-                        AVPlayer(url: videoURL).play()
-                    }
-            }
-            
+        
             VStack {
-                Text("Preview screen")
-                    .font(.largeTitle)
-                    .foregroundStyle(Color.white)
-                    .padding(.top, 100)
-                Spacer()
+                
+                Text("Preview View")
+                    .foregroundColor(.white)
+                    .font(.headline)
+                
+                // Define a consistent frame size
+                let frameSize: CGFloat = 390
+                
+                if let image = image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: frameSize, height: frameSize) // Apply consistent frame size
+                } else if videoURL != nil {
+                    if let player = player {
+                        VideoPlayer(player: player)
+                            .frame(width: frameSize, height: frameSize) // Apply consistent frame size
+                            .aspectRatio(contentMode: .fit)
+                            .onAppear {
+                                player.play()  // Automatically play the video on appear
+                            }
+                            .onDisappear {
+                                player.pause()  // Pause the video when view disappears
+                            }
+                    }
+                }
+                
                 HStack {
                     // Retake Button
                     Button(action: onDismiss) {
                         Text("Retake")
                             .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(.primary)
                             .padding(.vertical, 5)
                             .padding(.horizontal, 15)
                             .background(Color.white)
                             .cornerRadius(25)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color.red, lineWidth: 2)
+                                    .stroke(Color.red.opacity(0.25), lineWidth: 2)
                             )
                     }
                     .padding(.horizontal, 20)
@@ -61,19 +70,23 @@ struct PreviewView: View {
                     }) {
                         Text("Save and Upload")
                             .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(.primary)
                             .padding(.vertical, 5)
                             .padding(.horizontal, 15)
                             .background(Color.white)
                             .cornerRadius(25)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color.blue, lineWidth: 2)
+                                    .stroke(Color.blue.opacity(0.25), lineWidth: 2)
                             )
                     }
                     .padding(.horizontal, 20)
                 }
-                .padding(.bottom, 116) // Adjust padding as needed for UI
+            }
+        }
+        .onAppear {
+            if let videoURL = videoURL {
+                player = AVPlayer(url: videoURL)  // Initialize the player once when the view appears
             }
         }
     }

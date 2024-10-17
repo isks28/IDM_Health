@@ -263,12 +263,6 @@ struct StepCountView: View {
                     VStack {
                         Text("Data Information")
                             .font(.largeTitle)
-                        Text("SAMPLING RATE CONTROL can only be accessed by authorized personal")
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .padding(.vertical, 5)
-                            .padding(.horizontal, 5)
-                            .foregroundStyle(Color.primary)
                         Text("REAL-TIME record the data immediately and stop on-demand")
                             .font(.body)
                             .multilineTextAlignment(.center)

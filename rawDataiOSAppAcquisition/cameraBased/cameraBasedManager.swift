@@ -45,7 +45,10 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
             captureSession.addOutput(videoOutput!)
         }
         
-        captureSession.startRunning()
+        // Start capture session on a background thread
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.captureSession.startRunning()
+        }
     }
     
     private func configurePreviewLayer() {
@@ -97,5 +100,3 @@ extension CameraBasedManager: AVCapturePhotoCaptureDelegate {
         onPhotoCaptured?(image)  // Pass the photo to the view for preview
     }
 }
-
-

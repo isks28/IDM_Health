@@ -35,6 +35,9 @@ struct processedDataView: View {
                     Text("Step Counts")
                         .foregroundStyle(Color.primary)
                         .font(.title)
+                    Spacer()
+                    Image(systemName: "chevron.right.2")
+                        .foregroundStyle(Color.primary)
                 }
                         .tag("StepCounts")
             }
@@ -49,9 +52,9 @@ struct processedDataView: View {
                     }
                     .sheet(isPresented: $showingInfo) {
                         VStack {
-                            Text("Data Information")
+                            Text("Processsed data Information")
                                 .font(.largeTitle)
-                            Text("Start and End date can only fetch the history or collected data from iOS Health App and not collecting future or unrecorded data.")
+                            Text("STEP COUNTS use core motion to record the user steps")
                                 .font(.body)
                                 .padding()
                                 .padding()

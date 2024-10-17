@@ -19,6 +19,7 @@ struct cameraBasedView: View {
     
     var body: some View {
         ZStack {
+            // Camera-based controller
             CameraBasedController(
                 onPhotoCaptured: { image in
                     capturedImage = image
@@ -81,8 +82,10 @@ struct cameraBasedView: View {
                         showPhoto = false
                     }
                 )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)  // Make sure it fills the available space
+                .background(Color.black.opacity(0.8))  // Add background to help distinguish it
+                .edgesIgnoringSafeArea(.all)  // Ensure it covers the entire screen
                 .transition(.move(edge: .bottom))
-                .edgesIgnoringSafeArea(.all)
             }
         }
     }

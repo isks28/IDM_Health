@@ -24,7 +24,7 @@ struct healthKitView: View {
                         .foregroundStyle(Color.primary)
                         .font(.title)
                     Spacer()
-                    Image(systemName: "arrowtriangle.right")
+                    Image(systemName: "chevron.right.2")
                         .foregroundStyle(Color.primary)
                 }
                 .tag("Activity")
@@ -39,7 +39,7 @@ struct healthKitView: View {
                         .foregroundStyle(Color.primary)
                         .font(.title)
                     Spacer()
-                    Image(systemName: "arrowtriangle.right")
+                    Image(systemName: "chevron.right.2")
                         .foregroundStyle(Color.primary)
                 }
                 .tag("Mobility")
@@ -54,7 +54,7 @@ struct healthKitView: View {
                         .foregroundStyle(Color.primary)
                         .font(.title)
                     Spacer()
-                    Image(systemName: "arrowtriangle.right")
+                    Image(systemName: "chevron.right.2")
                         .foregroundStyle(Color.primary)
                 }
                 .tag("Vital")
