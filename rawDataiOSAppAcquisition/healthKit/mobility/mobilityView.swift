@@ -231,7 +231,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
             .padding(.horizontal)
             
             Picker("Time Frame", selection: $selectedTimeFrameMobility) {
-                ForEach(getAvailableTimeFrames(for: title), id: \.self) { timeFrame in
+                ForEach(TimeFrameMobility.allCases, id: \.self) { timeFrame in
                     Text(timeFrame.rawValue).tag(timeFrame)
                 }
             }
@@ -240,101 +240,103 @@ struct ChartWithTimeFrameMobilityPicker: View {
                 updateFilteredData()
             }
             
-            Button(action: {
-                showDatePicker = true
-            }) {
-                Text(getTitleForCurrentPage(TimeFrameMobility: selectedTimeFrameMobility, page: currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0, startDate: startDate, endDate: endDate))
-                    .font(.title2)
-            }
-            .sheet(isPresented: $showDatePicker) {
-                VStack {
-                    if selectedTimeFrameMobility == .yearly {
-                        // Yearly: Restrict to year-only
-                        DatePicker("Select Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: .date)
-                            .datePickerStyle(WheelDatePickerStyle())
-                            .labelsHidden()
-                            .onChange(of: selectedDate) { _, newDate in
-                                let calendar = Calendar.current
-                                if let selectedYear = calendar.dateComponents([.year], from: newDate).year {
-                                    // Set the date to January 1st of the selected year
-                                    selectedDate = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1)) ?? newDate
-                                    jumpToPage(for: selectedDate)
-                                }
-                            }
-                    } else if selectedTimeFrameMobility == .monthly || selectedTimeFrameMobility == .sixMonths {
-                        // Monthly and SixMonths: Restrict to month and year
-                        DatePicker("Select Month and Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
-                            .datePickerStyle(WheelDatePickerStyle())
-                            .labelsHidden()
-                            .onChange(of: selectedDate) { _, newDate in
-                                let calendar = Calendar.current
-                                let timeZone = TimeZone.current
-                                
-                                // Log the selected date before any modification
-                                print("Newly selected date before any adjustments: \(newDate)")
-                                
-                                // Get the year and month of the selected date directly
-                                var components = calendar.dateComponents([.year, .month], from: newDate)
-                                
-                                if let selectedYear = components.year, let selectedMonth = components.month {
-                                    
-                                    // Log the components before setting the new date
-                                    print("Selected Year: \(selectedYear), Selected Month: \(selectedMonth)")
-                                    
-                                    // Force the selected date to be the 1st of the month and set the time to midday (to avoid time zone issues)
-                                    components.day = 1
-                                    components.hour = 23
-                                    components.minute = 0
-                                    components.second = 0
-                                    components.timeZone = timeZone
-                                    
-                                    if let adjustedDate = calendar.date(from: components) {
-                                        
-                                        // Log the newly adjusted date
-                                        print("Adjusted Date to first of the month: \(adjustedDate)")
-                                        
-                                        // Update the selected date and jump to the corresponding page
-                                        selectedDate = adjustedDate
-                                        jumpToPage(for: selectedDate)
-                                    } else {
-                                        print("Failed to adjust the date correctly.")
-                                    }
-                                }
-                            }
-                    } else {
-                        // Daily and Weekly: Regular Date Picker
-                        DatePicker("Select Date", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
-                            .datePickerStyle(GraphicalDatePickerStyle())
-                            .onChange(of: selectedDate) { _, _ in
-                                jumpToPage(for: selectedDate)
-                            }
-                    }
-
-                    Button("Done") {
-                        showDatePicker = false
-                    }
-                    .foregroundStyle(Color.white)
-                    .padding() // Add padding inside the button to make the text area larger
-                    .background(Color.blue) // Set background color
-                    .cornerRadius(8) // Round the corners
-                    .padding(.horizontal, 20) // Add horizontal padding to make the button wider
-                    .padding(.vertical, 10) // Add vertical padding to make the button taller
-                }
-            }
-
-            // Display the metric sum and average
             HStack {
                 Text(getTitleForMetric(TimeFrameMobility: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue))
+                    .font(.footnote)
                     .foregroundColor(.primary)
-                + Text(": ")
+                
+                Button(action: {
+                    showDatePicker = true
+                }) {
+                    Text(getTitleForCurrentPage(TimeFrameMobility: selectedTimeFrameMobility, page: currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0, startDate: startDate, endDate: endDate))
+                        .foregroundColor(.blue)
+                        .padding(.vertical, 5)
+                        .padding(.horizontal, 10)
+                        .background(.white)
+                        .cornerRadius(25)
+                        .overlay(  // Adding black outline
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(Color.blue, lineWidth: 2)  // Outline color and width
+                        )
+                }
+                .sheet(isPresented: $showDatePicker) {
+                    VStack {
+                        if selectedTimeFrameMobility == .yearly {
+                            // Yearly: Restrict to year-only
+                            DatePicker("Select Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: .date)
+                                .datePickerStyle(WheelDatePickerStyle())
+                                .labelsHidden()
+                                .onChange(of: selectedDate) { _, newDate in
+                                    let calendar = Calendar.current
+                                    if let selectedYear = calendar.dateComponents([.year], from: newDate).year {
+                                        selectedDate = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1)) ?? newDate
+                                        jumpToPage(for: selectedDate)
+                                    }
+                                }
+                        } else if selectedTimeFrameMobility == .monthly || selectedTimeFrameMobility == .sixMonths {
+                            // Monthly and SixMonths: Restrict to month and year
+                            DatePicker("Select Month and Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
+                                .datePickerStyle(WheelDatePickerStyle())
+                                .labelsHidden()
+                                .onChange(of: selectedDate) { _, newDate in
+                                    let calendar = Calendar.current
+                                    let timeZone = TimeZone.current
+                                    
+                                    // Log the selected date before any modification
+                                    print("Newly selected date before any adjustments: \(newDate)")
+                                    
+                                    // Get the year and month of the selected date directly
+                                    var components = calendar.dateComponents([.year, .month], from: newDate)
+                                    
+                                    if let selectedYear = components.year, let selectedMonth = components.month {
+                                        
+                                        // Log the components before setting the new date
+                                        print("Selected Year: \(selectedYear), Selected Month: \(selectedMonth)")
+                                        
+                                        // Force the selected date to be the 1st of the month and set the time to midday (to avoid time zone issues)
+                                        components.day = 1
+                                        components.hour = 23
+                                        components.minute = 0
+                                        components.second = 0
+                                        components.timeZone = timeZone
+                                        
+                                        if let adjustedDate = calendar.date(from: components) {
+                                            selectedDate = adjustedDate
+                                            jumpToPage(for: selectedDate)
+                                        }
+                                    }
+                                }
+                        } else {
+                            // Daily and Weekly: Regular Date Picker
+                            DatePicker("Select Date", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
+                                .datePickerStyle(GraphicalDatePickerStyle())
+                                .onChange(of: selectedDate) { _, _ in
+                                    jumpToPage(for: selectedDate)
+                                }
+                        }
+
+                        Button("Done") {
+                            showDatePicker = false
+                        }
+                        .foregroundStyle(Color.white)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(8)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                    }
+                }
+
+                Text(": ")
                     .foregroundColor(.primary)
-                + Text(getValueText(timeFrame: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue, averageValue: averageValue)) // Pass averageValue here
+                
+                Text(getValueText(timeFrame: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue))
                     .foregroundColor(.pink)
             }
             .font(.headline)
             .frame(maxWidth: .infinity)
             .multilineTextAlignment(.center)
-            .padding(.horizontal, 25)
+            .padding(.horizontal, 5)
 
             // Use precomputed data for TabView
             TabView(selection: Binding(
@@ -359,7 +361,6 @@ struct ChartWithTimeFrameMobilityPicker: View {
             Spacer()
         }
         .onAppear {
-            selectedDate = endDate
             jumpToPage(for: endDate)
         }
     }
