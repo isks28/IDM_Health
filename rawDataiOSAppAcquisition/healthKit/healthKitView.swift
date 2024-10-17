@@ -76,6 +76,9 @@ struct healthKitView: View {
                                 .font(.body)
                                 .multilineTextAlignment(.center)
                                 .padding()
+                            Spacer()
+                            // Adding a chevron as a swipe indicator
+                            AnimatedSwipeDownCloseView()
                         }
                         .padding()
                     }

@@ -56,6 +56,9 @@ struct processedDataView: View {
                                 .padding()
                                 .padding()
                                 .foregroundStyle(Color.primary)
+                            Spacer()
+                            // Adding a chevron as a swipe indicator
+                            AnimatedSwipeDownCloseView()
                         }
                         .padding()
                     }

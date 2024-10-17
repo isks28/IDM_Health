@@ -356,6 +356,9 @@ struct rawDataAllView: View {
                             .padding(.vertical, 5)
                             .padding(.horizontal, 5)
                             .foregroundStyle(Color.primary)
+                        Spacer()
+                        // Adding a chevron as a swipe indicator
+                        AnimatedSwipeDownCloseView()
                     }
                     .padding()
                 }
