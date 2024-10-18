@@ -85,7 +85,7 @@ struct cameraBasedView: View {
                     }
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)  // Make sure it fills the available space
-                .background(Color.black.opacity(0.95))  // Add background to help distinguish it
+                .background(Color.black.opacity(0.92))  // Add background to help distinguish it
                 .edgesIgnoringSafeArea(.all)  // Ensure it covers the entire screen
                 .transition(.move(edge: .bottom))
             }
