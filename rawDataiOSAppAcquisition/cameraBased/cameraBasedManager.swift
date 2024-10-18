@@ -54,7 +54,8 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
     private func configurePreviewLayer() {
         videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
         videoPreviewLayer.videoGravity = .resizeAspect
-        videoPreviewLayer.frame = view.layer.bounds
+        videoPreviewLayer.frame = view.bounds
+        videoPreviewLayer.borderWidth = 0.5
         view.layer.addSublayer(videoPreviewLayer)
     }
     

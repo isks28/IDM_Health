@@ -18,7 +18,7 @@ struct cameraBasedView: View {
     var serverURL: URL? // Server URL for uploading
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .center) {
             // Camera-based controller
             CameraBasedController(
                 onPhotoCaptured: { image in
@@ -36,6 +36,8 @@ struct cameraBasedView: View {
                 isRecording: $isRecording,
                 shouldTakePhoto: $shouldTakePhoto
             )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .zIndex(0)
             .edgesIgnoringSafeArea(.all)
             
             // Flash overlay
@@ -83,7 +85,7 @@ struct cameraBasedView: View {
                     }
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)  // Make sure it fills the available space
-                .background(Color.black.opacity(0.8))  // Add background to help distinguish it
+                .background(Color.black.opacity(0.95))  // Add background to help distinguish it
                 .edgesIgnoringSafeArea(.all)  // Ensure it covers the entire screen
                 .transition(.move(edge: .bottom))
             }

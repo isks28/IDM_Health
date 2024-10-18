@@ -59,7 +59,7 @@ struct PreviewView: View {
                             .cornerRadius(25)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color.red.opacity(0.25), lineWidth: 2)
+                                    .stroke(Color.red.opacity(0.5), lineWidth: 2)
                             )
                     }
                     .padding(.horizontal, 20)
@@ -77,7 +77,7 @@ struct PreviewView: View {
                             .cornerRadius(25)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color.blue.opacity(0.25), lineWidth: 2)
+                                    .stroke(Color.blue.opacity(0.5), lineWidth: 2)
                             )
                     }
                     .padding(.horizontal, 20)
