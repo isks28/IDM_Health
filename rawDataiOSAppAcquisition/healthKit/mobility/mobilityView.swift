@@ -211,7 +211,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
         VStack {
             HStack {
                 Text(getInformationText())
-                    .font(.headline)
+                    .font(.footnote)
                     .foregroundStyle(Color.secondary)
                     .multilineTextAlignment(.center)
                     .padding(2)
@@ -241,25 +241,25 @@ struct ChartWithTimeFrameMobilityPicker: View {
             }
             
             HStack {
-                Text(getTitleForMetric(TimeFrameMobility: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue))
-                    .font(.footnote)
-                    .foregroundColor(.primary)
-                
-                Button(action: {
-                    showDatePicker = true
-                }) {
-                    Text(getTitleForCurrentPage(TimeFrameMobility: selectedTimeFrameMobility, page: currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0, startDate: startDate, endDate: endDate))
-                        .foregroundColor(.blue)
-                        .padding(.vertical, 5)
-                        .padding(.horizontal, 10)
-                        .background(.white)
-                        .cornerRadius(25)
-                        .overlay(  // Adding black outline
-                            RoundedRectangle(cornerRadius: 25)
-                                .stroke(Color.blue, lineWidth: 2)  // Outline color and width
-                        )
-                }
-                .sheet(isPresented: $showDatePicker) {
+                Text(getTitleForMetric(TimeFrameMobility: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
+                        .font(.footnote)
+                        .foregroundColor(.primary)
+                    
+                    Button(action: {
+                        showDatePicker = true
+                    }) {
+                        Text(getTitleForCurrentPage(TimeFrameMobility: selectedTimeFrameMobility, page: currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0, startDate: startDate, endDate: endDate))
+                            .foregroundColor(.blue)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 10)
+                            .background(.white)
+                            .cornerRadius(25)
+                            .overlay(  // Adding black outline
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(Color.blue, lineWidth: 2)  // Outline color and width
+                            )
+                    }
+                    .sheet(isPresented: $showDatePicker) {
                     VStack {
                         if selectedTimeFrameMobility == .yearly {
                             // Yearly: Restrict to year-only
@@ -328,15 +328,18 @@ struct ChartWithTimeFrameMobilityPicker: View {
                 }
 
                 Text(": ")
-                    .foregroundColor(.primary)
+                        .foregroundColor(.primary)
+                    
+                    Text(getValueText(timeFrame: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
+                        .foregroundColor(.pink)
                 
-                Text(getValueText(timeFrame: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue))
+                Text(getUnitForMetric(title: title))
                     .foregroundColor(.pink)
-            }
-            .font(.headline)
-            .frame(maxWidth: .infinity)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 5)
+                }
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 5)
 
             // Use precomputed data for TabView
             TabView(selection: Binding(
@@ -458,27 +461,20 @@ struct ChartWithTimeFrameMobilityPicker: View {
         }
     }
 
-    private func getValueText(timeFrame: TimeFrameMobility, minValue: Double, maxValue: Double, averageValue: Double = 0) -> String {
-        let unit = getUnitForMetric(title: title) // Get the unit based on the title
-
-        // Special case for "Walking Asymmetry" to show only the average value
-        if title == "Walking Asymmetry" {
-            // If the averageValue is 0, return "--"
-            return averageValue == 0 ? "-- \(unit)" : "\(String(format: "%.1f", averageValue)) \(unit)"
+    private func getValueText(timeFrame: TimeFrameMobility, minValue: Double, maxValue: Double, averageValue: Double) -> String {
+        // Check if any of the values are 0, and return "--" if they are
+        if minValue == 0 && maxValue == 0 && averageValue == 0 {
+            return "--"
         }
-
-        // Check if both minValue and maxValue are 0, return "--" if true
-        guard minValue != 0 || maxValue != 0 else {
-            return "-- \(unit)"
-        }
-
-        // If minValue equals maxValue, return only minValue for other metrics
+        
         if minValue == maxValue {
-            return "\(String(format: "%.1f", minValue)) \(unit)"
+            // If minValue equals maxValue, show only the average
+            return "\(String(format: "%.1f", averageValue))"
+        } else {
+            // Otherwise, show the range and average
+            let rangeText = "(\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)))"
+            return "\(rangeText) \(String(format: "%.1f", averageValue))"
         }
-
-        // Return formatted string showing the range between minValue and maxValue for other metrics
-        return "\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)) \(unit)"
     }
     
     private func jumpToPage(for date: Date) {
@@ -520,89 +516,14 @@ struct ChartWithTimeFrameMobilityPicker: View {
         return (minValue, maxValue, averageValue)
     }
 
-    private func getTitleForMetric(TimeFrameMobility: TimeFrameMobility, minValue: Double, maxValue: Double) -> String {
-        let description: String
-        var rangeOrValue = (minValue == maxValue) ? "Value" : "Range"  // Switch between "Range" and "Value"
+    private func getTitleForMetric(TimeFrameMobility: TimeFrameMobility, minValue: Double, maxValue: Double, averageValue: Double) -> String {
         
-        // Special case for "Walking Asymmetry" to always display "average"
-        if title == "Walking Asymmetry" {
-            rangeOrValue = "average"
+        if minValue == maxValue {
+            // If minValue == maxValue, show only the average
+            return "Average in "
+        } else {
+            return "(Range) Average in "
         }
-        
-        // Determine the data type and set the title based on the TimeFrameMobility and the min/max values
-        switch title {
-        case "Walking Double Support":
-            switch TimeFrameMobility {
-            case .daily:
-                description = "\(rangeOrValue) in this day"
-            case .weekly:
-                description = "\(rangeOrValue) in this week"
-            case .monthly:
-                description = "\(rangeOrValue) in this month"
-            case .sixMonths:
-                description = "\(rangeOrValue) in these 6 months span"
-            case .yearly:
-                description = "\(rangeOrValue) in this year"
-            }
-            
-        case "Walking Asymmetry":
-            switch TimeFrameMobility {
-            case .daily:
-                description = "\(rangeOrValue) in this day"
-            case .weekly:
-                description = "\(rangeOrValue) in this week"
-            case .monthly:
-                description = "\(rangeOrValue) in this month"
-            case .sixMonths:
-                description = "\(rangeOrValue) in these 6 months span"
-            case .yearly:
-                description = "\(rangeOrValue) in this year"
-            }
-            
-        case "Walking Step Length":
-            switch TimeFrameMobility {
-            case .daily:
-                description = "\(rangeOrValue) in this day"
-            case .weekly:
-                description = "\(rangeOrValue) in this week"
-            case .monthly:
-                description = "\(rangeOrValue) in this month"
-            case .sixMonths:
-                description = "\(rangeOrValue) in these 6 months span"
-            case .yearly:
-                description = "\(rangeOrValue) in this year"
-            }
-            
-        case "Walking Steadiness":
-            switch TimeFrameMobility {
-            case .daily:
-                description = "\(rangeOrValue) in this day"
-            case .weekly:
-                description = "\(rangeOrValue) in this week"
-            case .monthly:
-                description = "\(rangeOrValue) in this month"
-            case .sixMonths:
-                description = "\(rangeOrValue) in these 6 months span"
-            case .yearly:
-                description = "\(rangeOrValue) in this year"
-            }
-            
-        default:
-            switch TimeFrameMobility {
-            case .daily:
-                description = "\(rangeOrValue) in this day"
-            case .weekly:
-                description = "\(rangeOrValue) in this week"
-            case .monthly:
-                description = "\(rangeOrValue) in this month"
-            case .sixMonths:
-                description = "\(rangeOrValue) in these 6 months span"
-            case .yearly:
-                description = "\(rangeOrValue) in this year"
-            }
-        }
-        
-        return description
     }
     
     // Helper function to display different text based on the selected data section
@@ -1047,9 +968,6 @@ struct BoxChartViewMobility: View {
                         }
                     }
                 }
-                
-                Text(getDynamicTitle())
-                    .font(.callout)
 
                 // Scrollable List of Data below the chart
                 ScrollView {
@@ -1058,11 +976,29 @@ struct BoxChartViewMobility: View {
                             Text(formatDateForTimeFrame(item.date)) // Display date formatted based on time frame
                             Spacer()
                             
-                            // Show average for Walking Asymmetry
-                            if title == "Walking Asymmetry" && item.value != 0{
-                                Text("\(String(format: "%.1f", item.value)) %")
-                            } else {
-                                Text(getFormattedText(minValue: item.minValue, maxValue: item.maxValue, value: item.value))
+                            VStack {
+                                // Check if it's a range or just an average (minValue == maxValue)
+                                if item.minValue == item.maxValue {
+                                    // If minValue equals maxValue, show "Average"
+                                    Text("Average")
+                                        .font(.caption2)
+                                } else {
+                                    // Otherwise, show "(Range) Average"
+                                    Text("(Range) Average")
+                                        .font(.caption2)
+                                }
+                                
+                                // Display the value or the range, with "--" if the value is 0
+                                if title == "Walking Asymmetry" && item.value != 0 {
+                                    // Show only the average value for Walking Asymmetry
+                                    Text(item.value == 0 ? "--" : "\(String(format: "%.1f", item.value)) %")
+                                } else if item.minValue == item.maxValue {
+                                    // Show only the average value if minValue == maxValue
+                                    Text(item.value == 0 ? "--" : "\(String(format: "%.1f", item.value))")
+                                } else {
+                                    // Show the range (minValue-maxValue) with the average in parentheses
+                                    Text(item.value == 0 ? "--" : "(\(String(format: "%.1f", item.minValue))-\(String(format: "%.1f", item.maxValue))) \(String(format: "%.1f", item.value))")
+                                }
                             }
                         }
                         .padding()
@@ -1072,12 +1008,12 @@ struct BoxChartViewMobility: View {
                         .foregroundStyle(Color.primary)
                     }
                 }
-               .frame(maxHeight: 200) // Restrict the height of the scrollable list
+                .frame(maxHeight: 200)
            }
        }
-       .padding()
-       .background(Color(UIColor.secondarySystemBackground))
-       .cornerRadius(25)
+        .padding()
+        .background(Color(UIColor.secondarySystemBackground))
+        .cornerRadius(25)
    }
 
         // Helper function to format the text based on the title
@@ -1113,69 +1049,69 @@ struct BoxChartViewMobility: View {
     }
     
     // Helper function to get the dynamic title based on data type and time frame
-        private func getDynamicTitle() -> String {
-            switch title {
-            case "Walking Double Support":
-                switch timeFrame {
-                case .sixMonths:
-                    return "Daily average step counts (weekly)"
-                case .yearly:
-                    return "Daily average step counts (monthly)"
-                default:
-                    return "Step Counts"
-                }
-                
-            case "Walking Asymmetry":
-                switch timeFrame {
-                case .sixMonths:
-                    return "Daily average Active energy burned (weekly)"
-                case .yearly:
-                    return "Daily average Active energy burned (monthly)"
-                default:
-                    return "Active Energy Burned in KCal"
-                }
-                
-            case "Walking Speed":
-                switch timeFrame {
-                case .sixMonths:
-                    return "Daily average Move time (weekly)"
-                case .yearly:
-                    return "Daily average Move time (monthly)"
-                default:
-                    return "Move Time in seconds"
-                }
-                
-            case "Walking Step length":
-                switch timeFrame {
-                case .sixMonths:
-                    return "Daily average Stand time (weekly)"
-                case .yearly:
-                    return "Daily average Stand time (monthly)"
-                default:
-                    return "Stand Time in seconds"
-                }
-                
-            case "Walking Steadiness":
-                switch timeFrame {
-                case .sixMonths:
-                    return "Daily average Distance Walking/Running (weekly)"
-                case .yearly:
-                    return "Daily average Distance Walking/Running (monthly)"
-                default:
-                    return "Distance Walking/Running in meters"
-                }
-                
-            default:
-                switch timeFrame {
-                case .sixMonths:
-                    return "6-Month Data Overview"
-                case .yearly:
-                    return "Yearly Data Overview"
-                default:
-                    return "Data"
-                }
-            }
-        }
+//        private func getDynamicTitle() -> String {
+//            switch title {
+//            case "Walking Double Support":
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "Daily average step counts (weekly)"
+//                case .yearly:
+//                    return "Daily average step counts (monthly)"
+//                default:
+//                    return "Step Counts"
+//                }
+//                
+//            case "Walking Asymmetry":
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "Daily average Active energy burned (weekly)"
+//                case .yearly:
+//                    return "Daily average Active energy burned (monthly)"
+//                default:
+//                    return "Active Energy Burned in KCal"
+//                }
+//                
+//            case "Walking Speed":
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "Daily average Move time (weekly)"
+//                case .yearly:
+//                    return "Daily average Move time (monthly)"
+//                default:
+//                    return "Move Time in seconds"
+//                }
+//                
+//            case "Walking Step length":
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "Daily average Stand time (weekly)"
+//                case .yearly:
+//                    return "Daily average Stand time (monthly)"
+//                default:
+//                    return "Stand Time in seconds"
+//                }
+//                
+//            case "Walking Steadiness":
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "Daily average Distance Walking/Running (weekly)"
+//                case .yearly:
+//                    return "Daily average Distance Walking/Running (monthly)"
+//                default:
+//                    return "Distance Walking/Running in meters"
+//                }
+//                
+//            default:
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "6-Month Data Overview"
+//                case .yearly:
+//                    return "Yearly Data Overview"
+//                default:
+//                    return "Data"
+//                }
+//            }
+//        }
     
     // Function to get the offset based on the time frame. Offset to set the position of the X-Axis Label
     private func getOffsetForTimeFrame(_ timeFrame: TimeFrameMobility) -> CGFloat {

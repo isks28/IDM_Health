@@ -131,57 +131,65 @@ class ActivityManager: ObservableObject {
     
     func saveDataAsCSV(serverURL: URL) {
         backgroundQueue.async {
-            self.saveCSV(for: self.stepCountData, fileName: "step_count_data.csv", valueUnit: HKUnit.count(), unitLabel: "Count", serverURL: serverURL, baseFolder: self.baseFolder)
-            self.saveCSV(for: self.activeEnergyBurnedData, fileName: "active_energy_burned_data.csv", valueUnit: HKUnit.largeCalorie(), multiplier: 1.0, unitLabel: "Kilo Calories", serverURL: serverURL, baseFolder: self.baseFolder)
-            self.saveCSV(for: self.appleMoveTimeData, fileName: "move_time_data.csv", valueUnit: HKUnit.minute(), unitLabel: "Minutes", serverURL: serverURL, baseFolder: self.baseFolder)
-            self.saveCSV(for: self.appleStandTimeData, fileName: "apple_stand_time_data.csv", valueUnit: HKUnit.minute(), unitLabel: "Minutes", serverURL: serverURL, baseFolder: self.baseFolder)
-            self.saveCSV(for: self.distanceWalkingRunningData, fileName: "distance_walking_running_data.csv", valueUnit: HKUnit.meterUnit(with: .kilo), unitLabel: "KiloMeters", serverURL: serverURL, baseFolder: self.baseFolder)
-            self.saveCSV(for: self.appleExerciseTimeData, fileName: "exercise_time_data.csv", valueUnit: HKUnit.minute(), unitLabel: "Minutes", serverURL: serverURL, baseFolder: self.baseFolder)
+            self.saveCSV(for: self.stepCountData , fileName: "step_count_data.csv", valueUnit: HKUnit.count(), unitLabel: "Step Counts", serverURL: serverURL, baseFolder: self.baseFolder, shouldRound: true)
+            self.saveCSV(for: self.activeEnergyBurnedData, fileName: "active_energy_burned_data.csv", valueUnit: HKUnit.largeCalorie(), multiplier: 1.0, unitLabel: "Kilo Calories", serverURL: serverURL, baseFolder: self.baseFolder, shouldRound: false)
+            self.saveCSV(for: self.appleMoveTimeData, fileName: "move_time_data.csv", valueUnit: HKUnit.minute(), unitLabel: "Minutes", serverURL: serverURL, baseFolder: self.baseFolder, shouldRound: true)
+            self.saveCSV(for: self.appleStandTimeData, fileName: "apple_stand_time_data.csv", valueUnit: HKUnit.minute(), unitLabel: "Minutes", serverURL: serverURL, baseFolder: self.baseFolder, shouldRound: true)
+            self.saveCSV(for: self.distanceWalkingRunningData, fileName: "distance_walking_running_data.csv", valueUnit: HKUnit.meterUnit(with: .kilo), unitLabel: "Kilometers", serverURL: serverURL, baseFolder: self.baseFolder, shouldRound: false)
+            self.saveCSV(for: self.appleExerciseTimeData, fileName: "exercise_time_data.csv", valueUnit: HKUnit.minute(), unitLabel: "Minutes", serverURL: serverURL, baseFolder: self.baseFolder, shouldRound: true)
         }
     }
     
-    private func saveCSV(for samples: [HKQuantitySample], fileName: String, valueUnit: HKUnit, multiplier: Double = 1.0, unitLabel: String, serverURL: URL, baseFolder: String) {
-            var csvString = "Recorded Date and Time,Value (\(unitLabel))\n"
+    private func saveCSV(for samples: [HKQuantitySample], fileName: String, valueUnit: HKUnit, multiplier: Double = 1.0, unitLabel: String, serverURL: URL, baseFolder: String, shouldRound: Bool = false) {
+        var csvString = "Recorded Date and Time,Value (\(unitLabel))\n"
+        
+        let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.timeZone = TimeZone.current
+        
+        for sample in samples {
+            let value = sample.quantity.doubleValue(for: valueUnit) * multiplier
+            let finalValue: String
             
-            let dateFormatter = ISO8601DateFormatter()
-            dateFormatter.timeZone = TimeZone.current
-            
-            for sample in samples {
-                let value = sample.quantity.doubleValue(for: valueUnit) * multiplier
-                let date = sample.endDate
-                let dateString = dateFormatter.string(from: date)
-                csvString += "\(dateString),\(value)\n"
+            // Check if we should round or format with zero decimal places
+            if shouldRound {
+                finalValue = "\(Int(value))"  // Convert to integer (no decimal places)
+            } else {
+                finalValue = String(format: "%.2f", value)  // Keep 2 decimal places
             }
             
-            guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-                print("Documents directory not found")
-                return
-            }
-            
-            // Use the baseFolder parameter to define where to save the file
-            let folderURL = documentsDirectory.appendingPathComponent(baseFolder)
-            
-            do {
-                try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
-            } catch {
-                print("Failed to create directory: \(error)")
-                return
-            }
-            
-            let fileURL = folderURL.appendingPathComponent(fileName)
-            
-            do {
-                try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
-                DispatchQueue.main.async {
-                    print("File saved locally at \(fileURL.path)")
-                    self.savedFilePath = fileURL.path
-                    
-                    self.uploadFile(fileURL: fileURL, serverURL: serverURL, category: self.baseFolder)
-                }
-            } catch {
-                print("Failed to save file locally: \(error)")
-            }
+            let date = sample.endDate
+            let dateString = dateFormatter.string(from: date)
+            csvString += "\(dateString),\(finalValue)\n"
         }
+        
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            print("Documents directory not found")
+            return
+        }
+        
+        let folderURL = documentsDirectory.appendingPathComponent(baseFolder)
+        
+        do {
+            try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
+        } catch {
+            print("Failed to create directory: \(error)")
+            return
+        }
+        
+        let fileURL = folderURL.appendingPathComponent(fileName)
+        
+        do {
+            try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
+            DispatchQueue.main.async {
+                print("File saved locally at \(fileURL.path)")
+                self.savedFilePath = fileURL.path
+                
+                self.uploadFile(fileURL: fileURL, serverURL: serverURL, category: self.baseFolder)
+            }
+        } catch {
+            print("Failed to save file locally: \(error)")
+        }
+    }
     
     func uploadFile(fileURL: URL, serverURL: URL, category: String) {
         var request = URLRequest(url: serverURL)

@@ -218,7 +218,7 @@ struct ChartWithTimeFramePicker: View {
         VStack {
             HStack {
                 Text(getInformationText())
-                    .font(.headline)
+                    .font(.footnote)
                     .foregroundStyle(Color.secondary)
                     .multilineTextAlignment(.center)
                     .padding(2)
@@ -527,13 +527,13 @@ struct ChartWithTimeFramePicker: View {
             case .daily:
                 description = "Total in "
             case .weekly:
-                description = "Daily average from "
+                description = "Average from "
             case .sixMonths:
                 description = "Daily average from "
             case .yearly:
                 description = "Daily average in "
             default:
-                description = "Daily average in "
+                description = "Average in "
             }
             
         case "Active Energy Burned in KiloCalorie":
@@ -541,13 +541,13 @@ struct ChartWithTimeFramePicker: View {
             case .daily:
                 description = "Total in "
             case .weekly:
-                description = "Daily average from "
+                description = "Average from "
             case .sixMonths:
                 description = "Daily average from "
             case .yearly:
                 description = "Daily average in "
             default:
-                description = "Daily average in "
+                description = "Average in "
             }
             
         case "Move Time (min)":
@@ -555,13 +555,13 @@ struct ChartWithTimeFramePicker: View {
             case .daily:
                 description = "Total in "
             case .weekly:
-                description = "Daily average from "
+                description = "Average from "
             case .sixMonths:
                 description = "Daily average from "
             case .yearly:
                 description = "Daily average in "
             default:
-                description = "Daily average in "
+                description = "Average in "
             }
             
         case "Stand Time (min)":
@@ -569,13 +569,13 @@ struct ChartWithTimeFramePicker: View {
             case .daily:
                 description = "Total in "
             case .weekly:
-                description = "Daily average from "
+                description = "Average from "
             case .sixMonths:
                 description = "Daily average from "
             case .yearly:
                 description = "Daily average in "
             default:
-                description = "Daily average in "
+                description = "Average in "
             }
             
         case "Distance Walking/Running (Km)":
@@ -583,13 +583,13 @@ struct ChartWithTimeFramePicker: View {
             case .daily:
                 description = "Total in "
             case .weekly:
-                description = "Daily average from "
+                description = "Average from "
             case .sixMonths:
                 description = "Daily average from "
             case .yearly:
                 description = "Daily average in "
             default:
-                description = "Daily average in "
+                description = "Average in "
             }
             
         case "Exercise Time (min)":
@@ -597,13 +597,13 @@ struct ChartWithTimeFramePicker: View {
             case .daily:
                 description = "Total in "
             case .weekly:
-                description = "Daily average from "
+                description = "Average from "
             case .sixMonths:
                 description = "Daily average from "
             case .yearly:
                 description = "Daily average in "
             default:
-                description = "Daily average in "
+                description = "Average in "
             }
             
         default:
@@ -611,13 +611,13 @@ struct ChartWithTimeFramePicker: View {
             case .daily:
                 description = "Total in "
             case .weekly:
-                description = "Daily average from "
+                description = "Average from "
             case .sixMonths:
                 description = "Daily average from "
             case .yearly:
                 description = "Daily average in "
             default:
-                description = "Daily average in "
+                description = "Average in "
             }
         }
         
@@ -1082,11 +1082,12 @@ struct BoxChartViewActivity: View {
 
                                     // Display the value and the unit (kcal)
                                     HStack {
-                                        Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value / 1000))")
+                                        Text(item.value == 0 ? "--" : "\(String(format: "%.0f", item.value / 1000))")
                                         Text("kcal")
                                     }
                                 }
                             }
+                            
                             if title == "Step Count" {
                                 VStack {
                                     // Check the time frame and display either "Daily average" or "Total"
@@ -1100,22 +1101,82 @@ struct BoxChartViewActivity: View {
 
                                     // Display the value and the unit (Steps)
                                     HStack {
-                                        Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value))")
+                                        Text(item.value == 0 ? "--" : "\(String(format: "%.0f", item.value))")
                                         Text("Steps")
                                     }
                                 }
                             }
+                            
                             if title == "Move Time (min)" {
-                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) Minutes")
+                                VStack {
+                                    if timeFrame == .yearly || timeFrame == .sixMonths {
+                                        Text("Daily average")
+                                            .font(.caption2)
+                                    } else {
+                                        Text("Total")
+                                            .font(.caption2)
+                                    }
+
+                                    // Display the value and the unit (Minutes)
+                                    HStack {
+                                        Text(item.value == 0 ? "--" : "\(String(format: "%.0f", item.value))")
+                                        Text("Minutes")
+                                    }
+                                }
                             }
+                            
                             if title == "Stand Time (min)" {
-                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) Mintues")
+                                VStack {
+                                    if timeFrame == .yearly || timeFrame == .sixMonths {
+                                        Text("Daily average")
+                                            .font(.caption2)
+                                    } else {
+                                        Text("Total")
+                                            .font(.caption2)
+                                    }
+
+                                    // Display the value and the unit (Minutes)
+                                    HStack {
+                                        Text(item.value == 0 ? "--" : "\(String(format: "%.0f", item.value))")
+                                        Text("Minutes")
+                                    }
+                                }
                             }
+                            
                             if title == "Distance Walking/Running (Km)" {
-                                Text("\(String(format: "%.2f", item.value.isNaN ? 0 : item.value / 1000)) Kilometers")
+                                VStack {
+                                    if timeFrame == .yearly || timeFrame == .sixMonths {
+                                        Text("Daily average")
+                                            .font(.caption2)
+                                    } else {
+                                        Text("Total")
+                                            .font(.caption2)
+                                    }
+
+                                    // Display the value and the unit (Kilometers)
+                                    HStack {
+                                        Text(item.value == 0 ? "--" : "\(String(format: "%.2f", item.value / 1000))")
+                                        Text("Kilometers")
+                                    }
+                                }
                             }
+                            
                             if title == "Exercise Time (min)" {
-                                Text("\(String(format: "%.0f", item.value.isNaN ? 0 : item.value)) Minutes")
+                                VStack {
+                                    if timeFrame == .yearly || timeFrame == .sixMonths {
+                                        Text("Daily average")
+                                            .font(.caption2)
+                                    } else {
+                                        Text("Total")
+                                            .font(.caption2)
+                                    }
+
+                                    // Display the value and the unit (Minutes)
+                                    HStack {
+                                        Text(item.value == 0 ? "--" : "\(String(format: "%.0f", item.value))")
+                                        Text("Minutes")
+                                    }
+                                }
                             }
                         }
                         .padding()

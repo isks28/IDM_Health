@@ -176,23 +176,23 @@ class HealthKitMobilityManager: ObservableObject {
     }
     
     func saveDataAsCSV(serverURL: URL) {
-        saveCSV(for: walkingDoubleSupportData, fileName: "walking_double_support_data.csv", unitLabel: "%", serverURL: serverURL, baseFolder: self.baseFolder)
-        saveCSV(for: walkingAsymmetryData, fileName: "walking_asymmetry_data.csv", unitLabel: "%", serverURL: serverURL, baseFolder: self.baseFolder)
-        saveCSV(for: walkingSpeedData, fileName: "walking_speed_data.csv", unitLabel: "km/h", serverURL: serverURL, baseFolder: self.baseFolder)
-        saveCSV(for: walkingStepLengthData, fileName: "walking_step_length_data.csv", unitLabel: "cm", serverURL: serverURL, baseFolder: self.baseFolder)
-        saveCSV(for: walkingSteadinessData, fileName: "walking_steadiness_data.csv", unitLabel: "%", serverURL: serverURL, baseFolder: self.baseFolder)
+        saveCSV(for: walkingDoubleSupportData, fileName: "walking_double_support_data.csv", unitLabel: "%", serverURL: serverURL, baseFolder: self.baseFolder, decimalPlaces: 1)
+        saveCSV(for: walkingAsymmetryData, fileName: "walking_asymmetry_data.csv", unitLabel: "%", serverURL: serverURL, baseFolder: self.baseFolder, decimalPlaces: 0)
+        saveCSV(for: walkingSpeedData, fileName: "walking_speed_data.csv", unitLabel: "km/h", serverURL: serverURL, baseFolder: self.baseFolder, decimalPlaces: 2)
+        saveCSV(for: walkingStepLengthData, fileName: "walking_step_length_data.csv", unitLabel: "cm", serverURL: serverURL, baseFolder: self.baseFolder, decimalPlaces: 0)
+        saveCSV(for: walkingSteadinessData, fileName: "walking_steadiness_data.csv", unitLabel: "%", serverURL: serverURL, baseFolder: self.baseFolder, decimalPlaces: 2)
     }
-    
-    private func saveCSV(for samples: [MobilityStatistics], fileName: String, unitLabel: String, serverURL: URL, baseFolder: String) {
-        var csvString = "Recorded Date and Time,Value (\(unitLabel))\n"  // Updated header to only include the value
+
+    private func saveCSV(for samples: [MobilityStatistics], fileName: String, unitLabel: String, serverURL: URL, baseFolder: String, decimalPlaces: Int) {
+        var csvString = "Recorded Date and Time,Value (\(unitLabel))\n"
         
         let dateFormatter = ISO8601DateFormatter()
         dateFormatter.timeZone = TimeZone.current
         
         for sample in samples {
-            // Use endDate when generating the CSV string
             let dateString = dateFormatter.string(from: sample.endDate)
-            let value = String(format: "%.2f", sample.averageValue)  // Assuming `averageValue` holds the desired value
+            let formatString = "%.\(decimalPlaces)f"  // Format the value based on the decimal places
+            let value = String(format: formatString, sample.averageValue.isNaN ? 0 : sample.averageValue)  // Handle NaN and format value
             csvString += "\(dateString),\(value)\n"
         }
         
@@ -201,7 +201,6 @@ class HealthKitMobilityManager: ObservableObject {
             return
         }
         
-        // Use the baseFolder parameter to define where to save the file (e.g., "ActivityData" or "MobilityData")
         let folderURL = documentsDirectory.appendingPathComponent(baseFolder)
         
         do {
@@ -213,13 +212,11 @@ class HealthKitMobilityManager: ObservableObject {
         
         let fileURL = folderURL.appendingPathComponent(fileName)
         
-        // Save the CSV file locally
         do {
             try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
             print("File saved locally at \(fileURL.path)")
             savedFilePath = fileURL.path
             
-            // After saving locally, upload the file to the web server
             self.uploadFile(fileURL: fileURL, serverURL: serverURL, category: baseFolder)
         } catch {
             print("Failed to save file locally: \(error)")
