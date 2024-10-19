@@ -934,78 +934,90 @@ struct BoxChartViewVital: View {
                 }
 
                 // Scrollable List of Data below the chart
-                Text(getDynamicTitle())
-                    .font(.callout)
+                ScrollView {
+                    ForEach(timeFrame == .weekly ? Array(data.prefix(7)) : data) { item in
+                        HStack {
+                            Text(formatDateForTimeFrame(item.date)) // Display date formatted based on time frame
+                            Spacer()
+                            
+                            VStack {
+                                // Check if it's a range or just an average (minValue == maxValue)
+                                if item.minValue == item.maxValue {
+                                    // If minValue equals maxValue, show "Average"
+                                    Text("Average")
+                                        .font(.caption2)
+                                } else {
+                                    // Otherwise, show "(Range) Average"
+                                    Text("(Range) Average")
+                                        .font(.caption2)
+                                }
 
-                // Scrollable List of Data below the chart
-                               ScrollView {
-                                   ForEach(timeFrame == .weekly ? Array(data.prefix(7)) : data) { item in
-                                       HStack {
-                                           Text(formatDateForTimeFrame(item.date)) // Display date formatted based on time frame
-                                           Spacer()
-                                           Text(getFormattedText(minValue: item.minValue, maxValue: item.maxValue))
-                                       }
-                                       .padding()
-                                       .background(Color(UIColor.systemBackground))
-                                       .cornerRadius(8)
-                                       .padding(.horizontal)
-                                       .foregroundStyle(Color.primary)
-                                   }
-                               }
-                               .frame(maxHeight: 200) // Restrict the height of the scrollable list
-                           }
-                       }
-                       .padding()
-                       .background(Color(UIColor.secondarySystemBackground))
-                       .cornerRadius(25)
-                   }
+                                // Display the value or the range, with "--" if the value is 0
+                                if item.minValue == item.maxValue {
+                                    // Show only the average value if minValue == maxValue
+                                    Text(item.averageValue == 0 ? "--" : "\(String(format: "%.1f", item.averageValue)) BPM")
+                                } else {
+                                    // Show the range (minValue-maxValue) with the average in parentheses
+                                    Text(item.averageValue == 0 ? "--" : "(\(String(format: "%.1f", item.minValue))-\(String(format: "%.1f", item.maxValue))) \(String(format: "%.1f", item.averageValue)) BPM")
+                                }
+                            }
+                        }
+                        .padding()
+                        .background(Color(UIColor.systemBackground))
+                        .cornerRadius(8)
+                        .padding(.horizontal)
+                        .foregroundStyle(Color.primary)
+                    }
+                }
+                .frame(maxHeight: 200) // Restrict the height of the scrollable list
+               }
+           }
+           .padding()
+           .background(Color(UIColor.secondarySystemBackground))
+           .cornerRadius(25)
+       }
 
-        // Helper function to format the text based on the title
-        private func getFormattedText(minValue: Double, maxValue: Double) -> String {
-            guard minValue != 0 || maxValue != 0 else {
-                return "--"
-            }
-
-            let unit: String
-            switch title {
-            case "Heart Rate":
-                unit = "BPM"
-            default:
-                unit = ""
-            }
-
-            // Check if minValue is equal to maxValue
-            if minValue == maxValue {
-                return "\(String(format: "%.1f", maxValue)) \(unit)"
-            } else {
-                return "\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)) \(unit)"
-            }
+    // Helper function to format the text for Heart Rate (BPM)
+    private func getFormattedText(minValue: Double, maxValue: Double, value: Double) -> String {
+        guard minValue != 0 || maxValue != 0 else {
+            return "--"
         }
+
+        let unit: String = "BPM" // Heart rate is always measured in BPM
+
+        // Check if minValue is equal to maxValue
+        if minValue == maxValue {
+            return "\(String(format: "%.1f", maxValue)) \(unit)"
+        } else {
+            // Return formatted string showing the range between minValue and maxValue
+            return "\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)) \(unit)"
+        }
+    }
     
     // Helper function to get the dynamic title based on data type and time frame
-        private func getDynamicTitle() -> String {
-            switch title {
-            case "Heart Rate":
-                switch timeFrame {
-                case .sixMonths:
-                    return "Heart rate range (weekly)"
-                case .yearly:
-                    return "Heart rate range (monthly)"
-                default:
-                    return "Heart rate"
-                }
-                
-            default:
-                switch timeFrame {
-                case .sixMonths:
-                    return "6-Month Data Overview"
-                case .yearly:
-                    return "Yearly Data Overview"
-                default:
-                    return "Data"
-                }
-            }
-        }
+//        private func getDynamicTitle() -> String {
+//            switch title {
+//            case "Heart Rate":
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "Heart rate range (weekly)"
+//                case .yearly:
+//                    return "Heart rate range (monthly)"
+//                default:
+//                    return "Heart rate"
+//                }
+//                
+//            default:
+//                switch timeFrame {
+//                case .sixMonths:
+//                    return "6-Month Data Overview"
+//                case .yearly:
+//                    return "Yearly Data Overview"
+//                default:
+//                    return "Data"
+//                }
+//            }
+//        }
     
     // Function to get the offset based on the time frame. Offset to set the position of the X-Axis Label
     private func getOffsetForTimeFrame(_ timeFrame: TimeFrameMobility) -> CGFloat {
