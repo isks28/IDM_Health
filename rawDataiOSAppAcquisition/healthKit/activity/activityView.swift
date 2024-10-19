@@ -196,7 +196,7 @@ struct ChartWithTimeFramePicker: View {
     var startDate: Date
     var endDate: Date
 
-    @State private var selectedTimeFrame: TimeFrame = .yearly
+    @State private var selectedTimeFrame: TimeFrame = .sixMonths
     @State private var currentPageForTimeFrames: [TimeFrame: Int] = [
         .daily: 0,
         .weekly: 0,
@@ -208,6 +208,8 @@ struct ChartWithTimeFramePicker: View {
     @State private var showInfoPopover: Bool = false
     @State private var showDatePicker: Bool = false
     @State private var selectedDate: Date = Date()
+    
+    @State private var refreshGraph = UUID()
 
     // Cache for precomputed data
     @State private var precomputedPageData: [TimeFrame: [Int: [ChartDataactivity]]] = [:]
@@ -322,7 +324,7 @@ struct ChartWithTimeFramePicker: View {
                                     jumpToPage(for: selectedDate)
                                 }
                         }
-
+                        
                         Button("Done") {
                             showDatePicker = false
                         }
@@ -334,7 +336,7 @@ struct ChartWithTimeFramePicker: View {
                         .padding(.vertical, 10)
                     }
                 }
-
+                
                 Text(": ")
                     .foregroundColor(.primary)
                 
@@ -345,7 +347,7 @@ struct ChartWithTimeFramePicker: View {
             .frame(maxWidth: .infinity)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 5)
-
+            
             // Use precomputed data for TabView
             TabView(selection: Binding(
                 get: { currentPageForTimeFrames[selectedTimeFrame] ?? 0 },
@@ -357,7 +359,8 @@ struct ChartWithTimeFramePicker: View {
                 if let pageData = precomputedPageData[selectedTimeFrame] {
                     ForEach(0..<getPageCount(for: selectedTimeFrame, startDate: startDate, endDate: endDate), id: \.self) { page in
                         BoxChartViewActivity(data: pageData[page] ?? [], timeFrame: selectedTimeFrame, title: title)
-                            .tag(page)
+                            .tag(page) // Ensure each page has a unique tag of type Int
+                            .id(refreshGraph) // Force refresh of the chart when graph data is updated
                     }
                 } else {
                     Text("No Data")
@@ -365,11 +368,20 @@ struct ChartWithTimeFramePicker: View {
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .padding(.horizontal)
-
+            
             Spacer()
         }
         .onAppear {
-            jumpToPage(for: endDate)
+            // Ensure the data is updated and visible upon initial appearance
+            DispatchQueue.main.async {
+                updateFilteredData() // Precompute and update the data before displaying
+                jumpToPage(for: endDate) // Jump to the appropriate page
+                
+                // Trigger a refresh manually after the data has been fetched and displayed
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    refreshGraph = UUID() // Force a chart redraw on appear
+                }
+            }
         }
     }
 

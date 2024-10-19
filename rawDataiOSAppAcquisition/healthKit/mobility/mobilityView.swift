@@ -188,7 +188,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
     var startDate: Date
     var endDate: Date
 
-    @State private var selectedTimeFrameMobility: TimeFrameMobility = .yearly
+    @State private var selectedTimeFrameMobility: TimeFrameMobility = .sixMonths
     @State private var currentPageForTimeFrameMobilitys: [TimeFrameMobility: Int] = [
         .daily: 0,
         .weekly: 0,
@@ -200,6 +200,8 @@ struct ChartWithTimeFrameMobilityPicker: View {
     @State private var showInfoPopover: Bool = false
     @State private var showDatePicker: Bool = false
     @State private var selectedDate: Date = Date()
+    
+    @State private var refreshGraph = UUID()
 
     // Cache for precomputed data
     @State private var precomputedPageData: [TimeFrameMobility: [Int: [ChartDataMobility]]] = [:]
@@ -242,24 +244,24 @@ struct ChartWithTimeFrameMobilityPicker: View {
             
             HStack {
                 Text(getTitleForMetric(TimeFrameMobility: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
-                        .font(.footnote)
-                        .foregroundColor(.primary)
-                    
-                    Button(action: {
-                        showDatePicker = true
-                    }) {
-                        Text(getTitleForCurrentPage(TimeFrameMobility: selectedTimeFrameMobility, page: currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0, startDate: startDate, endDate: endDate))
-                            .foregroundColor(.blue)
-                            .padding(.vertical, 5)
-                            .padding(.horizontal, 10)
-                            .background(.white)
-                            .cornerRadius(25)
-                            .overlay(  // Adding black outline
-                                RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color.blue, lineWidth: 2)  // Outline color and width
-                            )
-                    }
-                    .sheet(isPresented: $showDatePicker) {
+                    .font(.footnote)
+                    .foregroundColor(.primary)
+                
+                Button(action: {
+                    showDatePicker = true
+                }) {
+                    Text(getTitleForCurrentPage(TimeFrameMobility: selectedTimeFrameMobility, page: currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0, startDate: startDate, endDate: endDate))
+                        .foregroundColor(.blue)
+                        .padding(.vertical, 5)
+                        .padding(.horizontal, 10)
+                        .background(.white)
+                        .cornerRadius(25)
+                        .overlay(  // Adding black outline
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(Color.blue, lineWidth: 2)  // Outline color and width
+                        )
+                }
+                .sheet(isPresented: $showDatePicker) {
                     VStack {
                         if selectedTimeFrameMobility == .yearly {
                             // Yearly: Restrict to year-only
@@ -314,7 +316,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
                                     jumpToPage(for: selectedDate)
                                 }
                         }
-
+                        
                         Button("Done") {
                             showDatePicker = false
                         }
@@ -326,21 +328,21 @@ struct ChartWithTimeFrameMobilityPicker: View {
                         .padding(.vertical, 10)
                     }
                 }
-
+                
                 Text(": ")
-                        .foregroundColor(.primary)
-                    
-                    Text(getValueText(timeFrame: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
-                        .foregroundColor(.pink)
+                    .foregroundColor(.primary)
+                
+                Text(getValueText(timeFrame: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
+                    .foregroundColor(.pink)
                 
                 Text(getUnitForMetric(title: title))
                     .foregroundColor(.pink)
-                }
-                .font(.headline)
-                .frame(maxWidth: .infinity)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 5)
-
+            }
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 5)
+            
             // Use precomputed data for TabView
             TabView(selection: Binding(
                 get: { currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0 },
@@ -360,11 +362,15 @@ struct ChartWithTimeFrameMobilityPicker: View {
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .padding(.horizontal)
-
+            
             Spacer()
         }
         .onAppear {
-            jumpToPage(for: endDate)
+            updateFilteredData()  // Precompute data before the view appears
+            jumpToPage(for: endDate)  // Immediately jump to the correct page
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                refreshGraph = UUID()
+            }
         }
     }
     

@@ -166,7 +166,7 @@ struct VitalChartWithTimeFramePicker: View {
     var startDate: Date
     var endDate: Date
     
-    @State private var selectedTimeFrameVital: TimeFrameVital = .yearly
+    @State private var selectedTimeFrameVital: TimeFrameVital = .sixMonths
     @State private var currentPageForTimeFramesVital: [TimeFrameVital: Int] = [
         .hourly: 0,
         .daily: 0,
@@ -178,6 +178,8 @@ struct VitalChartWithTimeFramePicker: View {
     @State private var showInfoPopover: Bool = false
     @State private var showDatePicker: Bool = false
     @State private var selectedDate: Date = Date()
+    
+    @State private var refreshGraph = UUID()
     
     // Cache for precomputed data
     @State private var precomputedPageData: [TimeFrameVital: [Int: [ChartDataVital]]] = [:]
@@ -295,7 +297,7 @@ struct VitalChartWithTimeFramePicker: View {
                                 jumpToPage(for: selectedDate)
                             }
                     }
-
+                    
                     Button("Done") {
                         showDatePicker = false
                     }
@@ -307,7 +309,7 @@ struct VitalChartWithTimeFramePicker: View {
                     .padding(.vertical, 10) // Add vertical padding to make the button taller
                 }
             }
-
+            
             // Display the metric sum and average
             HStack {
                 Text(getTitleForMetric(TimeFrameVital: selectedTimeFrameVital, minValue: minValue, maxValue: maxValue))
@@ -321,7 +323,7 @@ struct VitalChartWithTimeFramePicker: View {
             .frame(maxWidth: .infinity)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 25)
-
+            
             // Use precomputed data for TabView
             TabView(selection: Binding(
                 get: { currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0 },
@@ -341,12 +343,15 @@ struct VitalChartWithTimeFramePicker: View {
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .padding(.horizontal)
-
+            
             Spacer()
         }
         .onAppear {
-            selectedDate = endDate
-            jumpToPage(for: endDate)
+            updateFilteredData()  // Precompute data before the view appears
+            jumpToPage(for: endDate)  // Immediately jump to the correct page
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                refreshGraph = UUID()  // Force a refresh to re-render the chart
+            }
         }
     }
 
