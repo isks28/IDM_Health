@@ -185,6 +185,7 @@ struct VitalChartWithTimeFramePicker: View {
     @State private var precomputedPageData: [TimeFrameVital: [Int: [ChartDataVital]]] = [:]
     @State private var minValue: Double = 0
     @State private var maxValue: Double = 0
+    @State private var averageValue: Double = 0
 
     var body: some View {
         VStack {
@@ -219,110 +220,106 @@ struct VitalChartWithTimeFramePicker: View {
                 updateFilteredData()
             }
             
-            Button(action: {
-                showDatePicker = true
-            }) {
-                Text(getTitleForCurrentPage(TimeFrameVital: selectedTimeFrameVital, page: currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0, startDate: startDate, endDate: endDate))
-                    .font(.title2)
-            }
-            .sheet(isPresented: $showDatePicker) {
-                VStack {
-                    if selectedTimeFrameVital == .yearly {
-                        // Yearly: Restrict to year-only
-                        DatePicker("Select Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: .date)
-                            .datePickerStyle(WheelDatePickerStyle())
-                            .labelsHidden()
-                            .onChange(of: selectedDate) { _, newDate in
-                                let calendar = Calendar.current
-                                if let selectedYear = calendar.dateComponents([.year], from: newDate).year {
-                                    // Set the date to January 1st of the selected year
-                                    selectedDate = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1)) ?? newDate
-                                    jumpToPage(for: selectedDate)
-                                }
-                            }
-                    } else if selectedTimeFrameVital == .monthly || selectedTimeFrameVital == .sixMonths {
-                        // Monthly and SixMonths: Restrict to month and year
-                        DatePicker("Select Month and Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
-                            .datePickerStyle(WheelDatePickerStyle())
-                            .labelsHidden()
-                            .onChange(of: selectedDate) { _, newDate in
-                                let calendar = Calendar.current
-                                let timeZone = TimeZone.current
-                                
-                                // Log the selected date before any modification
-                                print("Newly selected date before any adjustments: \(newDate)")
-                                
-                                // Get the year and month of the selected date directly
-                                var components = calendar.dateComponents([.year, .month], from: newDate)
-                                
-                                if let selectedYear = components.year, let selectedMonth = components.month {
-                                    
-                                    // Log the components before setting the new date
-                                    print("Selected Year: \(selectedYear), Selected Month: \(selectedMonth)")
-                                    
-                                    // Force the selected date to be the 1st of the month and set the time to midday (to avoid time zone issues)
-                                    components.day = 1
-                                    components.hour = 23
-                                    components.minute = 0
-                                    components.second = 0
-                                    components.timeZone = timeZone
-                                    
-                                    if let adjustedDate = calendar.date(from: components) {
-                                        
-                                        // Log the newly adjusted date
-                                        print("Adjusted Date to first of the month: \(adjustedDate)")
-                                        
-                                        // Update the selected date and jump to the corresponding page
-                                        selectedDate = adjustedDate
+            HStack {
+                Text(getTitleForMetric(TimeFrameVital: selectedTimeFrameVital, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
+                    .font(.footnote)
+                    .foregroundColor(.primary)
+                
+                Button(action: {
+                    showDatePicker = true
+                }) {
+                    Text(getTitleForCurrentPage(TimeFrameVital: selectedTimeFrameVital, page: currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0, startDate: startDate, endDate: endDate))
+                        .foregroundColor(.blue)
+                        .padding(.vertical, 5)
+                        .padding(.horizontal, 10)
+                        .background(.white)
+                        .cornerRadius(25)
+                        .overlay(  // Adding black outline
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(Color.blue, lineWidth: 2)  // Outline color and width
+                        )
+                }
+                .sheet(isPresented: $showDatePicker) {
+                    VStack {
+                        if selectedTimeFrameVital == .yearly {
+                            // Yearly: Restrict to year-only
+                            DatePicker("Select Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: .date)
+                                .datePickerStyle(WheelDatePickerStyle())
+                                .labelsHidden()
+                                .onChange(of: selectedDate) { _, newDate in
+                                    let calendar = Calendar.current
+                                    if let selectedYear = calendar.dateComponents([.year], from: newDate).year {
+                                        selectedDate = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1)) ?? newDate
                                         jumpToPage(for: selectedDate)
-                                    } else {
-                                        print("Failed to adjust the date correctly.")
                                     }
                                 }
-                            }
-                    } else if selectedTimeFrameVital == .hourly {
-                        // Hourly: Include hour and minute components
-                        DatePicker("Select Hour", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date, .hourAndMinute])
-                            .datePickerStyle(GraphicalDatePickerStyle())
-                            .labelsHidden()
-                            .onChange(of: selectedDate) { _, newDate in
-                                selectedDate = newDate
-                                jumpToPage(for: selectedDate)
-                            }
-                    } else {
-                        // Daily and Weekly: Regular Date Picker
-                        DatePicker("Select Date", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
-                            .datePickerStyle(GraphicalDatePickerStyle())
-                            .onChange(of: selectedDate) { _, _ in
-                                jumpToPage(for: selectedDate)
-                            }
+                        } else if selectedTimeFrameVital == .monthly || selectedTimeFrameVital == .sixMonths {
+                            // Monthly and SixMonths: Restrict to month and year
+                            DatePicker("Select Month and Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
+                                .datePickerStyle(WheelDatePickerStyle())
+                                .labelsHidden()
+                                .onChange(of: selectedDate) { _, newDate in
+                                    let calendar = Calendar.current
+                                    let timeZone = TimeZone.current
+                                    
+                                    // Log the selected date before any modification
+                                    print("Newly selected date before any adjustments: \(newDate)")
+                                    
+                                    // Get the year and month of the selected date directly
+                                    var components = calendar.dateComponents([.year, .month], from: newDate)
+                                    
+                                    if let selectedYear = components.year, let selectedMonth = components.month {
+                                        
+                                        // Log the components before setting the new date
+                                        print("Selected Year: \(selectedYear), Selected Month: \(selectedMonth)")
+                                        
+                                        // Force the selected date to be the 1st of the month and set the time to midday (to avoid time zone issues)
+                                        components.day = 1
+                                        components.hour = 23
+                                        components.minute = 0
+                                        components.second = 0
+                                        components.timeZone = timeZone
+                                        
+                                        if let adjustedDate = calendar.date(from: components) {
+                                            selectedDate = adjustedDate
+                                            jumpToPage(for: selectedDate)
+                                        }
+                                    }
+                                }
+                        } else {
+                            // Daily and Weekly: Regular Date Picker
+                            DatePicker("Select Date", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date])
+                                .datePickerStyle(GraphicalDatePickerStyle())
+                                .onChange(of: selectedDate) { _, _ in
+                                    jumpToPage(for: selectedDate)
+                                }
+                        }
+                        
+                        Button("Done") {
+                            showDatePicker = false
+                        }
+                        .foregroundStyle(Color.white)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(8)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
                     }
-                    
-                    Button("Done") {
-                        showDatePicker = false
-                    }
-                    .foregroundStyle(Color.white)
-                    .padding() // Add padding inside the button to make the text area larger
-                    .background(Color.blue) // Set background color
-                    .cornerRadius(8) // Round the corners
-                    .padding(.horizontal, 20) // Add horizontal padding to make the button wider
-                    .padding(.vertical, 10) // Add vertical padding to make the button taller
                 }
-            }
-            
-            // Display the metric sum and average
-            HStack {
-                Text(getTitleForMetric(TimeFrameVital: selectedTimeFrameVital, minValue: minValue, maxValue: maxValue))
+                
+                Text(": ")
                     .foregroundColor(.primary)
-                + Text(": ")
-                    .foregroundColor(.primary)
-                + Text(getValueText(timeFrame: selectedTimeFrameVital, minValue: minValue, maxValue: maxValue))
+                
+                Text(getValueText(timeFrame: selectedTimeFrameVital, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
+                    .foregroundColor(.pink)
+                
+                Text(getUnitForMetric(title: title))
                     .foregroundColor(.pink)
             }
             .font(.headline)
             .frame(maxWidth: .infinity)
             .multilineTextAlignment(.center)
-            .padding(.horizontal, 25)
+            .padding(.horizontal, 5)
             
             // Use precomputed data for TabView
             TabView(selection: Binding(
@@ -350,7 +347,7 @@ struct VitalChartWithTimeFramePicker: View {
             updateFilteredData()  // Precompute data before the view appears
             jumpToPage(for: endDate)  // Immediately jump to the correct page
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                refreshGraph = UUID()  // Force a refresh to re-render the chart
+                refreshGraph = UUID()
             }
         }
     }
@@ -373,12 +370,12 @@ struct VitalChartWithTimeFramePicker: View {
 
             // Loop over each page and compute the data for it
             for page in 0..<pageCount {
-                let filtered = filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrameVital, page: page, startDate: startDate, endDate: endDate)
+                let filtered = filterAndAggregateDataForPage(data, timeFrame: selectedTimeFrameVital, page: page, startDate: startDate, endDate: endDate, title: title)
                 newPrecomputedData[page] = filtered
             }
 
-            // Compute min and max for the current page
-            let (computedMinValue, computedMaxValue) = calculateMinMax(
+            // Compute min, max, and average for the current page
+            let (computedMinValue, computedMaxValue, computedAverageValue) = calculateMinMaxAndAverage(
                 for: selectedTimeFrameVital,
                 data: newPrecomputedData[currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0] ?? [],
                 startDate: startDate,
@@ -391,6 +388,7 @@ struct VitalChartWithTimeFramePicker: View {
                 precomputedPageData[selectedTimeFrameVital] = newPrecomputedData
                 minValue = computedMinValue
                 maxValue = computedMaxValue
+                averageValue = computedAverageValue // Update average value
             }
         }
     }
@@ -398,9 +396,16 @@ struct VitalChartWithTimeFramePicker: View {
     // Update displayed data based on the current page
     private func updateDisplayedData() {
         if let pageData = precomputedPageData[selectedTimeFrameVital]?[currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0] {
-            let (computedMinValue, computedMaxValue) = calculateMinMax(for: selectedTimeFrameVital, data: pageData, startDate: startDate, endDate: endDate, currentPage: currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0)
+            let (computedMinValue, computedMaxValue, computedAverageValue) = calculateMinMaxAndAverage(
+                for: selectedTimeFrameVital,
+                data: pageData,
+                startDate: startDate,
+                endDate: endDate,
+                currentPage: currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0
+            )
             minValue = computedMinValue
             maxValue = computedMaxValue
+            averageValue = computedAverageValue // Update average value
         }
     }
 
@@ -436,21 +441,20 @@ struct VitalChartWithTimeFramePicker: View {
         }
     }
 
-    private func getValueText(timeFrame: TimeFrameVital, minValue: Double, maxValue: Double) -> String {
-        let unit = getUnitForMetric(title: title) // Get the unit based on the title
-
-        // Check if both minValue and maxValue are 0, return "--" if true
-        guard minValue != 0 || maxValue != 0 else {
-            return "-- \(unit)"
+    private func getValueText(timeFrame: TimeFrameVital, minValue: Double, maxValue: Double, averageValue: Double) -> String {
+        // Check if any of the values are 0, and return "--" if they are
+        if minValue == 0 && maxValue == 0 && averageValue == 0 {
+            return "--"
         }
         
-        // If minValue equals maxValue, return only minValue
         if minValue == maxValue {
-            return "\(String(format: "%.1f", minValue)) \(unit)"
+            // If minValue equals maxValue, show only the average
+            return "\(String(format: "%.1f", averageValue))"
+        } else {
+            // Otherwise, show the range and average
+            let rangeText = "(\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)))"
+            return "\(rangeText) \(String(format: "%.1f", averageValue))"
         }
-
-        // Return formatted string showing the range between minValue and maxValue
-        return "\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)) \(unit)"
     }
     
     private func jumpToPage(for date: Date) {
@@ -477,57 +481,32 @@ struct VitalChartWithTimeFramePicker: View {
         }
     }
         
-    private func calculateMinMax(for timeFrame: TimeFrameVital, data: [ChartDataVital], startDate: Date, endDate: Date, currentPage: Int) -> (minValue: Double, maxValue: Double) {
+    private func calculateMinMaxAndAverage(for timeFrame: TimeFrameVital, data: [ChartDataVital], startDate: Date, endDate: Date, currentPage: Int) -> (minValue: Double, maxValue: Double, averageValue: Double) {
         // Filter out zero values when computing the minimum
         let nonZeroData = data.filter { $0.minValue > 0 }
-
+        
         // Calculate min and max from non-zero values
         let minValue = nonZeroData.map { $0.minValue }.min() ?? 0.0
         let maxValue = data.map { $0.maxValue }.max() ?? 0.0
 
-        return (minValue, maxValue)
+        // Filter data with valid non-zero values
+        let validData = data.filter { $0.averageValue > 0 }
+
+        // Calculate the total and average value only for entries that have data
+        let totalValue = validData.reduce(0) { $0 + $1.averageValue }
+        let averageValue = validData.isEmpty ? 0 : totalValue / Double(validData.count)
+
+        return (minValue, maxValue, averageValue)
     }
 
-    private func getTitleForMetric(TimeFrameVital: TimeFrameVital, minValue: Double, maxValue: Double) -> String {
-        let description: String
-        let rangeOrValue = (minValue == maxValue) ? "Value" : "Range"  // Switch between "Range" and "Value"
+    private func getTitleForMetric(TimeFrameVital: TimeFrameVital, minValue: Double, maxValue: Double, averageValue: Double) -> String {
         
-        // Determine the data type and set the title based on the TimeFrameVital and the min/max values
-        switch title {
-        case "Heart Rate":
-            switch TimeFrameVital {
-            case .hourly:
-                description = "\(rangeOrValue) in this day"
-            case .daily:
-                description = "\(rangeOrValue) in this day"
-            case .weekly:
-                description = "\(rangeOrValue) in this week"
-            case .monthly:
-                description = "\(rangeOrValue) in this month"
-            case .sixMonths:
-                description = "\(rangeOrValue) in these 6 months span"
-            case .yearly:
-                description = "\(rangeOrValue) in this year"
-            }
-            
-        default:
-            switch TimeFrameVital {
-            case .hourly:
-                description = "\(rangeOrValue) in this day"
-            case .daily:
-                description = "\(rangeOrValue) in this day"
-            case .weekly:
-                description = "\(rangeOrValue) in this week"
-            case .monthly:
-                description = "\(rangeOrValue) in this month"
-            case .sixMonths:
-                description = "\(rangeOrValue) in these 6 months span"
-            case .yearly:
-                description = "\(rangeOrValue) in this year"
-            }
+        if minValue == maxValue {
+            // If minValue == maxValue, show only the average
+            return "Average in "
+        } else {
+            return "(Range) Average in "
         }
-        
-        return description
     }
     
     // Helper function to display different text based on the selected data section
@@ -658,7 +637,7 @@ struct VitalChartWithTimeFramePicker: View {
     }
 
     // Function to filter and aggregate data based on the current page and time frame
-    private func filterAndAggregateDataForPage(_ data: [ChartDataVital], timeFrame: TimeFrameVital, page: Int, startDate: Date, endDate: Date) -> [ChartDataVital] {
+private func filterAndAggregateDataForPage(_ data: [ChartDataVital], timeFrame: TimeFrameVital, page: Int, startDate: Date, endDate: Date, title: String) -> [ChartDataVital] {
         let calendar = Calendar.current
         var filteredData: [ChartDataVital] = []
         

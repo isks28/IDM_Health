@@ -122,11 +122,11 @@ class VitalManager: ObservableObject {
     
     func saveDataAsCSV(serverURL: URL) {
         backgroundQueue.async{
-            self.saveCSV(for: self.heartRateData, fileName: "heart_rate_data.csv", unitLabel: "BPM", serverURL: serverURL, baseFolder: self.baseFolder)
+            self.saveCSV(for: self.heartRateData, fileName: "heart_rate_data.csv", unitLabel: "BPM", serverURL: serverURL, baseFolder: self.baseFolder, decimalPlaces: 0)
         }
     }
     
-    private func saveCSV(for samples: [VitalStatistics], fileName: String, unitLabel: String, serverURL: URL, baseFolder: String) {
+    private func saveCSV(for samples: [VitalStatistics], fileName: String, unitLabel: String, serverURL: URL, baseFolder: String, decimalPlaces: Int) {
         // Add headers for the CSV
         var csvString = "Recorded Date and Time,Value (\(unitLabel))\n"
         
@@ -134,10 +134,10 @@ class VitalManager: ObservableObject {
         dateFormatter.timeZone = TimeZone.current
         
         for sample in samples {
-            let endDateString = dateFormatter.string(from: sample.endDate)
-            // averageValue is actually the actualValue recorded
-            let actualValueString = String(format: "%.0f", sample.averageValue)
-            csvString += "\(endDateString),\(actualValueString)\n"
+            let dateString = dateFormatter.string(from: sample.endDate)
+            let formatString = "%.\(decimalPlaces)f"  // Format the value based on the decimal places
+            let value = String(format: formatString, sample.averageValue.isNaN ? 0 : sample.averageValue)  // Handle NaN and format value
+            csvString += "\(dateString),\(value)\n"
         }
         
         // Get the local documents directory to save locally
