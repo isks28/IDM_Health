@@ -178,6 +178,7 @@ struct VitalChartWithTimeFramePicker: View {
     @State private var showInfoPopover: Bool = false
     @State private var showDatePicker: Bool = false
     @State private var selectedDate: Date = Date()
+    @State private var selectedHour: Int = Calendar.current.component(.hour, from: Date())
     
     @State private var refreshGraph = UUID()
     
@@ -241,7 +242,19 @@ struct VitalChartWithTimeFramePicker: View {
                 }
                 .sheet(isPresented: $showDatePicker) {
                     VStack {
-                        if selectedTimeFrameVital == .yearly {
+                        if selectedTimeFrameVital == .hourly {
+                            // Hourly: Allow selection of both date and hour
+                            DatePicker("Select Date and Hour", selection: $selectedDate, in: startDate...endDate, displayedComponents: [.date, .hourAndMinute])
+                                .datePickerStyle(GraphicalDatePickerStyle())
+                                .labelsHidden()
+                                .onChange(of: selectedDate) { _, newDate in
+                                    let calendar = Calendar.current
+                                    selectedHour = calendar.component(.hour, from: newDate)
+                                    // Ensure the selectedDate is set with the updated hour, minute, and second
+                                    selectedDate = calendar.date(bySettingHour: selectedHour, minute: 0, second: 0, of: newDate) ?? newDate
+                                    jumpToPage(for: selectedDate)
+                                }
+                        } else if selectedTimeFrameVital == .yearly {
                             // Yearly: Restrict to year-only
                             DatePicker("Select Year", selection: $selectedDate, in: startDate...endDate, displayedComponents: .date)
                                 .datePickerStyle(WheelDatePickerStyle())
@@ -892,7 +905,7 @@ struct BoxChartViewVital: View {
                     }
                 }
                 .id(UUID())
-                .foregroundStyle(Color.pink)
+                .foregroundStyle(Color.primary)
                 .chartXScale(domain: getXScaleDomain())
                 .chartXAxis {
                     switch timeFrame {
