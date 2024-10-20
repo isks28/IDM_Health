@@ -61,7 +61,7 @@
 /* Begin PBXFileReference section */
 		5A45C7172C9C0FDB00F6E14E /* vitalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vitalView.swift; sourceTree = "<group>"; };
 		5A45C7192C9C0FE600F6E14E /* vitalManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vitalManager.swift; sourceTree = "<group>"; };
-		5A554E572C8705080081747B /* rawDataiOSAppAcquisition.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = rawDataiOSAppAcquisition.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5A554E572C8705080081747B /* LifeStats.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LifeStats.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A554E5A2C8705080081747B /* rawDataiOSAppAcquisitionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataiOSAppAcquisitionApp.swift; sourceTree = "<group>"; };
 		5A554E5C2C8705080081747B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		5A554E5E2C8705090081747B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -145,7 +145,7 @@
 		5A554E582C8705080081747B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5A554E572C8705080081747B /* rawDataiOSAppAcquisition.app */,
+				5A554E572C8705080081747B /* LifeStats.app */,
 				5A554E682C8705090081747B /* rawDataiOSAppAcquisitionTests.xctest */,
 				5A554E722C8705090081747B /* rawDataiOSAppAcquisitionUITests.xctest */,
 			);
@@ -319,7 +319,7 @@
 			);
 			name = rawDataiOSAppAcquisition;
 			productName = rawDataiOSAppAcquisition;
-			productReference = 5A554E572C8705080081747B /* rawDataiOSAppAcquisition.app */;
+			productReference = 5A554E572C8705080081747B /* LifeStats.app */;
 			productType = "com.apple.product-type.application";
 		};
 		5A554E672C8705090081747B /* rawDataiOSAppAcquisitionTests */ = {
@@ -381,7 +381,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 5A554E522C8705080081747B /* Build configuration list for PBXProject "LifeStat" */;
+			buildConfigurationList = 5A554E522C8705080081747B /* Build configuration list for PBXProject "LifeStats" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -566,6 +566,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = LifeStats;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -635,6 +636,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = LifeStats;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -684,7 +686,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = UKGM.rawDataiOSAppAcquisition;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = LifeStats;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -738,7 +740,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = UKGM.rawDataiOSAppAcquisition;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = LifeStats;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -840,7 +842,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		5A554E522C8705080081747B /* Build configuration list for PBXProject "LifeStat" */ = {
+		5A554E522C8705080081747B /* Build configuration list for PBXProject "LifeStats" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5A554E7A2C8705090081747B /* Debug */,
