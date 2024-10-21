@@ -116,7 +116,7 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
     func showDataCollectionStoppedNotification() {
         let content = UNMutableNotificationContent()
         content.title = "Data Collection Stopped"
-        content.body = "Accelerometer data collection has stopped and the data has been saved."
+        content.body = "Magnetometer data collection has stopped and the data has been saved."
         content.sound = .default
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
