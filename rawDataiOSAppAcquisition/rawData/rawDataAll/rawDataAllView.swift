@@ -255,7 +255,7 @@ struct rawDataAllView: View {
                         Toggle(isOn: $isRecording) {
                             Text(isRecording ? "Data will be fetched according to set time interval" : "Start timed recording")
                                 .padding()
-                                .background(isRecording ? Color.mint : Color.gray)
+                                .background(isRecording ? Color.blue : Color.gray)
                                 .foregroundColor(.white)
                                 .cornerRadius(15)
                                 .multilineTextAlignment(.center)
@@ -309,7 +309,7 @@ struct rawDataAllView: View {
                         }) {
                             Text(isRecording ? "Stop and Save" : "Start")
                                 .padding()
-                                .background(isRecording ? Color.gray : Color.mint)
+                                .background(isRecording ? Color.gray : Color.blue)
                                 .foregroundColor(.white)
                                 .cornerRadius(15)
                         }
