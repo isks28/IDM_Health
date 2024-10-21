@@ -9,69 +9,79 @@ import SwiftUI
 
 struct ContentView: View {
     @State var selectedTab = "Home"
-    
+    @State private var showWarning = true  // Initially show the warning screen
+
     init() {
         // Set the appearance of the tab bar globally
         let appearance = UITabBarAppearance()
-        
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor.label // Unselected icon color
-        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.label] // Unselected text color
-        
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor.systemBlue // Selected icon color
-        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.systemBlue] // Selected text color
-        
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor.label
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.label]
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor.systemBlue
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.systemBlue]
         UITabBar.appearance().standardAppearance = appearance
-        UITabBar.appearance().scrollEdgeAppearance = appearance // Ensure the same appearance for edge scrolling
+        UITabBar.appearance().scrollEdgeAppearance = appearance
         
         // Set the appearance for the navigation bar
         let navAppearance = UINavigationBarAppearance()
         navAppearance.configureWithOpaqueBackground()
-        navAppearance.backgroundColor = UIColor.systemBackground // Adaptive background
-        navAppearance.titleTextAttributes = [.foregroundColor: UIColor.label] // Adaptive text color for title
-        
+        navAppearance.backgroundColor = UIColor.systemBackground
+        navAppearance.titleTextAttributes = [.foregroundColor: UIColor.label]
         UINavigationBar.appearance().standardAppearance = navAppearance
         UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
     }
-    
+
     var body: some View {
-        TabView(selection: $selectedTab) {
+        ZStack {
+            // Main TabView content
+            TabView(selection: $selectedTab) {
+                
+                healthKitView()
+                    .tag("HealthKit")
+                    .tabItem{
+                        Image(systemName: "figure.walk")
+                        Text("HealthKit")
+                    }
+                    .onAppear {
+                        let navAppearance = UINavigationBarAppearance()
+                        navAppearance.configureWithOpaqueBackground()
+                        navAppearance.backgroundColor = UIColor.systemBackground
+                        navAppearance.titleTextAttributes = [.foregroundColor: UIColor.label]
+                        UINavigationBar.appearance().standardAppearance = navAppearance
+                        UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
+                    }
+                
+                rawDataView()
+                    .tag("CoreMotion")
+                    .tabItem{
+                        Image(systemName: "gyroscope")
+                        Text("Raw Data")
+                    }
+                
+                processedDataView()
+                    .tag("CoreMotionProcessed")
+                    .tabItem{
+                        Image(systemName: "desktopcomputer")
+                        Text("Processed Data")
+                    }
+                
+                cameraBasedView()
+                    .tag("AVFoundation")
+                    .tabItem{
+                        Image(systemName: "camera.fill")
+                        Text("Photo and Video")
+                    }
+            }
             
-            healthKitView()
-                .tag("HealthKit")
-                .tabItem{
-                    Image(systemName: "figure.walk")
-                    Text("HealthKit")
-                }
-                .onAppear {
-                    let navAppearance = UINavigationBarAppearance()
-                    navAppearance.configureWithOpaqueBackground()
-                    navAppearance.backgroundColor = UIColor.systemBackground
-                    navAppearance.titleTextAttributes = [.foregroundColor: UIColor.label]
-                    
-                    UINavigationBar.appearance().standardAppearance = navAppearance
-                    UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
-                }
-            
-            rawDataView()
-                .tag("CoreMotion")
-                .tabItem{
-                    Image(systemName: "gyroscope")
-                    Text("Raw Data")
-                }
-            
-            processedDataView()
-                .tag("CoreMotionProcessed")
-                .tabItem{
-                    Image(systemName: "desktopcomputer")
-                    Text("Processed Data")
-                }
-            
-            cameraBasedView()
-                .tag("AVFoundation")
-                .tabItem{
-                    Image(systemName: "camera.fill")
-                    Text("Photo and Video")
-                }
+            // Warning pop-up overlay
+            if showWarning {
+                WarningView(isPresented: $showWarning)
+            }
+        }
+        .onAppear {
+            showWarning = true  // Show the warning screen when the app appears
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            showWarning = true  // Show the warning every time the app becomes active
         }
     }
 }
