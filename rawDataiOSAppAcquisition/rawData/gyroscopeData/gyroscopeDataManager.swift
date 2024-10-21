@@ -112,6 +112,23 @@ class GyroscopeManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
         }
     }
+    
+    func showDataCollectionStoppedNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Data Collection Stopped"
+        content.body = "Accelerometer data collection has stopped and the data has been saved."
+        content.sound = .default
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let request = UNNotificationRequest(identifier: "dataCollectionStoppedNotification", content: content, trigger: trigger)
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Error showing stop notification: \(error)")
+            }
+        }
+    }
+
 
     // Remove the notification when data collection stops
     func removeDataCollectionNotification() {
@@ -158,6 +175,7 @@ class GyroscopeManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         gyroscopeManager.stopDeviceMotionUpdates()
         endBackgroundTask()
         removeDataCollectionNotification()  // Remove the notification
+        showDataCollectionStoppedNotification()
         
         if let serverURL = serverURL {
             saveDataToCSV(serverURL: serverURL, baseFolder: self.baseFolder, recordingMode: self.recordingMode)
@@ -291,6 +309,8 @@ class GyroscopeManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let endInterval = endDate.timeIntervalSince(now)
         Timer.scheduledTimer(withTimeInterval: endInterval, repeats: false) { [weak self] _ in
             self?.stopGyroscopeDataCollection()
+            self?.removeDataCollectionNotification()
+            self?.showDataCollectionStoppedNotification()
             completion()
         }
     }

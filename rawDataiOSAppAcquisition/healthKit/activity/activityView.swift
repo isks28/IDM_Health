@@ -327,6 +327,7 @@ struct ChartWithTimeFramePicker: View {
                         
                         Button("Done") {
                             showDatePicker = false
+                            refreshGraph = UUID()
                         }
                         .foregroundStyle(Color.white)
                         .padding()

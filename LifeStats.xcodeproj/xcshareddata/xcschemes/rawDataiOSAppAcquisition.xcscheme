@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "5A554E562C8705080081747B"
-               BuildableName = "rawDataiOSAppAcquisition.app"
+               BuildableName = "LifeStats.app"
                BlueprintName = "rawDataiOSAppAcquisition"
                ReferencedContainer = "container:LifeStats.xcodeproj">
             </BuildableReference>
@@ -69,7 +69,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "5A554E562C8705080081747B"
-            BuildableName = "rawDataiOSAppAcquisition.app"
+            BuildableName = "LifeStats.app"
             BlueprintName = "rawDataiOSAppAcquisition"
             ReferencedContainer = "container:LifeStats.xcodeproj">
          </BuildableReference>
@@ -86,7 +86,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "5A554E562C8705080081747B"
-            BuildableName = "rawDataiOSAppAcquisition.app"
+            BuildableName = "LifeStats.app"
             BlueprintName = "rawDataiOSAppAcquisition"
             ReferencedContainer = "container:LifeStats.xcodeproj">
          </BuildableReference>
