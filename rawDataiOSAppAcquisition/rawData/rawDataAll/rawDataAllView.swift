@@ -356,6 +356,12 @@ struct rawDataAllView: View {
                             .padding(.vertical, 5)
                             .padding(.horizontal, 5)
                             .foregroundStyle(Color.primary)
+                        Text("DATA COLLECTION WILL STOP IF THE ACCELEROMETER VIEW IS CLOSED. but you may lock the phone or use another app, and the data collection will still be running")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.pink)
                         Spacer()
                         // Adding a chevron as a swipe indicator
                         AnimatedSwipeDownCloseView()
@@ -412,7 +418,7 @@ struct RawDataGraphView: View {
                     // Ensure there's a minimum value for scaling in case all data points are zero
                     let maxValue = dataPoints.max() ?? 0
                     let minValue = dataPoints.min() ?? 0
-                    let range = maxValue - minValue
+                    _ = maxValue - minValue
                     
                     // Handle case where all values are zero or the same
                     let adjustedMax = max(maxValue, 0.1) // Ensure there's a minimum range

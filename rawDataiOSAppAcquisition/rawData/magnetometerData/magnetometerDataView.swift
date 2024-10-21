@@ -256,6 +256,12 @@ struct magnetometerDataView: View {
                             .padding(.vertical, 5)
                             .padding(.horizontal, 5)
                             .foregroundStyle(Color.primary)
+                        Text("DATA COLLECTION WILL STOP IF THE ACCELEROMETER VIEW IS CLOSED. but you may lock the phone or use another app, and the data collection will still be running")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 5)
+                            .foregroundStyle(Color.pink)
                         Spacer()
                         // Adding a chevron as a swipe indicator
                         AnimatedSwipeDownCloseView()
