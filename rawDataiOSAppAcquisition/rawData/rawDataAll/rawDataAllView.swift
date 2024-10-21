@@ -408,11 +408,17 @@ struct RawDataGraphView: View {
                     
                     let width = geometry.size.width
                     let height = geometry.size.height
-                    let maxValue = dataPoints.max() ?? 1
+                    
+                    // Ensure there's a minimum value for scaling in case all data points are zero
+                    let maxValue = dataPoints.max() ?? 0
                     let minValue = dataPoints.min() ?? 0
+                    let range = maxValue - minValue
+                    
+                    // Handle case where all values are zero or the same
+                    let adjustedMax = max(maxValue, 0.1) // Ensure there's a minimum range
                     let scaleX = width / CGFloat(dataPoints.count - 1)
-                    let scaleY = height / CGFloat(maxValue - minValue)
-
+                    let scaleY = height / CGFloat(adjustedMax - minValue)
+                    
                     path.move(to: CGPoint(x: 0, y: height - CGFloat(dataPoints[0] - minValue) * scaleY))
                     
                     for index in 1..<dataPoints.count {

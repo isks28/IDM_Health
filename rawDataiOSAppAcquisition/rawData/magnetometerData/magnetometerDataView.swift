@@ -302,8 +302,11 @@ struct MagnetometerGraphView: View {
                 let height = geometry.size.height
                 let maxValue = dataPoints.max() ?? 1
                 let minValue = dataPoints.min() ?? 0
+                
+                // Ensure that if all values are zero, the graph is still visible
+                let maxY = max(maxValue, 0.1)
                 let scaleX = width / CGFloat(dataPoints.count - 1)
-                let scaleY = height / CGFloat(maxValue - minValue)
+                let scaleY = height / CGFloat(maxY - minValue)
 
                 path.move(to: CGPoint(x: 0, y: height - CGFloat(dataPoints[0] - minValue) * scaleY))
                 
