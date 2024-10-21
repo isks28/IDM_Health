@@ -187,7 +187,7 @@ struct gyroscopeDataView: View {
                         if motionManager.savedFilePath != nil {
                             Text("File saved")  // Display the saved file path
                                 .font(.footnote)
-                                .foregroundStyle(Color(.blue))
+                                .foregroundStyle(Color.primary)
                         }
                     }
                 }

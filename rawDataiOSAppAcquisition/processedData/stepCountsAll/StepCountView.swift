@@ -244,6 +244,7 @@ struct StepCountView: View {
                         if stepManager.savedFilePath != nil {
                             Text("File saved")
                                 .font(.footnote)
+                                .foregroundStyle(Color.primary)
                         }
                     }
                 }

@@ -317,7 +317,7 @@ struct rawDataAllView: View {
                         if motionManager.savedFilePath != nil {
                             Text("File saved")
                                 .font(.footnote)
-                                .foregroundStyle(Color.blue)
+                                .foregroundStyle(Color.primary)
                                 .padding()
                         }
                     }

@@ -21,7 +21,7 @@ struct WarningView: View {
                 Text("Please always read the info screen located on the top-right on every view")
                     .font(.title3)
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.pink)
+                    .foregroundStyle(Color.secondary)
                     .padding()
                 
                 Button(action: {
