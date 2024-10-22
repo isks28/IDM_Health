@@ -54,10 +54,8 @@ class ActivityManager: ObservableObject {
     }
     
     func fetchActivityData(startDate: Date, endDate: Date) {
-        // Clear cache for new data fetch
         dataCache.removeAll()
         
-        // Fetch each data type
         fetchData(identifier: .stepCount, startDate: startDate, endDate: endDate) { [weak self] result in
             DispatchQueue.main.async {
                 self?.stepCountData = result
@@ -150,11 +148,10 @@ class ActivityManager: ObservableObject {
             let value = sample.quantity.doubleValue(for: valueUnit) * multiplier
             let finalValue: String
             
-            // Check if we should round or format with zero decimal places
             if shouldRound {
-                finalValue = "\(Int(value))"  // Convert to integer (no decimal places)
+                finalValue = "\(Int(value))"
             } else {
-                finalValue = String(format: "%.2f", value)  // Keep 2 decimal places
+                finalValue = String(format: "%.2f", value)
             }
             
             let date = sample.endDate
@@ -197,7 +194,7 @@ class ActivityManager: ObservableObject {
         
         let boundary = UUID().uuidString
         let fileName = fileURL.lastPathComponent
-        let mimeType = "text/csv"  // Assuming you're uploading CSV files
+        let mimeType = "text/csv"
         
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 

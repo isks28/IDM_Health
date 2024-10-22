@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ContentView: View {
     @State var selectedTab = "Home"
-    @State private var showWarning = true  // Initially show the warning screen
     
     init() {
         // Set the appearance of the tab bar globally

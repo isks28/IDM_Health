@@ -9,7 +9,7 @@ import SwiftUI
 
 struct healthKitView: View {
     @State private var selectedView: String? = nil
-    @State private var showingInfo = false // State to show the info sheet
+    @State private var showingInfo = false
     
     var body: some View {
         NavigationSplitView {
@@ -63,7 +63,7 @@ struct healthKitView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
-                        showingInfo.toggle() // Show the info sheet when button is tapped
+                        showingInfo.toggle()
                     }) {
                         Image(systemName: "info.circle")
                     }
@@ -77,7 +77,6 @@ struct healthKitView: View {
                                 .multilineTextAlignment(.center)
                                 .padding()
                             Spacer()
-                            // Adding a chevron as a swipe indicator
                             AnimatedSwipeDownCloseView()
                         }
                         .padding()
