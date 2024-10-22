@@ -51,7 +51,7 @@ struct StepCountView: View {
                                 .gridCellAnchor(.leading)
                             Text("\(stepManager.stepCount)")
                                 .font(.largeTitle)
-                                .foregroundColor(.primary)
+                                .foregroundColor(.white)
                                 .gridCellAnchor(.trailing)
                         }
                         .padding()
