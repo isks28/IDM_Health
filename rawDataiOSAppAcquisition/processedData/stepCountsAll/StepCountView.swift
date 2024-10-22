@@ -26,12 +26,15 @@ struct StepCountView: View {
     
     var body: some View {
         VStack {
-            Text("Put the phone in the pocket after clicking start")
-                .font(.title3)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(Color.secondary)
-                .padding(.top, 5)
-                .padding(.horizontal)
+            
+            if stepManager.stepCount == 0{
+                Text("Put the phone in the pocket after clicking start")
+                    .font(.title3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Color.secondary)
+                    .padding(.top, 5)
+                    .padding(.horizontal)
+            }
             Spacer()
             
             // Step Count Display
@@ -39,22 +42,24 @@ struct StepCountView: View {
                 if stepManager.stepCount > 0 {
                     Grid {
                         // Step Count
-                        GridRow {
+                        VStack {
                             Text("Steps:")
                                 .font(.largeTitle)
-                                .foregroundStyle(Color.white)
+                                .foregroundStyle(Color.primary)
                                 .padding(.vertical, 5)
                                 .padding(.horizontal, 15)
                                 .gridCellAnchor(.leading)
-                                .background(.secondary)
-                                .cornerRadius(25)
                             Text("\(stepManager.stepCount)")
                                 .font(.largeTitle)
-                                .foregroundColor(.blue)
+                                .foregroundColor(.primary)
                                 .gridCellAnchor(.trailing)
                         }
-                        .padding(.bottom, 250)
+                        .padding()
+                        .background(Color.secondary) // Add background to the VStack
+                        .cornerRadius(25) // Add rounded corners to the VStack background
 
+                        Spacer()
+                        
                         // Distance
                         GridRow {
                             Text("Distance:")
@@ -128,9 +133,9 @@ struct StepCountView: View {
                         }
                     }
                 } else {
-                    Text("Set the desired Time")
+                    Text("Select the Time-Method:")
                         .font(.headline)
-                        .foregroundStyle(Color.secondary)
+                        .foregroundStyle(Color.primary)
                         .multilineTextAlignment(.center)
                 }
             }
@@ -161,8 +166,7 @@ struct StepCountView: View {
                         }
                     }
             }
-            .padding()
-            .padding(.top, 25)
+            .padding(.horizontal)
             
             // Start/Stop buttons for recording
             VStack {

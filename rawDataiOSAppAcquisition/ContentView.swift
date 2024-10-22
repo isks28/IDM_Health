@@ -10,7 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @State var selectedTab = "Home"
     @State private var showWarning = true  // Initially show the warning screen
-
+    
     init() {
         // Set the appearance of the tab bar globally
         let appearance = UITabBarAppearance()
@@ -29,7 +29,7 @@ struct ContentView: View {
         UINavigationBar.appearance().standardAppearance = navAppearance
         UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
     }
-
+    
     var body: some View {
         ZStack {
             // Main TabView content
@@ -71,17 +71,6 @@ struct ContentView: View {
                         Text("Photo and Video")
                     }
             }
-            
-            // Warning pop-up overlay
-            if showWarning {
-                WarningView(isPresented: $showWarning)
-            }
-        }
-        .onAppear {
-            showWarning = true  // Show the warning screen when the app appears
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
-            showWarning = true  // Show the warning every time the app becomes active
         }
     }
 }

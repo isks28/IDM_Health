@@ -38,7 +38,6 @@
 		86419FE82CB97E800071151C /* StepCountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE72CB97E800071151C /* StepCountView.swift */; };
 		86419FEC2CB988BF0071151C /* processedDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FEB2CB988BF0071151C /* processedDataView.swift */; };
 		86419FEE2CBA8CE20071151C /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FED2CBA8CE20071151C /* PreviewView.swift */; };
-		86653A2B2CC65A6B00084E7E /* warningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86653A2A2CC65A6B00084E7E /* warningView.swift */; };
 		86B0DE662CBE973C00003F50 /* ServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0DE652CBE973C00003F50 /* ServerConfig.swift */; };
 /* End PBXBuildFile section */
 
@@ -96,7 +95,6 @@
 		86419FE72CB97E800071151C /* StepCountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountView.swift; sourceTree = "<group>"; };
 		86419FEB2CB988BF0071151C /* processedDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = processedDataView.swift; sourceTree = "<group>"; };
 		86419FED2CBA8CE20071151C /* PreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
-		86653A2A2CC65A6B00084E7E /* warningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = warningView.swift; sourceTree = "<group>"; };
 		86B0DE652CBE973C00003F50 /* ServerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerConfig.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -169,7 +167,6 @@
 				5A554E602C8705090081747B /* rawDataiOSAppAcquisition.entitlements */,
 				5A554E612C8705090081747B /* Preview Content */,
 				5AB490002CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift */,
-				86653A2A2CC65A6B00084E7E /* warningView.swift */,
 			);
 			path = rawDataiOSAppAcquisition;
 			sourceTree = "<group>";
@@ -460,7 +457,6 @@
 				86419FEE2CBA8CE20071151C /* PreviewView.swift in Sources */,
 				5A554E932C8705F70081747B /* activityManager.swift in Sources */,
 				5A554E5B2C8705080081747B /* rawDataiOSAppAcquisitionApp.swift in Sources */,
-				86653A2B2CC65A6B00084E7E /* warningView.swift in Sources */,
 				5A554E9F2C8706470081747B /* gyroscopeDataView.swift in Sources */,
 				5A554EA32C8706690081747B /* magnetometerDataView.swift in Sources */,
 			);
