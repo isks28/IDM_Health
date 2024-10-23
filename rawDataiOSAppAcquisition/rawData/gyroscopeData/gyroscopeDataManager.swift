@@ -137,7 +137,7 @@ class GyroscopeManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     func startGyroscopeDataCollection(realTime: Bool, serverURL: URL) {
         guard !isCollectingData else { return }
-        
+
         self.serverURL = serverURL
         isCollectingData = true
         gyroscopeData = []
@@ -145,26 +145,31 @@ class GyroscopeManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         gyroscopeDataPointsY = []
         gyroscopeDataPointsZ = []
         recordingMode = realTime ? "RealTime" : "TimeInterval"
-        
+
         startBackgroundTask()
         showDataCollectionNotification() // Show the notification
-        
-        if gyroscopeManager.isDeviceMotionAvailable {
-            gyroscopeManager.deviceMotionUpdateInterval = 1.0 / currentSamplingRate // Apply the current sampling rate
-            gyroscopeManager.startDeviceMotionUpdates(to: .main) { [weak self] (data, error) in
+
+        // Collect raw gyroscope data
+        if gyroscopeManager.isGyroAvailable {
+            gyroscopeManager.gyroUpdateInterval = 1.0 / currentSamplingRate // Set sampling rate
+
+            // Start collecting raw gyroscope data
+            gyroscopeManager.startGyroUpdates(to: .main) { [weak self] (data, error) in
                 if let validData = data {
-                    let timestamp = validData.timestamp
-                    let userGyroDataString = "UserGyroscope,\(timestamp),\(validData.rotationRate.x),\(validData.rotationRate.y),\(validData.rotationRate.z)"
-                    self?.gyroscopeData.append(userGyroDataString)
-                    
-                    let dataPointX = validData.rotationRate.x
-                    self?.gyroscopeDataPointsX.append(dataPointX)
-                    let dataPointY = validData.rotationRate.y
-                    self?.gyroscopeDataPointsY.append(dataPointY)
-                    let dataPointZ = validData.rotationRate.z
-                    self?.gyroscopeDataPointsZ.append(dataPointZ)
+                    let timestamp = Date().timeIntervalSince1970
+                    let rawGyroDataString = "Gyroscope,\(timestamp),\(validData.rotationRate.x),\(validData.rotationRate.y),\(validData.rotationRate.z)"
+                    self?.gyroscopeData.append(rawGyroDataString)
+
+                    // Append raw gyroscope data to the arrays
+                    self?.gyroscopeDataPointsX.append(validData.rotationRate.x)
+                    self?.gyroscopeDataPointsY.append(validData.rotationRate.y)
+                    self?.gyroscopeDataPointsZ.append(validData.rotationRate.z)
+                } else if let error = error {
+                    print("Gyroscope error: \(error)")
                 }
             }
+        } else {
+            print("Gyroscope is not available.")
         }
     }
     
@@ -172,7 +177,7 @@ class GyroscopeManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard isCollectingData else { return }
         
         isCollectingData = false
-        gyroscopeManager.stopDeviceMotionUpdates()
+        gyroscopeManager.stopGyroUpdates()
         endBackgroundTask()
         removeDataCollectionNotification()  // Remove the notification
         showDataCollectionStoppedNotification()

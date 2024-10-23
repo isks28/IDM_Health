@@ -146,22 +146,27 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         startBackgroundTask()
         showDataCollectionNotification() // Show the notification
 
-        if accelerometerManager.isDeviceMotionAvailable {
-            accelerometerManager.deviceMotionUpdateInterval = 1.0 / currentSamplingRate
-            accelerometerManager.startDeviceMotionUpdates(to: .main) { [weak self] (data, error) in
+        // Collect raw accelerometer data
+        if accelerometerManager.isAccelerometerAvailable {
+            accelerometerManager.accelerometerUpdateInterval = 1.0 / currentSamplingRate // Set sampling rate
+            
+            // Start collecting raw accelerometer data
+            accelerometerManager.startAccelerometerUpdates(to: .main) { [weak self] (data, error) in
                 if let validData = data {
-                    let timestamp = validData.timestamp
-                    let userAccDataString = "UserAcceleration,\(timestamp),\(validData.userAcceleration.x),\(validData.userAcceleration.y),\(validData.userAcceleration.z)"
-                    self?.accelerometerData.append(userAccDataString)
+                    let timestamp = Date().timeIntervalSince1970
+                    let rawAccDataString = "Accelerometer,\(timestamp),\(validData.acceleration.x),\(validData.acceleration.y),\(validData.acceleration.z)"
+                    self?.accelerometerData.append(rawAccDataString)
 
-                    let dataPointX = validData.userAcceleration.x
-                    self?.accelerometerDataPointsX.append(dataPointX)
-                    let dataPointY = validData.userAcceleration.y
-                    self?.accelerometerDataPointsY.append(dataPointY)
-                    let dataPointZ = validData.userAcceleration.z
-                    self?.accelerometerDataPointsZ.append(dataPointZ)
+                    // Append raw accelerometer data to the arrays
+                    self?.accelerometerDataPointsX.append(validData.acceleration.x)
+                    self?.accelerometerDataPointsY.append(validData.acceleration.y)
+                    self?.accelerometerDataPointsZ.append(validData.acceleration.z)
+                } else if let error = error {
+                    print("Accelerometer error: \(error)")
                 }
             }
+        } else {
+            print("Accelerometer is not available.")
         }
     }
 
@@ -169,7 +174,7 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         guard isCollectingData else { return }
 
         isCollectingData = false
-        accelerometerManager.stopDeviceMotionUpdates()
+        accelerometerManager.stopAccelerometerUpdates()
         endBackgroundTask()
         removeDataCollectionNotification() // Remove the notification
         showDataCollectionStoppedNotification() // show the notification if data collection is stopped

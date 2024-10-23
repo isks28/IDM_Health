@@ -55,21 +55,21 @@ struct rawDataAllView: View {
                         RawDataGraphView(
                             dataPoints: motionManager.accelerometerDataPointsX,
                             lineColor: .red.opacity(0.5),
-                            graphTitle: "Accelerometer X-Axis"
+                            graphTitle: "User Acceleration X-Axis"
                         )
                         .frame(height: 100)
 
                         RawDataGraphView(
                             dataPoints: motionManager.accelerometerDataPointsY,
                             lineColor: .green.opacity(0.5),
-                            graphTitle: "Accelerometer Y-Axis"
+                            graphTitle: "User Acceleration Y-Axis"
                         )
                         .frame(height: 100)
 
                         RawDataGraphView(
                             dataPoints: motionManager.accelerometerDataPointsZ,
                             lineColor: .blue.opacity(0.5),
-                            graphTitle: "Accelerometer Z-Axis"
+                            graphTitle: "User Acceleration Z-Axis"
                         )
                         .frame(height: 100)
                     }
@@ -87,21 +87,21 @@ struct rawDataAllView: View {
                         RawDataGraphView(
                             dataPoints: motionManager.rotationalDataPointsX,
                             lineColor: .red.opacity(0.5),
-                            graphTitle: "Gyroscope X-Axis"
+                            graphTitle: "Rotation Rate X-Axis"
                         )
                         .frame(height: 100)
 
                         RawDataGraphView(
                             dataPoints: motionManager.rotationalDataPointsY,
                             lineColor: .green.opacity(0.5),
-                            graphTitle: "Gyroscope Y-Axis"
+                            graphTitle: "Rotation Rate Y-Axis"
                         )
                         .frame(height: 100)
 
                         RawDataGraphView(
                             dataPoints: motionManager.rotationalDataPointsZ,
                             lineColor: .blue.opacity(0.5),
-                            graphTitle: "Gyroscope Z-Axis"
+                            graphTitle: "Rotation Rate Z-Axis"
                         )
                         .frame(height: 100)
                     }
@@ -119,21 +119,21 @@ struct rawDataAllView: View {
                         RawDataGraphView(
                             dataPoints: motionManager.magneticDataPointsX,
                             lineColor: .red.opacity(0.5),
-                            graphTitle: "Magnetometer X-Axis"
+                            graphTitle: "Magnetic Field X-Axis"
                         )
                         .frame(height: 100)
 
                         RawDataGraphView(
                             dataPoints: motionManager.magneticDataPointsY,
                             lineColor: .green.opacity(0.5),
-                            graphTitle: "Magnetometer Y-Axis"
+                            graphTitle: "Magnetic Field Y-Axis"
                         )
                         .frame(height: 100)
 
                         RawDataGraphView(
                             dataPoints: motionManager.magneticDataPointsZ,
                             lineColor: .blue.opacity(0.5),
-                            graphTitle: "Magnetometer Z-Axis"
+                            graphTitle: "Magnetic Field Z-Axis"
                         )
                         .frame(height: 100)
                     }

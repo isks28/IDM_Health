@@ -136,7 +136,7 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
 
     func startMagnetometerDataCollection(realTime: Bool, serverURL: URL) {
         guard !isCollectingData else { return }
-        
+
         self.serverURL = serverURL
         isCollectingData = true
         magnetometerData = []
@@ -144,26 +144,31 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
         magnetometerDataPointsY = []
         magnetometerDataPointsZ = []
         recordingMode = realTime ? "RealTime" : "TimeInterval"
-        
+
         startBackgroundTask()
         showDataCollectionNotification() // Show the notification
-        
-        if magnetometerManager.isDeviceMotionAvailable {
-            magnetometerManager.deviceMotionUpdateInterval = 1.0 / currentSamplingRate // Apply the current sampling rate
-            magnetometerManager.startDeviceMotionUpdates(to: .main) { [weak self] (data, error) in
+
+        // Collect raw magnetometer data
+        if magnetometerManager.isMagnetometerAvailable {
+            magnetometerManager.magnetometerUpdateInterval = 1.0 / currentSamplingRate // Set sampling rate
+
+            // Start collecting raw magnetometer data
+            magnetometerManager.startMagnetometerUpdates(to: .main) { [weak self] (data, error) in
                 if let validData = data {
-                    let timestamp = validData.timestamp
-                    let userMagnetometerString = "UserMagnetometer,\(timestamp),\(validData.magneticField.field.x),\(validData.magneticField.field.y),\(validData.magneticField.field.z)"
-                    self?.magnetometerData.append(userMagnetometerString)
-                    
-                    let dataPointX = validData.magneticField.field.x
-                    self?.magnetometerDataPointsX.append(dataPointX)
-                    let dataPointY = validData.magneticField.field.y
-                    self?.magnetometerDataPointsY.append(dataPointY)
-                    let dataPointZ = validData.magneticField.field.z
-                    self?.magnetometerDataPointsZ.append(dataPointZ)
+                    let timestamp = Date().timeIntervalSince1970
+                    let rawMagnetometerString = "Magnetometer,\(timestamp),\(validData.magneticField.x),\(validData.magneticField.y),\(validData.magneticField.z)"
+                    self?.magnetometerData.append(rawMagnetometerString)
+
+                    // Append raw magnetometer data to the arrays
+                    self?.magnetometerDataPointsX.append(validData.magneticField.x)
+                    self?.magnetometerDataPointsY.append(validData.magneticField.y)
+                    self?.magnetometerDataPointsZ.append(validData.magneticField.z)
+                } else if let error = error {
+                    print("Magnetometer error: \(error)")
                 }
             }
+        } else {
+            print("Magnetometer is not available.")
         }
     }
     
@@ -172,7 +177,7 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
         
         isCollectingData = false
         
-        magnetometerManager.stopDeviceMotionUpdates()
+        magnetometerManager.stopMagnetometerUpdates()
         endBackgroundTask()
         removeDataCollectionNotification()  // Remove the notification
         showDataCollectionStoppedNotification()
