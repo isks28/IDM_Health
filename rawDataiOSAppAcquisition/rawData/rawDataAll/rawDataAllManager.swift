@@ -32,6 +32,16 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var magneticDataPointsY: [Double] = []
     @Published var magneticDataPointsZ: [Double] = []
     
+    @Published var gravityData: [String] = []
+    @Published var gravityDataPointsX: [Double] = []
+    @Published var gravityDataPointsY: [Double] = []
+    @Published var gravityDataPointsZ: [Double] = []
+
+    @Published var attitudeData: [String] = []
+    @Published var attitudeDataRoll: [Double] = []
+    @Published var attitudeDataPitch: [Double] = []
+    @Published var attitudeDataYaw: [Double] = []
+    
     @Published var savedFilePath: String?
     
     let baseFolder: String = "RawDataAll"
@@ -149,6 +159,7 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dataCollectionNotification"])
     }
 
+    // Updating the startRawDataAllCollection method
     func startRawDataAllCollection(realTime: Bool, serverURL: URL) {
         guard !isCollectingData else { return }
         
@@ -166,6 +177,12 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         magneticDataPointsX = []
         magneticDataPointsY = []
         magneticDataPointsZ = []
+        gravityDataPointsX = []  // Clear gravity data points
+        gravityDataPointsY = []
+        gravityDataPointsZ = []
+        attitudeDataRoll = []  // Clear attitude data points
+        attitudeDataPitch = []
+        attitudeDataYaw = []
         recordingMode = realTime ? "RealTime" : "TimeInterval"
         
         startBackgroundTask()
@@ -197,6 +214,20 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                     self?.magneticDataPointsX.append(validData.magneticField.field.x)
                     self?.magneticDataPointsY.append(validData.magneticField.field.y)
                     self?.magneticDataPointsZ.append(validData.magneticField.field.z)
+
+                    // Collect gravity data
+                    let gravityDataString = "Gravity,\(timestamp),\(validData.gravity.x),\(validData.gravity.y),\(validData.gravity.z)"
+                    self?.gravityData.append(gravityDataString)
+                    self?.gravityDataPointsX.append(validData.gravity.x)
+                    self?.gravityDataPointsY.append(validData.gravity.y)
+                    self?.gravityDataPointsZ.append(validData.gravity.z)
+
+                    // Collect attitude data (roll, pitch, yaw)
+                    let attitudeDataString = "Attitude,\(timestamp),\(validData.attitude.roll),\(validData.attitude.pitch),\(validData.attitude.yaw)"
+                    self?.attitudeData.append(attitudeDataString)
+                    self?.attitudeDataRoll.append(validData.attitude.roll)
+                    self?.attitudeDataPitch.append(validData.attitude.pitch)
+                    self?.attitudeDataYaw.append(validData.attitude.yaw)
                 }
             }
         }
@@ -231,6 +262,14 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             magneticDataPointsX = []
             magneticDataPointsY = []
             magneticDataPointsZ = []
+            gravityData = []
+            gravityDataPointsX = []
+            gravityDataPointsY = []
+            gravityDataPointsZ = []
+            attitudeData = []
+            attitudeDataYaw = []
+            attitudeDataPitch = []
+            attitudeDataRoll = []
         }
     
     func updateSamplingRate(rate: Double) {
@@ -257,7 +296,7 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
 
         let csvHeader = "DataType,TimeStamp,x,y,z\n"
-        let csvData = (userAccelerometerData + rotationalData + magneticFieldData).joined(separator: "\n")
+        let csvData = (userAccelerometerData + rotationalData + magneticFieldData + gravityData + attitudeData).joined(separator: "\n")
         let csvString = csvHeader + csvData
         
         // Compute a hash of the current data to see if it's already been saved

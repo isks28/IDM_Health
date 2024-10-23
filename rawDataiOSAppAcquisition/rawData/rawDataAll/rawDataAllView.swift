@@ -11,140 +11,115 @@ import CoreMotion
 import UserNotifications
 
 enum DataType: String, CaseIterable {
-    case accelerometer = "Accelerometer"
-    case gyroscope = "Gyroscope"
-    case magnetometer = "Magnetometer"
+case accelerometer = "User Acc."
+case gyroscope = "Rot. Rate"
+case gravity = "Gravity"
+case attitude = "Attitude"
+    case magnetometer = "Mag. Field"
 }
 
 struct rawDataAllView: View {
-    @StateObject private var motionManager = RawDataAllManager()
-    @State private var isRecording = false
-    @State private var startDate = Date()
-    @State private var endDate = Date().addingTimeInterval(3600)
-    @State private var isRecordingRealTime = false
-    @State private var isRecordingInterval = false
-    @State private var samplingRate: Double = 60.0 // Default sampling rate
-    @State private var canControlSamplingRate = false
-    @State private var showingAuthenticationError = false
-    @State private var selectedDataType: DataType = .accelerometer // Default data type
-    
-    @State private var showingInfo = false
-    // New state to trigger the graph refresh
-    @State private var refreshGraph = UUID()
-    
-    var body: some View {
-        VStack {
-            
-            // Segmented Picker to choose data type
-            Picker("Select Data", selection: $selectedDataType) {
-                ForEach(DataType.allCases, id: \.self) { dataType in
-                    Text(dataType.rawValue)
-                        .tag(dataType)
-                }
+@StateObject private var motionManager = RawDataAllManager()
+@State private var isRecording = false
+@State private var startDate = Date()
+@State private var endDate = Date().addingTimeInterval(3600)
+@State private var isRecordingRealTime = false
+@State private var isRecordingInterval = false
+@State private var samplingRate: Double = 60.0 // Default sampling rate
+@State private var canControlSamplingRate = false
+@State private var showingAuthenticationError = false
+@State private var selectedDataType: DataType = .accelerometer // Default data type
+
+@State private var showingInfo = false
+@State private var refreshGraph = UUID() // To trigger graph refresh
+
+var body: some View {
+    VStack {
+        // Segmented Picker to choose data type
+        Picker("Select Data", selection: $selectedDataType) {
+            ForEach(DataType.allCases, id: \.self) { dataType in
+                Text(dataType.rawValue)
+                    .tag(dataType)
             }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding()
-            
-            Spacer()
-            
-            // Display Graphs Based on Selected Data Type
-            switch selectedDataType {
-            case .accelerometer:
-                if motionManager.userAccelerometerData.last != nil {
-                    VStack {
-                        RawDataGraphView(
-                            dataPoints: motionManager.accelerometerDataPointsX,
-                            lineColor: .red.opacity(0.5),
-                            graphTitle: "User Acceleration X-Axis"
-                        )
-                        .frame(height: 100)
+        }
+        .pickerStyle(SegmentedPickerStyle())
+        .padding()
 
-                        RawDataGraphView(
-                            dataPoints: motionManager.accelerometerDataPointsY,
-                            lineColor: .green.opacity(0.5),
-                            graphTitle: "User Acceleration Y-Axis"
-                        )
-                        .frame(height: 100)
+        Spacer()
 
-                        RawDataGraphView(
-                            dataPoints: motionManager.accelerometerDataPointsZ,
-                            lineColor: .blue.opacity(0.5),
-                            graphTitle: "User Acceleration Z-Axis"
-                        )
+        // Display graphs based on the selected data type
+        switch selectedDataType {
+        case .accelerometer:
+            if motionManager.userAccelerometerData.last != nil {
+                VStack {
+                    RawDataGraphView(dataPoints: motionManager.accelerometerDataPointsX, lineColor: .red.opacity(0.5), graphTitle: "User Acceleration X-Axis")
                         .frame(height: 100)
-                    }
-                } else {
-                    Text("No data")
-                        .padding(.bottom, 300)
-                        .font(.title3)
-                        .foregroundStyle(Color.secondary)
-                        .multilineTextAlignment(.center)
+                    RawDataGraphView(dataPoints: motionManager.accelerometerDataPointsY, lineColor: .green.opacity(0.5), graphTitle: "User Acceleration Y-Axis")
+                        .frame(height: 100)
+                    RawDataGraphView(dataPoints: motionManager.accelerometerDataPointsZ, lineColor: .blue.opacity(0.5), graphTitle: "User Acceleration Z-Axis")
+                        .frame(height: 100)
                 }
-                
-            case .gyroscope:
-                if motionManager.rotationalData.last != nil {
-                    VStack {
-                        RawDataGraphView(
-                            dataPoints: motionManager.rotationalDataPointsX,
-                            lineColor: .red.opacity(0.5),
-                            graphTitle: "Rotation Rate X-Axis"
-                        )
-                        .frame(height: 100)
-
-                        RawDataGraphView(
-                            dataPoints: motionManager.rotationalDataPointsY,
-                            lineColor: .green.opacity(0.5),
-                            graphTitle: "Rotation Rate Y-Axis"
-                        )
-                        .frame(height: 100)
-
-                        RawDataGraphView(
-                            dataPoints: motionManager.rotationalDataPointsZ,
-                            lineColor: .blue.opacity(0.5),
-                            graphTitle: "Rotation Rate Z-Axis"
-                        )
-                        .frame(height: 100)
-                    }
-                } else {
-                    Text("No data")
-                        .padding(.bottom, 300)
-                        .font(.title3)
-                        .foregroundStyle(Color.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                
-            case .magnetometer:
-                if motionManager.magneticFieldData.last != nil {
-                    VStack {
-                        RawDataGraphView(
-                            dataPoints: motionManager.magneticDataPointsX,
-                            lineColor: .red.opacity(0.5),
-                            graphTitle: "Magnetic Field X-Axis"
-                        )
-                        .frame(height: 100)
-
-                        RawDataGraphView(
-                            dataPoints: motionManager.magneticDataPointsY,
-                            lineColor: .green.opacity(0.5),
-                            graphTitle: "Magnetic Field Y-Axis"
-                        )
-                        .frame(height: 100)
-
-                        RawDataGraphView(
-                            dataPoints: motionManager.magneticDataPointsZ,
-                            lineColor: .blue.opacity(0.5),
-                            graphTitle: "Magnetic Field Z-Axis"
-                        )
-                        .frame(height: 100)
-                    }
-                } else {
-                    Text("No data")
-                        .padding(.bottom, 300)
-                        .font(.title3)
-                        .foregroundStyle(Color.secondary)
-                        .multilineTextAlignment(.center)
-                }
+            } else {
+                showNoDataMessage()
             }
+
+        case .gyroscope:
+            if motionManager.rotationalData.last != nil {
+                VStack {
+                    RawDataGraphView(dataPoints: motionManager.rotationalDataPointsX, lineColor: .red.opacity(0.5), graphTitle: "Rotation Rate X-Axis")
+                        .frame(height: 100)
+                    RawDataGraphView(dataPoints: motionManager.rotationalDataPointsY, lineColor: .green.opacity(0.5), graphTitle: "Rotation Rate Y-Axis")
+                        .frame(height: 100)
+                    RawDataGraphView(dataPoints: motionManager.rotationalDataPointsZ, lineColor: .blue.opacity(0.5), graphTitle: "Rotation Rate Z-Axis")
+                        .frame(height: 100)
+                }
+            } else {
+                showNoDataMessage()
+            }
+
+
+        case .gravity:
+            if motionManager.gravityDataPointsX.last != nil {
+                VStack {
+                    RawDataGraphView(dataPoints: motionManager.gravityDataPointsX, lineColor: .red.opacity(0.5), graphTitle: "Gravity X-Axis")
+                        .frame(height: 100)
+                    RawDataGraphView(dataPoints: motionManager.gravityDataPointsY, lineColor: .green.opacity(0.5), graphTitle: "Gravity Y-Axis")
+                        .frame(height: 100)
+                    RawDataGraphView(dataPoints: motionManager.gravityDataPointsZ, lineColor: .blue.opacity(0.5), graphTitle: "Gravity Z-Axis")
+                        .frame(height: 100)
+                }
+            } else {
+                showNoDataMessage()
+            }
+
+        case .attitude:
+            if motionManager.attitudeDataRoll.last != nil {
+                VStack {
+                    RawDataGraphView(dataPoints: motionManager.attitudeDataRoll, lineColor: .red.opacity(0.5), graphTitle: "Attitude Roll")
+                        .frame(height: 100)
+                    RawDataGraphView(dataPoints: motionManager.attitudeDataPitch, lineColor: .green.opacity(0.5), graphTitle: "Attitude Pitch")
+                        .frame(height: 100)
+                    RawDataGraphView(dataPoints: motionManager.attitudeDataYaw, lineColor: .blue.opacity(0.5), graphTitle: "Attitude Yaw")
+                        .frame(height: 100)
+                }
+            } else {
+                showNoDataMessage()
+            }
+            
+        case .magnetometer:
+            if motionManager.magneticFieldData.last != nil {
+                VStack {
+                    RawDataGraphView(dataPoints: motionManager.magneticDataPointsX, lineColor: .red.opacity(0.5), graphTitle: "Magnetic Field X-Axis")
+                        .frame(height: 100)
+                    RawDataGraphView(dataPoints: motionManager.magneticDataPointsY, lineColor: .green.opacity(0.5), graphTitle: "Magnetic Field Y-Axis")
+                        .frame(height: 100)
+                    RawDataGraphView(dataPoints: motionManager.magneticDataPointsZ, lineColor: .blue.opacity(0.5), graphTitle: "Magnetic Field Z-Axis")
+                        .frame(height: 100)
+                }
+            } else {
+                showNoDataMessage()
+            }
+        }
             
             Spacer()
             Spacer()
@@ -403,6 +378,14 @@ struct rawDataAllView: View {
             completion(false)
         }
     }
+    
+    func showNoDataMessage() -> some View {
+            Text("No data")
+                .padding(.bottom, 300)
+                .font(.title3)
+                .foregroundStyle(Color.secondary)
+                .multilineTextAlignment(.center)
+        }
 }
 
 // Custom RawDataGraphView to display one axis at a time
