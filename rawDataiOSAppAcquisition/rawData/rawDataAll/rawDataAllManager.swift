@@ -192,7 +192,7 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             rawDataAllManager.deviceMotionUpdateInterval = 1.0 / currentSamplingRate // Apply the current sampling rate
             rawDataAllManager.startDeviceMotionUpdates(to: .main) { [weak self] (data, error) in
                 if let validData = data {
-                    let timestamp = validData.timestamp
+                    let timestamp = Date().timeIntervalSince1970
                     
                     // Collect accelerometer data
                     let userAccDataString = "UserAcceleration,\(timestamp),\(validData.userAcceleration.x),\(validData.userAcceleration.y),\(validData.userAcceleration.z)"

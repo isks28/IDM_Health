@@ -218,7 +218,7 @@ struct accelerometerDataView: View {
                         }) {
                             Text(isRecording ? "Stop and Save" : "Start")
                                 .padding()
-                                .background(isRecording ? Color.gray : Color.blue)
+                                .background(isRecording ? Color.secondary : Color.blue)
                                 .foregroundColor(.white)
                                 .cornerRadius(15)
                         }
@@ -226,7 +226,7 @@ struct accelerometerDataView: View {
                         if motionManager.savedFilePath != nil {
                             Text("File saved")
                                 .font(.footnote)
-                                .foregroundStyle(Color.blue)
+                                .foregroundStyle(Color.primary)
                                 .padding()
                         }
                     }

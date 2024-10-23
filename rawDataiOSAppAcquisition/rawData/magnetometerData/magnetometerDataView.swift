@@ -209,7 +209,7 @@ struct magnetometerDataView: View {
                         }) {
                             Text(isRecording ? "Stop and Save" : "Start")
                                 .padding()
-                                .background(isRecording ? Color.gray : Color.blue)
+                                .background(isRecording ? Color.secondary : Color.blue)
                                 .foregroundColor(.white)
                                 .cornerRadius(15)
                         }
