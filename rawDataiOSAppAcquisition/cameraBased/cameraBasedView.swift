@@ -18,77 +18,77 @@ struct cameraBasedView: View {
     var serverURL: URL? // Server URL for uploading
     
     var body: some View {
-        ZStack(alignment: .center) {
-            // Camera-based controller
-            CameraBasedController(
-                onPhotoCaptured: { image in
-                    capturedImage = image
-                    capturedVideoURL = nil
-                    showPhoto = true
-                    triggerFlash()
-                },
-                onVideoRecorded: { url in
-                    capturedVideoURL = url
-                    capturedImage = nil
-                    showPhoto = true
-                    triggerFlash()
-                },
-                isRecording: $isRecording,
-                shouldTakePhoto: $shouldTakePhoto
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .zIndex(0)
-            .edgesIgnoringSafeArea(.all)
-            
-            // Flash overlay
-            Color.white
-                .opacity(flashOverlayOpacity)
+        NavigationView {
+            ZStack(alignment: .center) {
+                // Camera-based controller
+                CameraBasedController(
+                    onPhotoCaptured: { image in
+                        capturedImage = image
+                        capturedVideoURL = nil
+                        showPhoto = true
+                        triggerFlash()
+                    },
+                    onVideoRecorded: { url in
+                        capturedVideoURL = url
+                        capturedImage = nil
+                        showPhoto = true
+                        triggerFlash()
+                    },
+                    isRecording: $isRecording,
+                    shouldTakePhoto: $shouldTakePhoto
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .zIndex(0)
                 .edgesIgnoringSafeArea(.all)
-            
-            VStack {
-                Text("Visual Data collection")
-                    .font(.largeTitle)
-                    .foregroundStyle(.primary)
-                    .multilineTextAlignment(.center)
-                Spacer()
-                HStack {
-                    Button(action: {
-                        isRecording.toggle()
-                    }) {
-                        Image(systemName: isRecording ? "stop.circle.fill" : "video.circle.fill")
-                            .font(.system(size: 50))
-                            .foregroundColor(isRecording ? .pink : .secondary)
+                
+                // Flash overlay
+                Color.white
+                    .opacity(flashOverlayOpacity)
+                    .edgesIgnoringSafeArea(.all)
+                
+                VStack {
+                    Spacer()
+                    HStack {
+                        Button(action: {
+                            isRecording.toggle()
+                        }) {
+                            Image(systemName: isRecording ? "stop.circle.fill" : "video.circle.fill")
+                                .font(.system(size: 50))
+                                .foregroundColor(isRecording ? .pink : .secondary)
+                        }
+                        .padding(20)
+                        
+                        Button(action: {
+                            shouldTakePhoto = true
+                        }) {
+                            Image(systemName: "camera.circle.fill")
+                                .font(.system(size: 50))
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(20)
                     }
-                    .padding(20)
-                    
-                    Button(action: {
-                        shouldTakePhoto = true
-                    }) {
-                        Image(systemName: "camera.circle.fill")
-                            .font(.system(size: 50))
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(20)
+                }
+                
+                if showPhoto {
+                    PreviewView(
+                        image: capturedImage,
+                        videoURL: capturedVideoURL,
+                        onDismiss: {
+                            showPhoto = false
+                        },
+                        onSaveAndUpload: { image, videoURL in
+                            saveAndUploadData(image: image, videoURL: videoURL)
+                            showPhoto = false
+                        }
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)  // Make sure it fills the available space
+                    .background(Color.black.opacity(0.92))  // Add background to help distinguish it
+                    .edgesIgnoringSafeArea(.all)  // Ensure it covers the entire screen
+                    .transition(.move(edge: .bottom))
                 }
             }
-            
-            if showPhoto {
-                PreviewView(
-                    image: capturedImage,
-                    videoURL: capturedVideoURL,
-                    onDismiss: {
-                        showPhoto = false
-                    },
-                    onSaveAndUpload: { image, videoURL in
-                        saveAndUploadData(image: image, videoURL: videoURL)
-                        showPhoto = false
-                    }
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)  // Make sure it fills the available space
-                .background(Color.black.opacity(0.92))  // Add background to help distinguish it
-                .edgesIgnoringSafeArea(.all)  // Ensure it covers the entire screen
-                .transition(.move(edge: .bottom))
-            }
+            .navigationTitle("Visual Data")
+            .padding(.top, -8) // Adjust this value to align the ZStack with the bottom of the navigation title
         }
     }
     

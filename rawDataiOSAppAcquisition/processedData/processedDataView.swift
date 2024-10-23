@@ -41,7 +41,7 @@ struct processedDataView: View {
                 }
                         .tag("StepCounts")
             }
-            .navigationTitle("Processed Data")
+            .navigationTitle("Walking Data")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
@@ -52,7 +52,7 @@ struct processedDataView: View {
                     }
                     .sheet(isPresented: $showingInfo) {
                         VStack {
-                            Text("Processsed data Information")
+                            Text("Walking data Information")
                                 .font(.largeTitle)
                             Text("STEP COUNTS use core motion to record the user steps")
                                 .font(.body)

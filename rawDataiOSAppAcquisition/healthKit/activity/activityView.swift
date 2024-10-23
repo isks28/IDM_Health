@@ -52,7 +52,6 @@ struct activityView: View {
                 VStack(spacing: 10) {
                     dataSection(title: "Step Count", dataAvailable: !healthKitManager.stepCountData.isEmpty, chartKey: "StepCount", data: healthKitManager.stepCountData, unit: HKUnit.count(), chartTitle: "Step Count")
                     dataSection(title: "Active Energy Burned", dataAvailable: !healthKitManager.activeEnergyBurnedData.isEmpty, chartKey: "ActiveEnergy", data: healthKitManager.activeEnergyBurnedData, unit: HKUnit.smallCalorie(), chartTitle: "Active Energy Burned in KiloCalorie")
-                    dataSection(title: "Move Time", dataAvailable: !healthKitManager.appleMoveTimeData.isEmpty, chartKey: "MoveTime", data: healthKitManager.appleMoveTimeData, unit: HKUnit.minute(), chartTitle: "Move Time (min)")
                     dataSection(title: "Stand Time", dataAvailable: !healthKitManager.appleStandTimeData.isEmpty, chartKey: "StandTime", data: healthKitManager.appleStandTimeData, unit: HKUnit.minute(), chartTitle: "Stand Time (min)")
                     dataSection(title: "Distance Walking/Running", dataAvailable: !healthKitManager.distanceWalkingRunningData.isEmpty, chartKey: "DistanceWalkingRunning", data: healthKitManager.distanceWalkingRunningData, unit: HKUnit.meter(), chartTitle: "Distance Walking/Running (Km)")
                     dataSection(title: "Exercise Time", dataAvailable: !healthKitManager.appleExerciseTimeData.isEmpty, chartKey: "ExerciseTime", data: healthKitManager.appleExerciseTimeData, unit: HKUnit.minute(), chartTitle: "Exercise Time (min)")
@@ -217,8 +216,8 @@ struct ChartWithTimeFramePicker: View {
         VStack {
             HStack {
                 Text(getInformationText())
-                    .font(.footnote)
-                    .foregroundStyle(Color.secondary)
+                    .font(.body)
+                    .foregroundStyle(Color.primary)
                     .multilineTextAlignment(.center)
                     .padding(2)
                     .padding(.top, 5)
@@ -256,7 +255,7 @@ struct ChartWithTimeFramePicker: View {
                     showDatePicker = true
                 }) {
                     Text(getTitleForCurrentPage(timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0, startDate: startDate, endDate: endDate))
-                        .foregroundColor(.blue)
+                        .foregroundColor(.primary)
                         .padding(.vertical, 5)
                         .padding(.horizontal, 10)
                         .background(.white)
@@ -332,7 +331,7 @@ struct ChartWithTimeFramePicker: View {
                     .foregroundColor(.primary)
                 
                 Text(getValueText(timeFrame: selectedTimeFrame, sum: sum, average: average))
-                    .foregroundColor(.pink)
+                    .foregroundColor(.primary)
             }
             .font(.headline)
             .frame(maxWidth: .infinity)
@@ -407,6 +406,9 @@ struct ChartWithTimeFramePicker: View {
                 .font(.title)
                 .padding(.bottom, 7)
                 .foregroundStyle(Color.primary)
+            Text(dataInformation())
+                .font(.body)
+                .padding(.bottom, 3)
             Text(measuredUsing())
                 .font(.body)
                 .padding(.bottom, 3)
@@ -617,19 +619,38 @@ struct ChartWithTimeFramePicker: View {
     private func getInformationText() -> String {
         switch title {
         case "Step Count":
-            return "Number of Steps taken"
+            return "Step Count"
         case "Active Energy Burned in KiloCalorie":
-            return "Energy burned through physical activity, excluding Energy burned at Rest (basal metabolic rate)"
+            return "Active Energy Burned"
         case "Move Time (min)":
-            return "Time spent performing activities that involve full-body movements"
+            return ""
         case "Stand Time (min)":
-            return "Time has spent standing"
+            return "Stand Time"
         case "Distance Walking/Running (Km)":
-            return "Distance the user has moved by walking or running"
+            return "Distance Walking/Running"
         case "Exercise Time (min)":
-            return "Time that the user has spent exercising"
+            return "Exercise Time"
         default:
             return "Data not available."
+        }
+    }
+    
+    private func dataInformation() -> String {
+        switch title {
+        case "Step Count":
+            return "DATA INFORMATION: Number of steps taken"
+        case "Active Energy Burned in KiloCalorie":
+            return "DATA INFORMATION: Energy burned through physical activity, excluding Energy burned at Rest (basal metabolic rate)"
+        case "Move Time (min)":
+            return ""
+        case "Stand Time (min)":
+            return "DATA INFORMATION: Time spent standing"
+        case "Distance Walking/Running (Km)":
+            return "DATA INFORMATION: Distance the user has moved by walking or running"
+        case "Exercise Time (min)":
+            return "DATA INFORMATION: Time the user has spent exercising"
+        default:
+            return "More information about this section is not available."
         }
     }
     
@@ -651,6 +672,7 @@ struct ChartWithTimeFramePicker: View {
             return "More information about this section is not available."
         }
     }
+    
     private func useCase() -> String {
         switch title {
         case "Step Count":

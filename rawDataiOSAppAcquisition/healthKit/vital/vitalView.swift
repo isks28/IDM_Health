@@ -192,8 +192,8 @@ struct VitalChartWithTimeFramePicker: View {
         VStack {
             HStack {
                 Text(getInformationText())
-                    .font(.headline)
-                    .foregroundStyle(Color.secondary)
+                    .font(.body)
+                    .foregroundStyle(Color.primary)
                     .multilineTextAlignment(.center)
                     .padding(2)
                     .padding(.top, 5)
@@ -203,7 +203,8 @@ struct VitalChartWithTimeFramePicker: View {
                 }) {
                     Image(systemName: "info.circle")
                         .foregroundColor(.blue)
-                        .padding(.vertical)
+                        .padding(.top, 8)
+                        .padding(.bottom, 2)
                 }
                 .popover(isPresented: $showInfoPopover) {
                     popoverContent()
@@ -324,10 +325,10 @@ struct VitalChartWithTimeFramePicker: View {
                     .foregroundColor(.primary)
                 
                 Text(getValueText(timeFrame: selectedTimeFrameVital, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
-                    .foregroundColor(.pink)
+                    .foregroundColor(.primary)
                 
                 Text(getUnitForMetric(title: title))
-                    .foregroundColor(.pink)
+                    .foregroundColor(.primary)
             }
             .font(.headline)
             .frame(maxWidth: .infinity)
@@ -428,6 +429,9 @@ struct VitalChartWithTimeFramePicker: View {
                 .font(.title)
                 .padding(.bottom, 7)
                 .foregroundStyle(Color.primary)
+            Text(dataInformation())
+                .font(.body)
+                .padding(.bottom, 3)
             Text(measuredUsing())
                 .font(.body)
                 .padding(.bottom, 3)
@@ -526,7 +530,16 @@ struct VitalChartWithTimeFramePicker: View {
     private func getInformationText() -> String {
         switch title {
         case "Heart Rate":
-            return "Heart Beats per Minute"
+            return "Heart Rate"
+        default:
+            return "Data not available."
+        }
+    }
+    
+    private func dataInformation() -> String {
+        switch title {
+        case "Heart Rate":
+            return "DATA INFORMATION: Heart Rate is a measure of the number of times the heart beats per minute."
         default:
             return "Data not available."
         }

@@ -59,8 +59,8 @@ struct ContentView: View {
                 processedDataView()
                     .tag("CoreMotionProcessed")
                     .tabItem{
-                        Image(systemName: "desktopcomputer")
-                        Text("Processed Data")
+                        Image(systemName: "shoeprints.fill")
+                        Text("Walking Data")
                     }
                 
                 cameraBasedView()

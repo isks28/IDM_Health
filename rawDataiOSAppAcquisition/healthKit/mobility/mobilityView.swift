@@ -213,8 +213,8 @@ struct ChartWithTimeFrameMobilityPicker: View {
         VStack {
             HStack {
                 Text(getInformationText())
-                    .font(.footnote)
-                    .foregroundStyle(Color.secondary)
+                    .font(.body)
+                    .foregroundStyle(Color.primary)
                     .multilineTextAlignment(.center)
                     .padding(2)
                     .padding(.top, 5)
@@ -224,7 +224,8 @@ struct ChartWithTimeFrameMobilityPicker: View {
                 }) {
                     Image(systemName: "info.circle")
                         .foregroundColor(.blue)
-                        .padding(.vertical)
+                        .padding(.top, 8)
+                        .padding(.bottom, 2)
                 }
                 .popover(isPresented: $showInfoPopover) {
                     popoverContent()
@@ -251,7 +252,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
                     showDatePicker = true
                 }) {
                     Text(getTitleForCurrentPage(TimeFrameMobility: selectedTimeFrameMobility, page: currentPageForTimeFrameMobilitys[selectedTimeFrameMobility] ?? 0, startDate: startDate, endDate: endDate))
-                        .foregroundColor(.blue)
+                        .foregroundColor(.primary)
                         .padding(.vertical, 5)
                         .padding(.horizontal, 10)
                         .background(.white)
@@ -333,10 +334,10 @@ struct ChartWithTimeFrameMobilityPicker: View {
                     .foregroundColor(.primary)
                 
                 Text(getValueText(timeFrame: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
-                    .foregroundColor(.pink)
+                    .foregroundColor(.primary)
                 
                 Text(getUnitForMetric(title: title))
-                    .foregroundColor(.pink)
+                    .foregroundColor(.primary)
             }
             .font(.headline)
             .frame(maxWidth: .infinity)
@@ -437,6 +438,9 @@ struct ChartWithTimeFrameMobilityPicker: View {
                 .font(.title)
                 .padding(.bottom, 7)
                 .foregroundStyle(Color.primary)
+            Text(dataInformation())
+                .font(.body)
+                .padding(.bottom, 3)
             Text(measuredUsing())
                 .font(.body)
                 .padding(.bottom, 3)
@@ -536,15 +540,32 @@ struct ChartWithTimeFrameMobilityPicker: View {
     private func getInformationText() -> String {
         switch title {
         case "Walking Double Support":
-            return "Percentage of time when both of the user's feet touch the ground while walking steadily over flat ground"
+            return "Walking Double Support"
         case "Walking Asymmetry":
-            return "Percentage of steps in which one foot moves at a different speed than the other when walking on flat ground"
+            return "Walking Asymmetry"
         case "Walking Speed":
-            return "Speed when walking steadily over flat ground"
+            return "Walking Speed"
         case "Walking Step Length":
-            return "Distance between your front foot and back foot when you're walking"
+            return "Walking Step Length"
         case "Walking Steadiness":
-            return "Steadiness of the gait calculated using walking speed, step length, double support time and wlaking asymmetry data"
+            return "Walking Steadiness"
+        default:
+            return "Data not available."
+        }
+    }
+    
+    private func dataInformation() -> String {
+        switch title {
+        case "Walking Double Support":
+            return "DATA INFORMATION: Percentage of time when both of the user's feet touch the ground while walking steadily over flat ground"
+        case "Walking Asymmetry":
+            return "DATA INFORMATION: Percentage of steps in which one foot moves at a different speed than the other when walking on flat ground"
+        case "Walking Speed":
+            return "DATA INFORMATION: Speed when walking steadily over flat ground"
+        case "Walking Step Length":
+            return "DATA INFORMATION: Distance between your front foot and back foot when you're walking"
+        case "Walking Steadiness":
+            return "DATA INFORMATION: Steadiness of the gait calculated using walking speed, step length, double support time and wlaking asymmetry data"
         default:
             return "Data not available."
         }

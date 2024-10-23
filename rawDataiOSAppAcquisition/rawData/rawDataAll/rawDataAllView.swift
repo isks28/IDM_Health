@@ -326,6 +326,16 @@ struct rawDataAllView: View {
             .padding()
         }
         .navigationTitle("Raw Data All")
+        .onDisappear {
+                    // Ensure the recording stops and resources are released when the view disappears
+                    if isRecording || isRecordingRealTime || isRecordingInterval {
+                        motionManager.stopRawDataAllCollection()
+                        isRecording = false
+                        isRecordingRealTime = false
+                        isRecordingInterval = false
+                        motionManager.resetData()
+                    }
+                }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
