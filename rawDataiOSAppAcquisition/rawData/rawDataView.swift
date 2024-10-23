@@ -43,7 +43,7 @@ struct rawDataView: View {
                         }
                         .tag("Gyroscope Data")
                 HStack {
-                    Image(systemName: "globe")
+                    Image(systemName: "plusminus.circle.fill")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
@@ -57,12 +57,12 @@ struct rawDataView: View {
                         }
                         .tag("Magnetometer Data")
                 HStack{
-                    Image(systemName: "chart.pie.fill")
+                    Image(systemName: "iphone.motion")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
                         .foregroundStyle(Color.blue)
-                    Text("Raw Data All")
+                    Text("Device Motion")
                         .foregroundStyle(Color.primary)
                         .font(.title)
                     Spacer()
@@ -101,7 +101,7 @@ struct rawDataView: View {
                                 .font(.body)
                                 .multilineTextAlignment(.center)
                                 .padding()
-                            Text("RAW DATA ALL: measures accelerometer, gyroscope and magnetometer all at the same time")
+                            Text("DEVICE MOTION: Device motion measures an iPhone's user acceleration, rotation rate, gravity acceleration, attitude, and magnetic field using data from the accelerometer, gyroscope, and magnetometer. ")
                                 .font(.body)
                                 .multilineTextAlignment(.center)
                                 .padding()

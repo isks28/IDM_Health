@@ -300,7 +300,7 @@ var body: some View {
             }
             .padding()
         }
-        .navigationTitle("Raw Data All")
+        .navigationTitle("Device Motion")
         .onDisappear {
                     // Ensure the recording stops and resources are released when the view disappears
                     if isRecording || isRecordingRealTime || isRecordingInterval {
@@ -321,37 +321,60 @@ var body: some View {
                 }
                 .sheet(isPresented: $showingInfo) {
                     VStack {
-                        Text("Data Information")
-                            .font(.largeTitle)
-                        Text("SAMPLING RATE CONTROL can only be accessed by authorized personal")
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .padding(.vertical, 5)
-                            .padding(.horizontal, 5)
-                            .foregroundStyle(Color.primary)
-                        Text("REAL-TIME record the data immediately and stop on-demand")
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .padding(.vertical, 5)
-                            .padding(.horizontal, 5)
-                            .foregroundStyle(Color.primary)
-                        Text("TIME-INTERVAL record the data automatically. Set the start and end date, turn on the Start timed recording, and the recording will stop automatically after the end time is up")
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .padding(.vertical, 5)
-                            .padding(.horizontal, 5)
-                            .foregroundStyle(Color.primary)
-                        Text("DATA COLLECTION WILL STOP IF THE RAW DATA ALL VIEW IS CLOSED. but you may lock the phone or use another app, and the data collection will still be running")
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .padding(.vertical, 5)
-                            .padding(.horizontal, 5)
-                            .foregroundStyle(Color.pink)
-                        Spacer()
+                        Text("Device Motion Information")
+                            .font(.title)
+                            .multilineTextAlignment(.leading)
+                        ScrollView {
+                            Text("DEVICE MOTION measures how an iPhone or Apple Watch moves and orients in space by combining data from the accelerometer (measuring linear acceleration), gyroscope (measuring rotational movement), and magnetometer (measuring orientation relative to Earth’s magnetic field). It also tracks gravity and the device’s attitude (orientation defined by roll, pitch, and yaw), providing comprehensive movement and orientation data used in fitness apps, navigation, gaming, and augmented reality.")
+                                .font(.callout)
+                                .multilineTextAlignment(.leading)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 5)
+                                .foregroundStyle(Color.primary)
+                            Text("For more information go to: https://developer.apple.com/documentation/coremotion/cmdevicemotion")
+                                .font(.callout)
+                                .multilineTextAlignment(.leading)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 5)
+                                .foregroundStyle(Color.primary)
+                            Text("SAMPLING RATE CONTROL can only be accessed by authorized personal")
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding(.vertical, 5)
+                                .foregroundStyle(Color.primary)
+                            Text("REAL-TIME record the data immediately and stop on-demand")
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 5)
+                                .foregroundStyle(Color.primary)
+                            Text("TIME-INTERVAL record the data automatically. Set the start and end date, turn on the Start timed recording, and the recording will stop automatically after the end time is up")
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 5)
+                                .foregroundStyle(Color.primary)
+                            Text("Data collection will stop if the Device Motion view is closed, but it will continue running even if the phone is locked or other apps are in use.")
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 5)
+                                .foregroundStyle(Color.pink)
+                                .background(Color.white)
+                                .cornerRadius(25)
+                                .overlay(  // Adding black outline
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .stroke(Color.pink, lineWidth: 2)  // Outline color and width
+                                )
+                        }
+                        .scrollIndicators(.hidden)
+                        .padding()
+                        .background(Color.secondary.opacity(0.1))
+                        .cornerRadius(25)
+                        .padding(.bottom, 5)
                         // Adding a chevron as a swipe indicator
                         AnimatedSwipeDownCloseView()
                     }
-                    .padding()
                 }
             }
         }
