@@ -184,18 +184,10 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
     
     func resetData() {
             // Reset any internal data states to prepare for a fresh start when the view is reopened
-            userAccelerometerData = []
-            rotationalData = []
-            magneticFieldData = []
-            accelerometerDataPointsX = []
-            accelerometerDataPointsY = []
-            accelerometerDataPointsZ = []
-            rotationalDataPointsX = []
-            rotationalDataPointsY = []
-            rotationalDataPointsZ = []
-            magneticDataPointsX = []
-            magneticDataPointsY = []
-            magneticDataPointsZ = []
+        magnetometerData = []
+        magnetometerDataPointsX = []
+        magnetometerDataPointsY = []
+        magnetometerDataPointsZ = []
         }
     
     func updateSamplingRate(rate: Double) {

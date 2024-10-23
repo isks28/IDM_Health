@@ -184,18 +184,10 @@ class GyroscopeManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func resetData() {
             // Reset any internal data states to prepare for a fresh start when the view is reopened
-            userAccelerometerData = []
-            rotationalData = []
-            magneticFieldData = []
-            accelerometerDataPointsX = []
-            accelerometerDataPointsY = []
-            accelerometerDataPointsZ = []
-            rotationalDataPointsX = []
-            rotationalDataPointsY = []
-            rotationalDataPointsZ = []
-            magneticDataPointsX = []
-            magneticDataPointsY = []
-            magneticDataPointsZ = []
+        gyroscopeData = []
+        gyroscopeDataPointsX = []
+        gyroscopeDataPointsY = []
+        gyroscopeDataPointsZ = []
         }
     
     func updateSamplingRate(rate: Double) {

@@ -238,7 +238,7 @@ struct accelerometerDataView: View {
         .onDisappear {
                     // Ensure the recording stops and resources are released when the view disappears
                     if isRecording || isRecordingRealTime || isRecordingInterval {
-                        motionManager.stopRawDataAllCollection()
+                        motionManager.stopAccelerometerDataCollection()
                         isRecording = false
                         isRecordingRealTime = false
                         isRecordingInterval = false
