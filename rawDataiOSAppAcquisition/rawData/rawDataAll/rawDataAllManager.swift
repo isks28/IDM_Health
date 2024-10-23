@@ -195,21 +195,21 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                     let timestamp = validData.timestamp
                     
                     // Collect accelerometer data
-                    let userAccDataString = "UserAccelerometer,\(timestamp),\(validData.userAcceleration.x),\(validData.userAcceleration.y),\(validData.userAcceleration.z)"
+                    let userAccDataString = "UserAcceleration,\(timestamp),\(validData.userAcceleration.x),\(validData.userAcceleration.y),\(validData.userAcceleration.z)"
                     self?.userAccelerometerData.append(userAccDataString)
                     self?.accelerometerDataPointsX.append(validData.userAcceleration.x)
                     self?.accelerometerDataPointsY.append(validData.userAcceleration.y)
                     self?.accelerometerDataPointsZ.append(validData.userAcceleration.z)
                     
                     // Collect gyroscope (rotation) data
-                    let userGyroDataString = "UserGyroscope,\(timestamp),\(validData.rotationRate.x),\(validData.rotationRate.y),\(validData.rotationRate.z)"
+                    let userGyroDataString = "RotationRate,\(timestamp),\(validData.rotationRate.x),\(validData.rotationRate.y),\(validData.rotationRate.z)"
                     self?.rotationalData.append(userGyroDataString)
                     self?.rotationalDataPointsX.append(validData.rotationRate.x)
                     self?.rotationalDataPointsY.append(validData.rotationRate.y)
                     self?.rotationalDataPointsZ.append(validData.rotationRate.z)
                     
                     // Collect magnetometer data
-                    let userMagnetoDataString = "UserMagnetometer,\(timestamp),\(validData.magneticField.field.x),\(validData.magneticField.field.y),\(validData.magneticField.field.z)"
+                    let userMagnetoDataString = "MagneticField,\(timestamp),\(validData.magneticField.field.x),\(validData.magneticField.field.y),\(validData.magneticField.field.z)"
                     self?.magneticFieldData.append(userMagnetoDataString)
                     self?.magneticDataPointsX.append(validData.magneticField.field.x)
                     self?.magneticDataPointsY.append(validData.magneticField.field.y)
@@ -295,16 +295,32 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             return
         }
 
+        // Create a date formatter for converting the timestamp to local time string
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"  // Desired date format
+        dateFormatter.timeZone = TimeZone.current  // Local timezone
+
+        // Create the CSV header
         let csvHeader = "DataType,TimeStamp,x,y,z\n"
-        let csvData = (userAccelerometerData + rotationalData + magneticFieldData + gravityData + attitudeData).joined(separator: "\n")
+
+        // Replace the timestamp with formatted date strings for all data types
+        let csvData = (userAccelerometerData + rotationalData + magneticFieldData + gravityData + attitudeData).map { dataEntry -> String in
+            var components = dataEntry.split(separator: ",").map(String.init)
+            if let timestamp = Double(components[1]) {
+                let date = Date(timeIntervalSince1970: timestamp)
+                components[1] = dateFormatter.string(from: date)  // Replace timestamp with formatted date
+            }
+            return components.joined(separator: ",")
+        }.joined(separator: "\n")
+
         let csvString = csvHeader + csvData
-        
+
         // Compute a hash of the current data to see if it's already been saved
         let dataHash = csvString.hashValue
-        
+
         // Check if the file with the same data (hash) already exists
-        let fileURL = folderURL.appendingPathComponent("RawDataAll\(dataHash)_\(recordingMode).csv")
-        
+        let fileURL = folderURL.appendingPathComponent("RawDataAll_\(dataHash)_\(recordingMode).csv")
+
         if FileManager.default.fileExists(atPath: fileURL.path) {
             print("File with the same data already exists: \(fileURL.path)")
             savedFilePath = fileURL.path

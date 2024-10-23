@@ -218,10 +218,19 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             return
         }
 
+        // Create a date formatter for converting the timestamp to local time string
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"  // Desired date format
+        dateFormatter.timeZone = TimeZone.current  // Local timezone
+
+        // Get the current date and time for the CSV entry
+        let currentDate = Date()
+        let formattedDate = dateFormatter.string(from: currentDate)
+        
         let csvHeader = "DataType,TimeStamp,x,y,z\n"
         let csvData = "\(stepCount),\(distance ?? 0),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0)"
-        let csvString = csvHeader + csvData
-        
+        let csvString = csvHeader + "ProcessedStepCounts,\(formattedDate),\(csvData)"  // Include formatted timestamp in the CSV data
+
         // Compute a hash of the current data to see if it's already been saved
         let dataHash = csvString.hashValue
         

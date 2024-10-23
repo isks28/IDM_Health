@@ -218,16 +218,32 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
             return
         }
 
+        // Create a date formatter for converting the timestamp to local time string
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"  // Desired date format
+        dateFormatter.timeZone = TimeZone.current  // Local timezone
+
+        // Create the CSV header
         let csvHeader = "DataType,TimeStamp,x,y,z\n"
-        let csvData = magnetometerData.joined(separator: "\n")
+
+        // Replace the timestamp with formatted date strings
+        let csvData = magnetometerData.map { dataEntry -> String in
+            var components = dataEntry.split(separator: ",").map(String.init)
+            if let timestamp = Double(components[1]) {
+                let date = Date(timeIntervalSince1970: timestamp)
+                components[1] = dateFormatter.string(from: date)  // Replace timestamp with formatted date
+            }
+            return components.joined(separator: ",")
+        }.joined(separator: "\n")
+
         let csvString = csvHeader + csvData
-        
+
         // Compute a hash of the current data to see if it's already been saved
         let dataHash = csvString.hashValue
-        
+
         // Check if the file with the same data (hash) already exists
-        let fileURL = folderURL.appendingPathComponent("MagnetometerData\(dataHash)_\(recordingMode).csv")
-        
+        let fileURL = folderURL.appendingPathComponent("MagnetometerData_\(dataHash)_\(recordingMode).csv")
+
         if FileManager.default.fileExists(atPath: fileURL.path) {
             print("File with the same data already exists: \(fileURL.path)")
             savedFilePath = fileURL.path
