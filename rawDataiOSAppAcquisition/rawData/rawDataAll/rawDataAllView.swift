@@ -324,14 +324,15 @@ var body: some View {
                         Text("Device Motion Information")
                             .font(.title)
                             .multilineTextAlignment(.leading)
+                            .padding(.top)
                         ScrollView {
-                            Text("DEVICE MOTION measures how an iPhone or Apple Watch moves and orients in space by combining data from the accelerometer (measuring linear acceleration), gyroscope (measuring rotational movement), and magnetometer (measuring orientation relative to Earth’s magnetic field). It also tracks gravity and the device’s attitude (orientation defined by roll, pitch, and yaw), providing comprehensive movement and orientation data used in fitness apps, navigation, gaming, and augmented reality.")
+                            Text("DEVICE MOTION measures how an iPhone or Apple Watch moves and orients in space by combining FOLTERED data from the accelerometer (measuring linear acceleration), gyroscope (measuring rotational movement), and magnetometer (measuring orientation relative to Earth’s magnetic field). It also tracks gravity and the device’s attitude (orientation defined by roll, pitch, and yaw)")
                                 .font(.callout)
                                 .multilineTextAlignment(.leading)
                                 .padding(.vertical, 5)
                                 .padding(.horizontal, 5)
                                 .foregroundStyle(Color.primary)
-                            Text("For more information go to: https://developer.apple.com/documentation/coremotion/cmdevicemotion")
+                            Text("For more information go to: https://developer.apple.com/documentation/coremotion/getting_processed_device-motion_data")
                                 .font(.callout)
                                 .multilineTextAlignment(.leading)
                                 .padding(.vertical, 5)
@@ -368,9 +369,7 @@ var body: some View {
                                 )
                         }
                         .scrollIndicators(.hidden)
-                        .padding()
-                        .background(Color.secondary.opacity(0.1))
-                        .cornerRadius(25)
+                        .padding(.horizontal)
                         .padding(.bottom, 5)
                         // Adding a chevron as a swipe indicator
                         AnimatedSwipeDownCloseView()

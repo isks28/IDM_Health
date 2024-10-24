@@ -54,7 +54,7 @@ struct processedDataView: View {
                         VStack {
                             Text("Walking data Information")
                                 .font(.largeTitle)
-                            Text("STEP COUNTS use core motion to record the user steps")
+                            Text("STEP COUNTS use core motion pedometer to record the user steps, distance,  Floor Counts, Pace and Cadence")
                                 .font(.body)
                                 .padding()
                                 .padding()

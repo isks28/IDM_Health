@@ -21,13 +21,12 @@ struct StepCountView: View {
     @State private var timer: Timer? // Timer to update current pace and cadence
     
     @State private var showingInfo = false
-    // New state to trigger the graph refresh
     @State private var refreshGraph = UUID()
     
     var body: some View {
         VStack {
             
-            if stepManager.stepCount == 0{
+            if stepManager.stepCount == 0 {
                 Text("Put the phone in the pocket after clicking start")
                     .font(.title3)
                     .multilineTextAlignment(.center)
@@ -39,6 +38,7 @@ struct StepCountView: View {
             
             // Step Count Display
             VStack {
+                Spacer()
                 if stepManager.stepCount > 0 {
                     Grid {
                         // Step Count
@@ -51,12 +51,12 @@ struct StepCountView: View {
                                 .gridCellAnchor(.leading)
                             Text("\(stepManager.stepCount)")
                                 .font(.largeTitle)
-                                .foregroundColor(.white)
+                                .foregroundColor(.primary)
                                 .gridCellAnchor(.trailing)
                         }
                         .padding()
-                        .background(Color.secondary) // Add background to the VStack
-                        .cornerRadius(25) // Add rounded corners to the VStack background
+                        .background(Color.secondary.opacity(0.1))
+                        .cornerRadius(25)
 
                         Spacer()
                         
@@ -64,17 +64,17 @@ struct StepCountView: View {
                         GridRow {
                             Text("Distance:")
                                 .font(.title3)
-                                .gridCellAnchor(.leading) // Align label to the left
+                                .gridCellAnchor(.leading)
                             if let distance = stepManager.distance {
                                 Text(String(format: "%.2f meters", distance))
                                     .font(.title3)
                                     .foregroundColor(.blue)
-                                    .gridCellAnchor(.trailing) // Align value to the right
+                                    .gridCellAnchor(.trailing)
                             } else {
                                 Text("Not available")
                                     .font(.title3)
                                     .foregroundColor(.secondary)
-                                    .gridCellAnchor(.trailing) // Align value to the right
+                                    .gridCellAnchor(.trailing)
                             }
                         }
 
@@ -82,17 +82,17 @@ struct StepCountView: View {
                         GridRow {
                             Text("Average Active Pace:")
                                 .font(.title3)
-                                .gridCellAnchor(.leading) // Align label to the left
+                                .gridCellAnchor(.leading)
                             if let averageActivePace = stepManager.averageActivePace {
                                 Text(String(format: "%.2f meters/second", averageActivePace))
                                     .font(.title3)
                                     .foregroundColor(.blue)
-                                    .gridCellAnchor(.trailing) // Align value to the right
+                                    .gridCellAnchor(.trailing)
                             } else {
                                 Text("Not available")
                                     .font(.title3)
                                     .foregroundColor(.secondary)
-                                    .gridCellAnchor(.trailing) // Align value to the right
+                                    .gridCellAnchor(.trailing)
                             }
                         }
 
@@ -100,17 +100,17 @@ struct StepCountView: View {
                         GridRow {
                             Text("Current Pace:")
                                 .font(.title3)
-                                .gridCellAnchor(.leading) // Align label to the left
+                                .gridCellAnchor(.leading)
                             if let currentPace = stepManager.currentPace {
                                 Text(String(format: "%.2f meters/second", currentPace))
                                     .font(.title3)
                                     .foregroundColor(.blue)
-                                    .gridCellAnchor(.trailing) // Align value to the right
+                                    .gridCellAnchor(.trailing)
                             } else {
                                 Text("Not available")
                                     .font(.title3)
                                     .foregroundColor(.secondary)
-                                    .gridCellAnchor(.trailing) // Align value to the right
+                                    .gridCellAnchor(.trailing)
                             }
                         }
 
@@ -118,17 +118,53 @@ struct StepCountView: View {
                         GridRow {
                             Text("Current Cadence:")
                                 .font(.title3)
-                                .gridCellAnchor(.leading) // Align label to the left
+                                .gridCellAnchor(.leading)
                             if let currentCadence = stepManager.currentCadence {
                                 Text(String(format: "%.2f steps/second", currentCadence))
                                     .font(.title3)
                                     .foregroundColor(.blue)
-                                    .gridCellAnchor(.trailing) // Align value to the right
+                                    .gridCellAnchor(.trailing)
                             } else {
                                 Text("Not available")
                                     .font(.title3)
                                     .foregroundColor(.secondary)
-                                    .gridCellAnchor(.trailing) // Align value to the right
+                                    .gridCellAnchor(.trailing)
+                            }
+                        }
+
+                        // Floors Ascended
+                        GridRow {
+                            Text("Floors Ascended:")
+                                .font(.title3)
+                                .gridCellAnchor(.leading)
+                            if let floorsAscended = stepManager.floorAscended {
+                                Text("\(floorsAscended)")
+                                    .font(.title3)
+                                    .foregroundColor(.blue)
+                                    .gridCellAnchor(.trailing)
+                            } else {
+                                Text("Not available")
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
+                                    .gridCellAnchor(.trailing)
+                            }
+                        }
+
+                        // Floors Descended
+                        GridRow {
+                            Text("Floors Descended:")
+                                .font(.title3)
+                                .gridCellAnchor(.leading)
+                            if let floorsDescended = stepManager.floorDescended {
+                                Text("\(floorsDescended)")
+                                    .font(.title3)
+                                    .foregroundColor(.blue)
+                                    .gridCellAnchor(.trailing)
+                            } else {
+                                Text("Not available")
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
+                                    .gridCellAnchor(.trailing)
                             }
                         }
                     }
@@ -139,6 +175,7 @@ struct StepCountView: View {
                         .multilineTextAlignment(.center)
                 }
             }
+            Spacer()
             
             // Toggle controls for real-time and interval-based recording
             HStack {
@@ -266,27 +303,51 @@ struct StepCountView: View {
                 }
                 .sheet(isPresented: $showingInfo) {
                     VStack {
-                        Text("Data Information")
-                            .font(.largeTitle)
-                        Text("REAL-TIME record the data immediately and stop on-demand")
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .padding(.vertical, 5)
-                            .padding(.horizontal, 5)
-                            .foregroundStyle(Color.primary)
-                        Text("TIME-INTERVAL record the data automatically. Set the start and end date, turn on the Start timed recording, and the recording will stop automatically after the end time is up")
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .padding(.vertical, 5)
-                            .padding(.horizontal, 5)
-                            .foregroundStyle(Color.primary)
-                        Text("DATA COLLECTION WILL STOP IF THE STEP COUNT VIEW IS CLOSED. but you may lock the phone or use another app, and the data collection will still be running")
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .padding(.vertical, 5)
-                            .padding(.horizontal, 5)
-                            .foregroundStyle(Color.pink)
-                        Spacer()
+                        Text("Step Counts Information")
+                            .font(.title)
+                            .multilineTextAlignment(.leading)
+                            .padding(.top)
+                        ScrollView {
+                            Text("The pedometer used for STEP COUNTS measures the number of steps a person takes using data from the accelerometer. It detects repetitive motion patterns typical of walking or running and calculates the total step count accordingly")
+                                .font(.callout)
+                                .multilineTextAlignment(.leading)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 5)
+                                .foregroundStyle(Color.primary)
+                            Text("For more information go to: https://developer.apple.com/documentation/coremotion/cmpedometer")
+                                .font(.callout)
+                                .multilineTextAlignment(.leading)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 5)
+                                .foregroundStyle(Color.primary)
+                            Text("REAL-TIME record the data immediately and stop on-demand")
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 5)
+                                .foregroundStyle(Color.primary)
+                            Text("TIME-INTERVAL record the data automatically. Set the start and end date, turn on the Start timed recording, and the recording will stop automatically after the end time is up")
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 5)
+                                .foregroundStyle(Color.primary)
+                            Text("Data collection will stop if the step counts view is closed, but it will continue running even if the phone is locked or other apps are in use.")
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 5)
+                                .foregroundStyle(Color.pink)
+                                .background(Color.white)
+                                .cornerRadius(25)
+                                .overlay(  // Adding black outline
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .stroke(Color.pink, lineWidth: 2)  // Outline color and width
+                                )
+                        }
+                        .scrollIndicators(.hidden)
+                        .padding(.horizontal)
+                        .padding(.bottom, 5)
                         // Adding a chevron as a swipe indicator
                         AnimatedSwipeDownCloseView()
                     }

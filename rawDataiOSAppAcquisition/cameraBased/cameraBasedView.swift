@@ -17,6 +17,8 @@ struct cameraBasedView: View {
     @State private var flashOverlayOpacity = 0.0
     var serverURL: URL? // Server URL for uploading
     
+    @State private var showingInfo = false
+    
     var body: some View {
         NavigationView {
             ZStack(alignment: .center) {
@@ -88,7 +90,45 @@ struct cameraBasedView: View {
                 }
             }
             .navigationTitle("Visual Data")
-            .padding(.top, -8) // Adjust this value to align the ZStack with the bottom of the navigation title
+            .padding(.top, -8)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showingInfo.toggle()
+                    }) {
+                        Image(systemName: "info.circle")
+                            .foregroundColor(.blue)
+                    }
+                    .sheet(isPresented: $showingInfo) {
+                        VStack {
+                            Text("Visual Data Information")
+                                .font(.title)
+                                .multilineTextAlignment(.leading)
+                                .padding(.top)
+                            ScrollView {
+                                Text("VISUAL DATA collect video and photo data from the user's device")
+                                    .font(.callout)
+                                    .multilineTextAlignment(.leading)
+                                    .padding(.vertical, 5)
+                                    .padding(.horizontal, 5)
+                                    .foregroundStyle(Color.primary)
+                                Text("Click the Video or Photo button for a direct data collection")
+                                    .font(.callout)
+                                    .multilineTextAlignment(.leading)
+                                    .padding(.vertical, 5)
+                                    .padding(.horizontal, 5)
+                                    .foregroundStyle(Color.primary)
+                            }
+                            .scrollIndicators(.hidden)
+                            .padding(.horizontal)
+                            .padding(.bottom, 5)
+                            // Adding a chevron as a swipe indicator
+                            AnimatedSwipeDownCloseView()
+                        }
+                        .padding()
+                    }
+                }
+            }
         }
     }
     

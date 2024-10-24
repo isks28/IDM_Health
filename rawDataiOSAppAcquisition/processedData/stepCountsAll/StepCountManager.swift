@@ -18,6 +18,8 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var averageActivePace: Double? // Average active pace in meters per second
     @Published var currentPace: Double? // Current pace in meters per second
     @Published var currentCadence: Double? // Current cadence in steps per second
+    @Published var floorAscended: Int? // Floors ascended, if available
+    @Published var floorDescended: Int? // Floors descended, if available
     @Published var savedFilePath: String?
     
     let baseFolder: String = "ProcessedStepCountsData"
@@ -129,6 +131,8 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         averageActivePace = nil
         currentPace = nil
         currentCadence = nil
+        floorAscended = nil
+        floorDescended = nil
         recordingMode = realTime ? "RealTime" : "TimeInterval"
         
         startBackgroundTask()
@@ -159,6 +163,12 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 if let currentCadence = pedometerData.currentCadence?.doubleValue {
                     self?.currentCadence = currentCadence
                 }
+                if let floorsAscended = pedometerData.floorsAscended?.intValue {
+                    self?.floorAscended = floorsAscended
+                }
+                if let floorsDescended = pedometerData.floorsDescended?.intValue {
+                    self?.floorDescended = floorsDescended
+                }
             }
         }
     }
@@ -178,29 +188,29 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     // Update current pace and cadence
-        func updateCurrentPaceAndCadence() {
-            guard CMPedometer.isPaceAvailable(), CMPedometer.isCadenceAvailable() else {
-                print("Pace or Cadence is not available on this device")
+    func updateCurrentPaceAndCadence() {
+        guard CMPedometer.isPaceAvailable(), CMPedometer.isCadenceAvailable() else {
+            print("Pace or Cadence is not available on this device")
+            return
+        }
+        
+        let now = Date()
+        pedometer.queryPedometerData(from: now.addingTimeInterval(-1), to: now) { [weak self] pedometerData, error in
+            guard let pedometerData = pedometerData, error == nil else {
+                print("Error fetching pedometer data: \(String(describing: error))")
                 return
             }
             
-            let now = Date()
-            pedometer.queryPedometerData(from: now.addingTimeInterval(-1), to: now) { [weak self] pedometerData, error in
-                guard let pedometerData = pedometerData, error == nil else {
-                    print("Error fetching pedometer data: \(String(describing: error))")
-                    return
+            DispatchQueue.main.async {
+                if let currentPace = pedometerData.currentPace?.doubleValue {
+                    self?.currentPace = currentPace
                 }
-                
-                DispatchQueue.main.async {
-                    if let currentPace = pedometerData.currentPace?.doubleValue {
-                        self?.currentPace = currentPace
-                    }
-                    if let currentCadence = pedometerData.currentCadence?.doubleValue {
-                        self?.currentCadence = currentCadence
-                    }
+                if let currentCadence = pedometerData.currentCadence?.doubleValue {
+                    self?.currentCadence = currentCadence
                 }
             }
         }
+    }
     
     // Save collected data to CSV
     func saveDataToCSV(serverURL: URL, baseFolder: String, recordingMode: String) {
@@ -227,15 +237,18 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let currentDate = Date()
         let formattedDate = dateFormatter.string(from: currentDate)
         
-        let csvHeader = "DataType,TimeStamp,x,y,z\n"
-        let csvData = "\(stepCount),\(distance ?? 0),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0)"
-        let csvString = csvHeader + "ProcessedStepCounts,\(formattedDate),\(csvData)"  // Include formatted timestamp in the CSV data
+        // Prepare CSV header and data with floors ascended/descended included
+        let csvHeader = "DataType,TimeStamp,StepCount,Distance,AverageActivePace,CurrentPace,CurrentCadence,FloorsAscended,FloorsDescended\n"
+        let csvData = "WalkingData,\(formattedDate),\(stepCount),\(distance ?? 0),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0),\(floorAscended ?? 0),\(floorDescended ?? 0)"
+        
+        let csvString = csvHeader + csvData  // Include formatted timestamp in the CSV data
 
         // Compute a hash of the current data to see if it's already been saved
         let dataHash = csvString.hashValue
         
-        // Check if the file with the same data (hash) already exists
-        let fileURL = folderURL.appendingPathComponent("ProcessedStepCountsData\(dataHash)_\(recordingMode).csv")
+        // Create a unique file name based on the current data hash
+        let fileName = "StepCountData_\(formattedDate)_\(dataHash)_\(recordingMode).csv"
+        let fileURL = folderURL.appendingPathComponent(fileName)
         
         if FileManager.default.fileExists(atPath: fileURL.path) {
             print("File with the same data already exists: \(fileURL.path)")
@@ -254,6 +267,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             print("Failed to save file: \(error)")
         }
     }
+
     
     // Upload the file to the server
     func uploadFile(fileURL: URL, serverURL: URL, category: String) {
