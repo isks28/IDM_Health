@@ -231,7 +231,7 @@ struct VitalChartWithTimeFramePicker: View {
                     showDatePicker = true
                 }) {
                     Text(getTitleForCurrentPage(TimeFrameVital: selectedTimeFrameVital, page: currentPageForTimeFramesVital[selectedTimeFrameVital] ?? 0, startDate: startDate, endDate: endDate))
-                        .foregroundColor(.blue)
+                        .foregroundColor(.primary)
                         .padding(.vertical, 5)
                         .padding(.horizontal, 10)
                         .background(.white)
