@@ -17,7 +17,7 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
 
     var onPhotoCaptured: ((UIImage) -> Void)?
     var onVideoRecorded: ((URL) -> Void)?
-    var aspectRatio: CGFloat = 4/3
+    var useFrontCamera = false  // New property to toggle camera
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,13 +28,8 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
     
     private func configureCaptureSession() {
         captureSession.sessionPreset = .photo
-        
-        guard let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
-              let videoInput = try? AVCaptureDeviceInput(device: videoDevice),
-              captureSession.canAddInput(videoInput) else { return }
-        
-        captureSession.addInput(videoInput)
-        
+        updateCameraPosition()  // Configure the selected camera
+
         photoOutput = AVCapturePhotoOutput()
         if captureSession.canAddOutput(photoOutput!) {
             captureSession.addOutput(photoOutput!)
@@ -45,7 +40,6 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
             captureSession.addOutput(videoOutput!)
         }
         
-        // Start capture session on a background thread
         DispatchQueue.global(qos: .userInitiated).async {
             self.captureSession.startRunning()
         }
@@ -55,8 +49,20 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
         videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
         videoPreviewLayer.videoGravity = .resizeAspect
         videoPreviewLayer.frame = view.bounds
-        videoPreviewLayer.borderWidth = 0.5
         view.layer.addSublayer(videoPreviewLayer)
+    }
+    
+    func updateCameraPosition() {
+        captureSession.beginConfiguration()
+        captureSession.inputs.forEach { captureSession.removeInput($0) }
+        
+        let position: AVCaptureDevice.Position = useFrontCamera ? .front : .back
+        guard let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position),
+              let videoInput = try? AVCaptureDeviceInput(device: videoDevice),
+              captureSession.canAddInput(videoInput) else { return }
+        
+        captureSession.addInput(videoInput)
+        captureSession.commitConfiguration()
     }
     
     func takePhoto() {
@@ -73,8 +79,6 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
     func stopRecording() {
         videoOutput?.stopRecording()
     }
-    
-    // MARK: - AVCaptureFileOutputRecordingDelegate
 
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
         if let error = error {
@@ -82,7 +86,7 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
             return
         }
         
-        onVideoRecorded?(outputFileURL)  // Pass the video URL to the view for preview
+        onVideoRecorded?(outputFileURL)
     }
 }
 

@@ -15,6 +15,7 @@ struct cameraBasedView: View {
     @State private var capturedVideoURL: URL?
     @State private var shouldTakePhoto = false
     @State private var flashOverlayOpacity = 0.0
+    @State private var useFrontCamera = false  // New state for toggling camera
     var serverURL: URL? // Server URL for uploading
     
     @State private var showingInfo = false
@@ -37,7 +38,8 @@ struct cameraBasedView: View {
                         triggerFlash()
                     },
                     isRecording: $isRecording,
-                    shouldTakePhoto: $shouldTakePhoto
+                    shouldTakePhoto: $shouldTakePhoto,
+                    useFrontCamera: $useFrontCamera  // Pass to controller
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .zIndex(0)
@@ -68,6 +70,16 @@ struct cameraBasedView: View {
                                 .foregroundColor(.secondary)
                         }
                         .padding(20)
+
+                        // New button for toggling camera
+                        Button(action: {
+                            useFrontCamera.toggle()
+                        }) {
+                            Image(systemName: "arrow.triangle.2.circlepath.camera")
+                                .font(.system(size: 50))
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(20)
                     }
                 }
                 
@@ -83,9 +95,9 @@ struct cameraBasedView: View {
                             showPhoto = false
                         }
                     )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)  // Make sure it fills the available space
-                    .background(Color.black.opacity(0.92))  // Add background to help distinguish it
-                    .edgesIgnoringSafeArea(.all)  // Ensure it covers the entire screen
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black.opacity(0.92))
+                    .edgesIgnoringSafeArea(.all)
                     .transition(.move(edge: .bottom))
                 }
             }
@@ -103,27 +115,13 @@ struct cameraBasedView: View {
                         VStack {
                             Text("Visual Data Information")
                                 .font(.title)
-                                .multilineTextAlignment(.leading)
                                 .padding(.top)
                             ScrollView {
-                                Text("VISUAL DATA collect video and photo data from the user's device")
-                                    .font(.callout)
-                                    .multilineTextAlignment(.leading)
-                                    .padding(.vertical, 5)
-                                    .padding(.horizontal, 5)
-                                    .foregroundStyle(Color.primary)
-                                Text("Click the Video or Photo button for a direct data collection")
-                                    .font(.callout)
-                                    .multilineTextAlignment(.leading)
-                                    .padding(.vertical, 5)
-                                    .padding(.horizontal, 5)
-                                    .foregroundStyle(Color.primary)
+                                Text("VISUAL DATA collects video and photo data from the user's device.")
+                                    .padding()
                             }
                             .scrollIndicators(.hidden)
                             .padding(.horizontal)
-                            .padding(.bottom, 5)
-                            // Adding a chevron as a swipe indicator
-                            AnimatedSwipeDownCloseView()
                         }
                         .padding()
                     }
@@ -145,10 +143,8 @@ struct cameraBasedView: View {
     
     private func saveAndUploadData(image: UIImage?, videoURL: URL?) {
         if let image = image {
-            // Save and upload the captured image
             savePhotoToDocuments(image, serverURL: ServerConfig.serverURL)
         } else if let videoURL = videoURL {
-            // Save and upload the recorded video
             saveVideoToDocuments(videoURL, serverURL: ServerConfig.serverURL)
         }
     }

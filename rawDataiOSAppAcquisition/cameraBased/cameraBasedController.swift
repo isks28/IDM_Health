@@ -22,7 +22,7 @@ struct CameraBasedController: UIViewControllerRepresentable {
     
     @Binding var isRecording: Bool
     @Binding var shouldTakePhoto: Bool
-    var aspectRatio : CGFloat = 4/3
+    @Binding var useFrontCamera: Bool  // New binding for camera toggle
 
     func makeCoordinator() -> Coordinator {
         return Coordinator(parent: self)
@@ -32,6 +32,7 @@ struct CameraBasedController: UIViewControllerRepresentable {
         let cameraViewController = CameraBasedManager()
         cameraViewController.onPhotoCaptured = onPhotoCaptured
         cameraViewController.onVideoRecorded = onVideoRecorded
+        cameraViewController.useFrontCamera = useFrontCamera  // Set initial camera
         return cameraViewController
     }
     
@@ -48,5 +49,9 @@ struct CameraBasedController: UIViewControllerRepresentable {
                 self.shouldTakePhoto = false
             }
         }
+        
+        // Update the camera position if changed
+        uiViewController.useFrontCamera = useFrontCamera
+        uiViewController.updateCameraPosition()
     }
 }
