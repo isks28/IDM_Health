@@ -56,7 +56,7 @@ struct cameraBasedView: View {
                         }) {
                             Image(systemName: isRecording ? "stop.circle.fill" : "video.circle.fill")
                                 .font(.system(size: 50))
-                                .foregroundColor(isRecording ? .pink : .secondary)
+                                .foregroundColor(isRecording ? .pink : .blue)
                         }
                         .padding(20)
                         
@@ -65,7 +65,7 @@ struct cameraBasedView: View {
                         }) {
                             Image(systemName: "camera.circle.fill")
                                 .font(.system(size: 50))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.blue)
                         }
                         .padding(20)
                     }

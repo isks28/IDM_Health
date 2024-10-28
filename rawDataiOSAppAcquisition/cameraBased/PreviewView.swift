@@ -52,7 +52,7 @@ struct PreviewView: View {
                     Button(action: onDismiss) {
                         Text("Retake")
                             .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.black)
                             .padding(.vertical, 5)
                             .padding(.horizontal, 15)
                             .background(Color.white)
@@ -70,7 +70,7 @@ struct PreviewView: View {
                     }) {
                         Text("Save and Upload")
                             .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.primary)
+                            .foregroundColor(.black)
                             .padding(.vertical, 5)
                             .padding(.horizontal, 15)
                             .background(Color.white)
