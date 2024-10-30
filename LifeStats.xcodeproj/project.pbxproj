@@ -28,8 +28,8 @@
 		5A554EA12C87065A0081747B /* gyroscopeDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA02C87065A0081747B /* gyroscopeDataManager.swift */; };
 		5A554EA32C8706690081747B /* magnetometerDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA22C8706690081747B /* magnetometerDataView.swift */; };
 		5A554EA52C8706730081747B /* magnetometerDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA42C8706730081747B /* magnetometerDataManager.swift */; };
-		5A554EA72C8706810081747B /* rawDataAllView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA62C8706810081747B /* rawDataAllView.swift */; };
-		5A554EA92C87068D0081747B /* rawDataAllManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA82C87068D0081747B /* rawDataAllManager.swift */; };
+		5A554EA72C8706810081747B /* deviceMotionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA62C8706810081747B /* deviceMotionView.swift */; };
+		5A554EA92C87068D0081747B /* deviceMotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA82C87068D0081747B /* deviceMotionManager.swift */; };
 		5A554EAB2C87069D0081747B /* cameraBasedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAA2C87069D0081747B /* cameraBasedView.swift */; };
 		5A554EAD2C8706AA0081747B /* cameraBasedController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAC2C8706AA0081747B /* cameraBasedController.swift */; };
 		5A554EAF2C8706BE0081747B /* cameraBasedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */; };
@@ -38,6 +38,8 @@
 		86419FE82CB97E800071151C /* StepCountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE72CB97E800071151C /* StepCountView.swift */; };
 		86419FEC2CB988BF0071151C /* processedDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FEB2CB988BF0071151C /* processedDataView.swift */; };
 		86419FEE2CBA8CE20071151C /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FED2CBA8CE20071151C /* PreviewView.swift */; };
+		866B7C4C2CD0F6C8000FC227 /* rawDataAllManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */; };
+		866B7C4E2CD0F6EA000FC227 /* rawDataAllView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866B7C4D2CD0F6EA000FC227 /* rawDataAllView.swift */; };
 		86B0DE662CBE973C00003F50 /* ServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0DE652CBE973C00003F50 /* ServerConfig.swift */; };
 /* End PBXBuildFile section */
 
@@ -84,8 +86,8 @@
 		5A554EA02C87065A0081747B /* gyroscopeDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = gyroscopeDataManager.swift; sourceTree = "<group>"; };
 		5A554EA22C8706690081747B /* magnetometerDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = magnetometerDataView.swift; sourceTree = "<group>"; };
 		5A554EA42C8706730081747B /* magnetometerDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = magnetometerDataManager.swift; sourceTree = "<group>"; };
-		5A554EA62C8706810081747B /* rawDataAllView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllView.swift; sourceTree = "<group>"; };
-		5A554EA82C87068D0081747B /* rawDataAllManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllManager.swift; sourceTree = "<group>"; };
+		5A554EA62C8706810081747B /* deviceMotionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = deviceMotionView.swift; sourceTree = "<group>"; };
+		5A554EA82C87068D0081747B /* deviceMotionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = deviceMotionManager.swift; sourceTree = "<group>"; };
 		5A554EAA2C87069D0081747B /* cameraBasedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedView.swift; sourceTree = "<group>"; };
 		5A554EAC2C8706AA0081747B /* cameraBasedController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedController.swift; sourceTree = "<group>"; };
 		5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedManager.swift; sourceTree = "<group>"; };
@@ -95,6 +97,8 @@
 		86419FE72CB97E800071151C /* StepCountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountView.swift; sourceTree = "<group>"; };
 		86419FEB2CB988BF0071151C /* processedDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = processedDataView.swift; sourceTree = "<group>"; };
 		86419FED2CBA8CE20071151C /* PreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
+		866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllManager.swift; sourceTree = "<group>"; };
+		866B7C4D2CD0F6EA000FC227 /* rawDataAllView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllView.swift; sourceTree = "<group>"; };
 		86B0DE652CBE973C00003F50 /* ServerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerConfig.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -232,7 +236,8 @@
 				5A554E892C87058F0081747B /* accelerometerData */,
 				5A554E8A2C8705970081747B /* gyroscopeData */,
 				5A554E8B2C87059F0081747B /* magnetometerData */,
-				5A554E8C2C8705A60081747B /* rawDataAll */,
+				866B7C4A2CD0F68A000FC227 /* rawDataAll */,
+				5A554E8C2C8705A60081747B /* deviceMotion */,
 			);
 			path = rawData;
 			sourceTree = "<group>";
@@ -264,13 +269,13 @@
 			path = magnetometerData;
 			sourceTree = "<group>";
 		};
-		5A554E8C2C8705A60081747B /* rawDataAll */ = {
+		5A554E8C2C8705A60081747B /* deviceMotion */ = {
 			isa = PBXGroup;
 			children = (
-				5A554EA62C8706810081747B /* rawDataAllView.swift */,
-				5A554EA82C87068D0081747B /* rawDataAllManager.swift */,
+				5A554EA62C8706810081747B /* deviceMotionView.swift */,
+				5A554EA82C87068D0081747B /* deviceMotionManager.swift */,
 			);
-			path = rawDataAll;
+			path = deviceMotion;
 			sourceTree = "<group>";
 		};
 		5A554E8D2C8705C10081747B /* cameraBased */ = {
@@ -300,6 +305,15 @@
 				86419FE42CB97E090071151C /* stepCountsAll */,
 			);
 			path = processedData;
+			sourceTree = "<group>";
+		};
+		866B7C4A2CD0F68A000FC227 /* rawDataAll */ = {
+			isa = PBXGroup;
+			children = (
+				866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */,
+				866B7C4D2CD0F6EA000FC227 /* rawDataAllView.swift */,
+			);
+			path = rawDataAll;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -434,6 +448,7 @@
 			files = (
 				5A554E972C8706110081747B /* mobilityManager.swift in Sources */,
 				5A45C7182C9C0FDB00F6E14E /* vitalView.swift in Sources */,
+				866B7C4C2CD0F6C8000FC227 /* rawDataAllManager.swift in Sources */,
 				5A554EA12C87065A0081747B /* gyroscopeDataManager.swift in Sources */,
 				5A554EAD2C8706AA0081747B /* cameraBasedController.swift in Sources */,
 				5A554E9B2C8706310081747B /* accelerometerDataView.swift in Sources */,
@@ -446,11 +461,11 @@
 				5A554E992C87061E0081747B /* rawDataView.swift in Sources */,
 				5A554E5D2C8705080081747B /* ContentView.swift in Sources */,
 				5A554E952C8706080081747B /* mobilityView.swift in Sources */,
-				5A554EA72C8706810081747B /* rawDataAllView.swift in Sources */,
+				5A554EA72C8706810081747B /* deviceMotionView.swift in Sources */,
 				86B0DE662CBE973C00003F50 /* ServerConfig.swift in Sources */,
 				5A554E9D2C87063D0081747B /* accelerometerDataManager.swift in Sources */,
 				86419FEC2CB988BF0071151C /* processedDataView.swift in Sources */,
-				5A554EA92C87068D0081747B /* rawDataAllManager.swift in Sources */,
+				5A554EA92C87068D0081747B /* deviceMotionManager.swift in Sources */,
 				5A554EAB2C87069D0081747B /* cameraBasedView.swift in Sources */,
 				5A554EAF2C8706BE0081747B /* cameraBasedManager.swift in Sources */,
 				5A554EA52C8706730081747B /* magnetometerDataManager.swift in Sources */,
@@ -458,6 +473,7 @@
 				5A554E932C8705F70081747B /* activityManager.swift in Sources */,
 				5A554E5B2C8705080081747B /* rawDataiOSAppAcquisitionApp.swift in Sources */,
 				5A554E9F2C8706470081747B /* gyroscopeDataView.swift in Sources */,
+				866B7C4E2CD0F6EA000FC227 /* rawDataAllView.swift in Sources */,
 				5A554EA32C8706690081747B /* magnetometerDataView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

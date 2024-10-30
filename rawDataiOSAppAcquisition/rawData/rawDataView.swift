@@ -57,6 +57,20 @@ struct rawDataView: View {
                         }
                         .tag("Magnetometer Data")
                 HStack{
+                    Image(systemName: "book")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 100, height: 50)
+                        .foregroundStyle(Color.blue)
+                    Text("Raw Data All")
+                        .foregroundStyle(Color.primary)
+                        .font(.title)
+                    Spacer()
+                    Image(systemName: "chevron.right.2")
+                        .foregroundStyle(Color.primary)
+                }
+                        .tag("RawData")
+                HStack{
                     Image(systemName: "iphone.motion")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
@@ -120,6 +134,8 @@ struct rawDataView: View {
                 gyroscopeDataView()
             } else if selectedView == "Magnetometer Data" {
                 magnetometerDataView()
+            } else if selectedView == "RawData" {
+                rawDataAccGyroMagView()
             } else if selectedView == "RawDataAll" {
                 rawDataAllView()
             }  else {

@@ -1,40 +1,63 @@
 //
-//  StepCountManager.swift
+//  rawDataAllManager.swift
 //  rawDataiOSAppAcquisition
 //
-//  Created by Irnu Suryohadi Kusumo on 11.10.24.
+//  Created by Irnu Suryohadi Kusumo on 03.09.24.
 //
 
 import SwiftUI
 import CoreMotion
 import UserNotifications
 
-class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
-    private let pedometer = CMPedometer()
+    private let rawDataAllManager = CMMotionManager()
     @Published var isCollectingData = false
-    @Published var stepCount: Int = 0
-    @Published var distance: Double? // Distance in meters, if available
-    @Published var averageActivePace: Double? // Average active pace in meters per second
-    @Published var currentPace: Double? // Current pace in meters per second
-    @Published var currentCadence: Double? // Current cadence in steps per second
-    @Published var floorAscended: Int? // Floors ascended, if available
-    @Published var floorDescended: Int? // Floors descended, if available
+    
+    // Accelerometer Data Points
+    @Published var userAccelerometerData: [String] = []
+    @Published var accelerometerDataPointsX: [Double] = []
+    @Published var accelerometerDataPointsY: [Double] = []
+    @Published var accelerometerDataPointsZ: [Double] = []
+    
+    // Gyroscope Data Points (Rotation)
+    @Published var rotationalData: [String] = []
+    @Published var rotationalDataPointsX: [Double] = []
+    @Published var rotationalDataPointsY: [Double] = []
+    @Published var rotationalDataPointsZ: [Double] = []
+    
+    // Magnetometer Data Points
+    @Published var magneticFieldData: [String] = []
+    @Published var magneticDataPointsX: [Double] = []
+    @Published var magneticDataPointsY: [Double] = []
+    @Published var magneticDataPointsZ: [Double] = []
+    
+    @Published var gravityData: [String] = []
+    @Published var gravityDataPointsX: [Double] = []
+    @Published var gravityDataPointsY: [Double] = []
+    @Published var gravityDataPointsZ: [Double] = []
+
+    @Published var attitudeData: [String] = []
+    @Published var attitudeDataRoll: [Double] = []
+    @Published var attitudeDataPitch: [Double] = []
+    @Published var attitudeDataYaw: [Double] = []
+    
     @Published var savedFilePath: String?
     
-    let baseFolder: String = "ProcessedStepCountsData"
+    let baseFolder: String = "RawDataAll"
     
     private var locationManager: CLLocationManager?
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
     private var stopTime: Date?
     private var recordingMode: String = "RealTime"
+    private var currentSamplingRate: Double = 60.0
     private var serverURL: URL?
-
+    
     override init() {
         super.init()
         setupLocationManager()
         requestNotificationPermissions()
-        setupAppLifecycleObservers()
+        setupAppLifecycleObservers() // Add lifecycle observers
     }
     
     // App lifecycle event observers
@@ -102,7 +125,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         
         let content = UNMutableNotificationContent()
         content.title = "Data Collection Running"
-        content.body = "Step count data collection is active."
+        content.body = "Sensor data collection is active."
         content.sound = .default
         
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
@@ -114,105 +137,149 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
         }
     }
+    
+    func showDataCollectionStoppedNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Data Collection Stopped"
+        content.body = "Sensor data collection has stopped and the data has been saved."
+        content.sound = .default
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let request = UNNotificationRequest(identifier: "dataCollectionStoppedNotification", content: content, trigger: trigger)
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Error showing stop notification: \(error)")
+            }
+        }
+    }
 
     // Remove the notification when data collection stops
     func removeDataCollectionNotification() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dataCollectionNotification"])
     }
 
-    // Start step count collection
-    func startStepCountCollection(realTime: Bool, serverURL: URL) {
+    // Updating the startRawDataAllCollection method
+    func startRawDataAllCollection(realTime: Bool, serverURL: URL) {
         guard !isCollectingData else { return }
         
         self.serverURL = serverURL
         isCollectingData = true
-        stepCount = 0
-        distance = nil
-        averageActivePace = nil
-        currentPace = nil
-        currentCadence = nil
-        floorAscended = nil
-        floorDescended = nil
+        userAccelerometerData = []
+        rotationalData = []
+        magneticFieldData = []
+        accelerometerDataPointsX = []
+        accelerometerDataPointsY = []
+        accelerometerDataPointsZ = []
+        rotationalDataPointsX = []
+        rotationalDataPointsY = []
+        rotationalDataPointsZ = []
+        magneticDataPointsX = []
+        magneticDataPointsY = []
+        magneticDataPointsZ = []
+        gravityDataPointsX = []  // Clear gravity data points
+        gravityDataPointsY = []
+        gravityDataPointsZ = []
+        attitudeDataRoll = []  // Clear attitude data points
+        attitudeDataPitch = []
+        attitudeDataYaw = []
         recordingMode = realTime ? "RealTime" : "TimeInterval"
         
         startBackgroundTask()
         showDataCollectionNotification() // Show the notification
         
-        guard CMPedometer.isStepCountingAvailable() else {
-            print("Step counting is not available on this device")
-            return
-        }
+        if rawDataAllManager.isDeviceMotionAvailable {
+            rawDataAllManager.deviceMotionUpdateInterval = 1.0 / currentSamplingRate // Apply the current sampling rate
+            rawDataAllManager.startDeviceMotionUpdates(to: .main) { [weak self] (data, error) in
+                if let validData = data {
+                    let timestamp = Date().timeIntervalSince1970
+                    
+                    // Collect accelerometer data
+                    let userAccDataString = "UserAcceleration,\(timestamp),\(validData.userAcceleration.x),\(validData.userAcceleration.y),\(validData.userAcceleration.z)"
+                    self?.userAccelerometerData.append(userAccDataString)
+                    self?.accelerometerDataPointsX.append(validData.userAcceleration.x)
+                    self?.accelerometerDataPointsY.append(validData.userAcceleration.y)
+                    self?.accelerometerDataPointsZ.append(validData.userAcceleration.z)
+                    
+                    // Collect gyroscope (rotation) data
+                    let userGyroDataString = "RotationRate,\(timestamp),\(validData.rotationRate.x),\(validData.rotationRate.y),\(validData.rotationRate.z)"
+                    self?.rotationalData.append(userGyroDataString)
+                    self?.rotationalDataPointsX.append(validData.rotationRate.x)
+                    self?.rotationalDataPointsY.append(validData.rotationRate.y)
+                    self?.rotationalDataPointsZ.append(validData.rotationRate.z)
+                    
+                    // Collect magnetometer data
+                    let userMagnetoDataString = "MagneticField,\(timestamp),\(validData.magneticField.field.x),\(validData.magneticField.field.y),\(validData.magneticField.field.z)"
+                    self?.magneticFieldData.append(userMagnetoDataString)
+                    self?.magneticDataPointsX.append(validData.magneticField.field.x)
+                    self?.magneticDataPointsY.append(validData.magneticField.field.y)
+                    self?.magneticDataPointsZ.append(validData.magneticField.field.z)
 
-        pedometer.startUpdates(from: Date()) { [weak self] pedometerData, error in
-            guard let pedometerData = pedometerData, error == nil else {
-                print("Error fetching pedometer data: \(String(describing: error))")
-                return
-            }
-            
-            DispatchQueue.main.async {
-                self?.stepCount = pedometerData.numberOfSteps.intValue
-                if let distance = pedometerData.distance?.doubleValue {
-                    self?.distance = distance
-                }
-                if let averageActivePace = pedometerData.averageActivePace?.doubleValue {
-                    self?.averageActivePace = averageActivePace
-                }
-                if let currentPace = pedometerData.currentPace?.doubleValue {
-                    self?.currentPace = currentPace
-                }
-                if let currentCadence = pedometerData.currentCadence?.doubleValue {
-                    self?.currentCadence = currentCadence
-                }
-                if let floorsAscended = pedometerData.floorsAscended?.intValue {
-                    self?.floorAscended = floorsAscended
-                }
-                if let floorsDescended = pedometerData.floorsDescended?.intValue {
-                    self?.floorDescended = floorsDescended
+                    // Collect gravity data
+                    let gravityDataString = "Gravity,\(timestamp),\(validData.gravity.x),\(validData.gravity.y),\(validData.gravity.z)"
+                    self?.gravityData.append(gravityDataString)
+                    self?.gravityDataPointsX.append(validData.gravity.x)
+                    self?.gravityDataPointsY.append(validData.gravity.y)
+                    self?.gravityDataPointsZ.append(validData.gravity.z)
+
+                    // Collect attitude data (roll, pitch, yaw)
+                    let attitudeDataString = "Attitude,\(timestamp),\(validData.attitude.roll),\(validData.attitude.pitch),\(validData.attitude.yaw)"
+                    self?.attitudeData.append(attitudeDataString)
+                    self?.attitudeDataRoll.append(validData.attitude.roll)
+                    self?.attitudeDataPitch.append(validData.attitude.pitch)
+                    self?.attitudeDataYaw.append(validData.attitude.yaw)
                 }
             }
         }
     }
     
-    func stopStepCountCollection() {
+    func stopRawDataAllCollection() {
         guard isCollectingData else { return }
         
         isCollectingData = false
-        pedometer.stopUpdates()
         
+        rawDataAllManager.stopDeviceMotionUpdates()
         endBackgroundTask()
         removeDataCollectionNotification()  // Remove the notification
+        showDataCollectionStoppedNotification()
         
         if let serverURL = serverURL {
             saveDataToCSV(serverURL: serverURL, baseFolder: self.baseFolder, recordingMode: self.recordingMode)
         }
     }
     
-    // Update current pace and cadence
-    func updateCurrentPaceAndCadence() {
-        guard CMPedometer.isPaceAvailable(), CMPedometer.isCadenceAvailable() else {
-            print("Pace or Cadence is not available on this device")
-            return
+    func resetData() {
+            // Reset any internal data states to prepare for a fresh start when the view is reopened
+            userAccelerometerData = []
+            rotationalData = []
+            magneticFieldData = []
+            accelerometerDataPointsX = []
+            accelerometerDataPointsY = []
+            accelerometerDataPointsZ = []
+            rotationalDataPointsX = []
+            rotationalDataPointsY = []
+            rotationalDataPointsZ = []
+            magneticDataPointsX = []
+            magneticDataPointsY = []
+            magneticDataPointsZ = []
+            gravityData = []
+            gravityDataPointsX = []
+            gravityDataPointsY = []
+            gravityDataPointsZ = []
+            attitudeData = []
+            attitudeDataYaw = []
+            attitudeDataPitch = []
+            attitudeDataRoll = []
         }
-        
-        let now = Date()
-        pedometer.queryPedometerData(from: now.addingTimeInterval(-1), to: now) { [weak self] pedometerData, error in
-            guard let pedometerData = pedometerData, error == nil else {
-                print("Error fetching pedometer data: \(String(describing: error))")
-                return
-            }
-            
-            DispatchQueue.main.async {
-                if let currentPace = pedometerData.currentPace?.doubleValue {
-                    self?.currentPace = currentPace
-                }
-                if let currentCadence = pedometerData.currentCadence?.doubleValue {
-                    self?.currentCadence = currentCadence
-                }
-            }
+    
+    func updateSamplingRate(rate: Double) {
+        currentSamplingRate = rate
+        if isCollectingData {
+            stopRawDataAllCollection()
+            startRawDataAllCollection(realTime: recordingMode == "RealTime", serverURL: self.serverURL!)
         }
     }
     
-    // Save collected data to CSV
     func saveDataToCSV(serverURL: URL, baseFolder: String, recordingMode: String) {
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             print("Documents directory not found")
@@ -233,23 +300,27 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"  // Desired date format
         dateFormatter.timeZone = TimeZone.current  // Local timezone
 
-        // Get the current date and time for the CSV entry
-        let currentDate = Date()
-        let formattedDate = dateFormatter.string(from: currentDate)
-        
-        // Prepare CSV header and data with floors ascended/descended included
-        let csvHeader = "DataType,TimeStamp,StepCount,Distance (m),AverageActivePace (m/s),CurrentPace (m/s),CurrentCadence (steps/s),FloorsAscended,FloorsDescended\n"
-        let csvData = "WalkingData,\(formattedDate),\(stepCount),\(distance ?? 0),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0),\(floorAscended ?? 0),\(floorDescended ?? 0)"
-        
-        let csvString = csvHeader + csvData  // Include formatted timestamp in the CSV data
+        // Create the CSV header
+        let csvHeader = "DataType,TimeStamp,x,y,z\n"
+
+        // Replace the timestamp with formatted date strings for all data types
+        let csvData = (userAccelerometerData + rotationalData + magneticFieldData + gravityData + attitudeData).map { dataEntry -> String in
+            var components = dataEntry.split(separator: ",").map(String.init)
+            if let timestamp = Double(components[1]) {
+                let date = Date(timeIntervalSince1970: timestamp)
+                components[1] = dateFormatter.string(from: date)  // Replace timestamp with formatted date
+            }
+            return components.joined(separator: ",")
+        }.joined(separator: "\n")
+
+        let csvString = csvHeader + csvData
 
         // Compute a hash of the current data to see if it's already been saved
         let dataHash = csvString.hashValue
-        
-        // Create a unique file name based on the current data hash
-        let fileName = "StepCountData_\(formattedDate)_\(dataHash)_\(recordingMode).csv"
-        let fileURL = folderURL.appendingPathComponent(fileName)
-        
+
+        // Check if the file with the same data (hash) already exists
+        let fileURL = folderURL.appendingPathComponent("DeviceMotion_\(dataHash)_\(recordingMode).csv")
+
         if FileManager.default.fileExists(atPath: fileURL.path) {
             print("File with the same data already exists: \(fileURL.path)")
             savedFilePath = fileURL.path
@@ -267,30 +338,28 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             print("Failed to save file: \(error)")
         }
     }
-
     
-    // Upload the file to the server
     func uploadFile(fileURL: URL, serverURL: URL, category: String) {
         var request = URLRequest(url: serverURL)
         request.httpMethod = "POST"
-        
+
         let boundary = UUID().uuidString
         let fileName = fileURL.lastPathComponent
         let mimeType = "text/csv"  // Assuming you're uploading CSV files
-        
+
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        
+
         var body = Data()
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"category\"\r\n\r\n".data(using: .utf8)!)
         body.append("\(category)\r\n".data(using: .utf8)!)
-        
+
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
         body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
         body.append(try! Data(contentsOf: fileURL))
         body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
-        
+
         let task = URLSession.shared.uploadTask(with: request, from: body) { data, response, error in
             if let error = error {
                 print("Error uploading file: \(error)")
@@ -298,12 +367,12 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
             print("File uploaded successfully to server")
         }
-        
+
         task.resume()
     }
     
     private func startBackgroundTask() {
-        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "StepCountBackgroundTask") {
+        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "IMUBackgroundTask") {
             self.endBackgroundTask()
         }
         
@@ -311,7 +380,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             while self.isCollectingData {
                 if let stopTime = self.stopTime, Date() >= stopTime {
                     DispatchQueue.main.async {
-                        self.stopStepCountCollection()
+                        self.stopRawDataAllCollection()
                     }
                     break
                 }
@@ -328,7 +397,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    func scheduleStepCountCollection(startDate: Date, endDate: Date, serverURL: URL, baseFolder: String, completion: @escaping () -> Void) {
+    func scheduleDataCollection(startDate: Date, endDate: Date, serverURL: URL, baseFolder: String, completion: @escaping () -> Void) {
         let now = Date()
         stopTime = endDate
         
@@ -337,15 +406,17 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         if startDate > now {
             let startInterval = startDate.timeIntervalSince(now)
             Timer.scheduledTimer(withTimeInterval: startInterval, repeats: false) { [weak self] _ in
-                self?.startStepCountCollection(realTime: false, serverURL: serverURL)
+                self?.startRawDataAllCollection(realTime: false, serverURL: serverURL)
             }
         } else {
-            startStepCountCollection(realTime: false, serverURL: serverURL)
+            startRawDataAllCollection(realTime: false, serverURL: serverURL)
         }
         
         let endInterval = endDate.timeIntervalSince(now)
         Timer.scheduledTimer(withTimeInterval: endInterval, repeats: false) { [weak self] _ in
-            self?.stopStepCountCollection()
+            self?.stopRawDataAllCollection()
+            self?.removeDataCollectionNotification()
+            self?.showDataCollectionStoppedNotification()
             completion()
         }
     }
