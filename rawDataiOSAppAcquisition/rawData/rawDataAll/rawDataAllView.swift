@@ -269,7 +269,7 @@ var body: some View {
             }
             .padding()
         }
-        .navigationTitle("Device Motion")
+        .navigationTitle("Raw Data All")
         .onDisappear {
                     // Ensure the recording stops and resources are released when the view disappears
                     if isRecording || isRecordingRealTime || isRecordingInterval {
@@ -295,13 +295,13 @@ var body: some View {
                             .multilineTextAlignment(.leading)
                             .padding(.top)
                         ScrollView {
-                            Text("DEVICE MOTION measures how an iPhone or Apple Watch moves and orients in space by combining FOLTERED data from the accelerometer (measuring linear acceleration), gyroscope (measuring rotational movement), and magnetometer (measuring orientation relative to Earth’s magnetic field). It also tracks gravity and the device’s attitude (orientation defined by roll, pitch, and yaw)")
+                            Text("RAW DATA ALL measures unfiltered raw data of accelerometer, gyroscope and magnetometer all at the same time")
                                 .font(.callout)
                                 .multilineTextAlignment(.leading)
                                 .padding(.vertical, 5)
                                 .padding(.horizontal, 5)
                                 .foregroundStyle(Color.primary)
-                            Text("For more information go to: https://developer.apple.com/documentation/coremotion/getting_processed_device-motion_data")
+                            Text("For more information go to: https://developer.apple.com/documentation/coremotion/getting_raw_accelerometer_events")
                                 .font(.callout)
                                 .multilineTextAlignment(.leading)
                                 .padding(.vertical, 5)
