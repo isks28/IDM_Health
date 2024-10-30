@@ -34,7 +34,7 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     @Published var savedFilePath: String?
     
-    let baseFolder: String = "rawData"
+    let baseFolder: String = "RawData"
     
     private var locationManager: CLLocationManager?
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid

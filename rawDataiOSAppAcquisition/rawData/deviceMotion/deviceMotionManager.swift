@@ -44,7 +44,7 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     @Published var savedFilePath: String?
     
-    let baseFolder: String = "RawDataAll"
+    let baseFolder: String = "DeviceMotion"
     
     private var locationManager: CLLocationManager?
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
