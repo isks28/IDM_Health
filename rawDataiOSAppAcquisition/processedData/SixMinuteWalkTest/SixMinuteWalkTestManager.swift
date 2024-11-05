@@ -66,7 +66,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         locationManager?.requestAlwaysAuthorization()
         locationManager?.allowsBackgroundLocationUpdates = true
         locationManager?.startUpdatingLocation()
-        locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        locationManager?.desiredAccuracy = kCLLocationAccuracyBest
         locationManager?.distanceFilter = 4.9 // Customize this value as appropriate
     }
 
