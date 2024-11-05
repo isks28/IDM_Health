@@ -14,8 +14,8 @@ struct SixMinuteWalkTestView: View {
     @StateObject private var stepSixMinuteManager = SixMinuteWalkTestManager()
     @State private var isRecording = false
     @State private var showingAuthenticationError = false
-    @State private var timer: Timer? // Timer for periodic updates if needed
-    @State private var timeElapsed: Int = 0 // Time elapsed in seconds
+    @State private var timer: Timer?
+    @State private var timeElapsed: Int = 0
     @State private var countdownTimer: Int = 3
     @State private var isCountdownActive = false
     
@@ -44,6 +44,7 @@ struct SixMinuteWalkTestView: View {
                 Text("Elapsed Time: \(formattedTime)")
                     .font(.title2)
                     .padding(.bottom)
+                    .foregroundStyle(Color.primary)
                 
                 VStack {
                     Spacer()
@@ -67,18 +68,26 @@ struct SixMinuteWalkTestView: View {
                             
                             Spacer()
                             
-                            // Distance
                             GridRow {
-                                Text("Distance:")
+                                Text("Distance GPS:")
                                     .font(.title3)
                                     .gridCellAnchor(.leading)
-                                Text(String(format: "%.2f meters", stepSixMinuteManager.distance))
+                                Text(String(format: "%.2f meters", stepSixMinuteManager.distanceGPS))
                                     .font(.title3)
                                     .foregroundColor(.blue)
                                     .gridCellAnchor(.trailing)
                             }
 
-                            // Average Active Pace
+                            GridRow {
+                                Text("Distance Pedometer:")
+                                    .font(.title3)
+                                    .gridCellAnchor(.leading)
+                                Text(String(format: "%.2f meters", stepSixMinuteManager.distancePedometer))
+                                    .font(.title3)
+                                    .foregroundColor(.blue)
+                                    .gridCellAnchor(.trailing)
+                            }
+
                             GridRow {
                                 Text("Average Active Pace:")
                                     .font(.title3)
@@ -96,7 +105,6 @@ struct SixMinuteWalkTestView: View {
                                 }
                             }
 
-                            // Current Pace
                             GridRow {
                                 Text("Current Pace:")
                                     .font(.title3)
@@ -114,7 +122,6 @@ struct SixMinuteWalkTestView: View {
                                 }
                             }
 
-                            // Current Cadence
                             GridRow {
                                 Text("Current Cadence:")
                                     .font(.title3)
@@ -132,7 +139,6 @@ struct SixMinuteWalkTestView: View {
                                 }
                             }
 
-                            // Floors Ascended
                             GridRow {
                                 Text("Floors Ascended:")
                                     .font(.title3)
@@ -150,7 +156,6 @@ struct SixMinuteWalkTestView: View {
                                 }
                             }
 
-                            // Floors Descended
                             GridRow {
                                 Text("Floors Descended:")
                                     .font(.title3)
@@ -217,7 +222,7 @@ struct SixMinuteWalkTestView: View {
                             .multilineTextAlignment(.leading)
                             .padding(.top)
                         ScrollView {
-                            Text("The pedometer used for STEP COUNTS measures the number of steps a person takes using data from the accelerometer. It detects repetitive motion patterns typical of walking or running and calculates the total step count accordingly")
+                            Text("The pedometer used for STEP COUNTS measures the number of steps a person takes using data from the accelerometer. It detects repetitive motion patterns typical of walking or running and calculates the total step count accordingly.")
                                 .font(.callout)
                                 .multilineTextAlignment(.leading)
                                 .padding(.vertical, 5)

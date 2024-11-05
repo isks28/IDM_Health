@@ -17,7 +17,8 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     private let pedometer = CMPedometer()
     @Published var isCollectingData = false
     @Published var stepCount: Int = 0
-    @Published var distance: Double = 0.0 // Distance in meters from GPS
+    @Published var distanceGPS: Double = 0.0 // Distance in meters from GPS
+    @Published var distancePedometer: Double = 0.0 // Distance in meters estimated from steps
     @Published var averageActivePace: Double? // Average active pace in meters per second
     @Published var currentPace: Double? // Current pace in meters per second
     @Published var currentCadence: Double? // Current cadence in steps per second
@@ -27,11 +28,12 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     
     let baseFolder: String = "ProcessedStepCountsData"
     
-    private var recordingMode: String = "Six-Minute-Walk test"
+    private var recordingMode: String = "Six-Minute-Walk Test"
     private var serverURL: URL?
     private var locationManager: CLLocationManager?
     private var previousLocation: CLLocation?
     private var timer: Timer? // Timer property for precise control
+    private let stepLengthInMeters: Double = 0.7 // Approximate step length in meters
 
     override init() {
         super.init()
@@ -63,9 +65,9 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         locationManager?.delegate = self
         locationManager?.requestAlwaysAuthorization()
         locationManager?.allowsBackgroundLocationUpdates = true
-        locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
-        locationManager?.distanceFilter = 4.9 // Minimum distance in meters before an update
         locationManager?.startUpdatingLocation()
+        locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        locationManager?.distanceFilter = 4.9 // Customize this value as appropriate
     }
 
     // Request Notification permissions
@@ -108,7 +110,8 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         self.serverURL = serverURL
         isCollectingData = true
         stepCount = 0
-        distance = 0.0
+        distanceGPS = 0.0
+        distancePedometer = 0.0
         averageActivePace = nil
         currentPace = nil
         currentCadence = nil
@@ -117,9 +120,10 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         recordingMode = "Six-Minute-Walk Test"
         
         previousLocation = nil
-        locationManager?.startUpdatingLocation() // Start high-accuracy location tracking
+        locationManager?.startUpdatingLocation()
         
         showDataCollectionNotification()
+        
         playStartAlert()
         
         guard CMPedometer.isStepCountingAvailable() else {
@@ -135,6 +139,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
             
             DispatchQueue.main.async {
                 self?.stepCount = pedometerData.numberOfSteps.intValue
+                self?.distancePedometer = Double(pedometerData.numberOfSteps.intValue) * (self?.stepLengthInMeters ?? 0.75)
                 if let averageActivePace = pedometerData.averageActivePace?.doubleValue {
                     self?.averageActivePace = averageActivePace
                 }
@@ -159,12 +164,14 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     }
 
     func stopStepCountCollection() {
-        guard isCollectingData else { return }
+        guard isCollectingData else {
+            print("Data collection already stopped.")
+            return
+        }
         
         isCollectingData = false
         pedometer.stopUpdates()
         locationManager?.stopUpdatingLocation()
-        locationManager?.desiredAccuracy = kCLLocationAccuracyHundredMeters // Reduce accuracy after test
         timer?.invalidate()
         timer = nil
 
@@ -173,6 +180,8 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         
         if let serverURL = serverURL {
             saveDataToCSV(serverURL: serverURL, baseFolder: self.baseFolder, recordingMode: self.recordingMode)
+        } else {
+            print("Error: serverURL is nil. CSV will not be saved.")
         }
     }
 
@@ -198,10 +207,11 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         dateFormatter.timeZone = TimeZone.current
         let formattedDate = dateFormatter.string(from: Date())
 
-        let csvHeader = "DataType,TimeStamp,StepCount,Distance (m),AverageActivePace (m/s),CurrentPace (m/s),CurrentCadence (steps/s),FloorsAscended,FloorsDescended\n"
-        let csvData = "WalkingData,\(formattedDate),\(stepCount),\(distance),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0),\(floorAscended ?? 0),\(floorDescended ?? 0)"
+        let csvHeader = "DataType,TimeStamp,StepCount,Distance GPS (m),Distance Pedometer (m),AverageActivePace (m/s),CurrentPace (m/s),CurrentCadence (steps/s),FloorsAscended,FloorsDescended\n"
+        let csvData = "WalkingData,\(formattedDate),\(stepCount),\(distanceGPS),\(distancePedometer),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0),\(floorAscended ?? 0),\(floorDescended ?? 0)"
         
         let csvString = csvHeader + csvData
+
         let fileName = "SixMinuteWalkTest_\(formattedDate).csv"
         let fileURL = folderURL.appendingPathComponent(fileName)
         
@@ -212,11 +222,8 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         }
 
         do {
-            print("Attempting to save file at \(fileURL.path)")
             try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
-            print("File saved at \(fileURL.path)")
             savedFilePath = fileURL.path
-
             self.uploadFile(fileURL: fileURL, serverURL: serverURL, category: baseFolder)
         } catch {
             print("Failed to save file: \(error)")
@@ -257,22 +264,23 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let newLocation = locations.last else { return }
-        
+            guard let newLocation = locations.last else { return }
+            
         let movementThreshold: CLLocationDistance = 4.9
-        
-        if let previousLocation = previousLocation {
-            let distanceInMeters = newLocation.distance(from: previousLocation)
-            if distanceInMeters >= movementThreshold {
-                distance += distanceInMeters
-                self.previousLocation = newLocation
+            
+            if let previousLocation = previousLocation {
+                let distanceInMeters = newLocation.distance(from: previousLocation)
+                
+                if distanceInMeters >= movementThreshold {
+                    distanceGPS += distanceInMeters
+                    self.previousLocation = newLocation
+                } else {
+                    print("Ignoring small movement: \(distanceInMeters) meters")
+                }
             } else {
-                print("Ignoring small movement: \(distanceInMeters) meters")
+                previousLocation = newLocation
             }
-        } else {
-            previousLocation = newLocation
         }
-    }
     
     // Function to play sound and vibration at the start of the test
     func playStartAlert() {
