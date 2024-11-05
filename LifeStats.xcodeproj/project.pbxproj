@@ -590,6 +590,7 @@
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSLocationTemporaryUsageDescriptionDictionary = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSLocationUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone will be accessed to record audio during video recording";
 				INFOPLIST_KEY_NSMotionUsageDescription = "We use motion data to track your activity";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -661,6 +662,7 @@
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSLocationTemporaryUsageDescriptionDictionary = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSLocationUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone will be accessed to record audio during video recording";
 				INFOPLIST_KEY_NSMotionUsageDescription = "We use motion data to track your activity";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -698,6 +700,7 @@
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSLocationTemporaryUsageDescriptionDictionary = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSLocationUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone will be accessed to record audio during video recording";
 				INFOPLIST_KEY_NSMotionUsageDescription = "We use motion data to track your activity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -752,6 +755,7 @@
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSLocationTemporaryUsageDescriptionDictionary = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSLocationUsageDescription = "We use your location to track motion in the background";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone will be accessed to record audio during video recording";
 				INFOPLIST_KEY_NSMotionUsageDescription = "We use motion data to track your activity";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

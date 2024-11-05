@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreMotion
+import CoreLocation
 import UserNotifications
 
 class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
@@ -14,7 +15,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let pedometer = CMPedometer()
     @Published var isCollectingData = false
     @Published var stepCount: Int = 0
-    @Published var distance: Double? // Distance in meters, if available
+    @Published var distance: Double = 0.0 // Distance in meters, if available
     @Published var averageActivePace: Double? // Average active pace in meters per second
     @Published var currentPace: Double? // Current pace in meters per second
     @Published var currentCadence: Double? // Current cadence in steps per second
@@ -25,6 +26,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     let baseFolder: String = "ProcessedStepCountsData"
     
     private var locationManager: CLLocationManager?
+    private var previousLocation: CLLocation?
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
     private var stopTime: Date?
     private var recordingMode: String = "RealTime"
@@ -127,7 +129,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         self.serverURL = serverURL
         isCollectingData = true
         stepCount = 0
-        distance = nil
+        distance = 0.0
         averageActivePace = nil
         currentPace = nil
         currentCadence = nil
@@ -135,6 +137,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         floorDescended = nil
         recordingMode = realTime ? "RealTime" : "TimeInterval"
         
+        locationManager?.startMonitoringSignificantLocationChanges()
         startBackgroundTask()
         showDataCollectionNotification() // Show the notification
         
@@ -151,9 +154,6 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             
             DispatchQueue.main.async {
                 self?.stepCount = pedometerData.numberOfSteps.intValue
-                if let distance = pedometerData.distance?.doubleValue {
-                    self?.distance = distance
-                }
                 if let averageActivePace = pedometerData.averageActivePace?.doubleValue {
                     self?.averageActivePace = averageActivePace
                 }
@@ -179,6 +179,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         isCollectingData = false
         pedometer.stopUpdates()
         
+        locationManager?.stopMonitoringSignificantLocationChanges()
         endBackgroundTask()
         removeDataCollectionNotification()  // Remove the notification
         
@@ -239,7 +240,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         
         // Prepare CSV header and data with floors ascended/descended included
         let csvHeader = "DataType,TimeStamp,StepCount,Distance (m),AverageActivePace (m/s),CurrentPace (m/s),CurrentCadence (steps/s),FloorsAscended,FloorsDescended\n"
-        let csvData = "WalkingData,\(formattedDate),\(stepCount),\(distance ?? 0),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0),\(floorAscended ?? 0),\(floorDescended ?? 0)"
+        let csvData = "WalkingData,\(formattedDate),\(stepCount),\(distance),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0),\(floorAscended ?? 0),\(floorDescended ?? 0)"
         
         let csvString = csvHeader + csvData  // Include formatted timestamp in the CSV data
 
@@ -350,8 +351,15 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    // CLLocationManagerDelegate method
+    // CLLocationManagerDelegate method for updating location
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        // Handle location updates if needed
+        guard let newLocation = locations.last else { return }
+        
+        // Calculate the distance incrementally
+        if let previousLocation = previousLocation {
+            let distanceInMeters = newLocation.distance(from: previousLocation)
+            distance += distanceInMeters
+        }
+        previousLocation = newLocation
     }
 }

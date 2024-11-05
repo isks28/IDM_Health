@@ -15,7 +15,7 @@ struct SixMinuteWalkTestView: View {
     @State private var isRecording = false
     @State private var showingAuthenticationError = false
     @State private var timer: Timer? // Timer for periodic updates if needed
-    
+    @State private var timeElapsed: Int = 0 // Time elapsed in seconds
     @State private var countdownTimer: Int = 3
     @State private var isCountdownActive = false
     
@@ -24,9 +24,8 @@ struct SixMinuteWalkTestView: View {
     
     var body: some View {
         VStack {
-            
             if !isCountdownActive && stepSixMinuteManager.stepCount == 0 {
-                Text("Put the phone in the pocket after clicking start")
+                Text("Put the phone in the trouser pocket after clicking start")
                     .font(.title3)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(Color.secondary)
@@ -36,19 +35,20 @@ struct SixMinuteWalkTestView: View {
             
             Spacer()
             
-            // Countdown Timer
             if isCountdownActive {
                 Text("Starting in \(countdownTimer)...")
                     .font(.largeTitle)
                     .foregroundColor(.primary)
                     .padding()
             } else {
-                // Step Count Display
+                Text("Elapsed Time: \(formattedTime)")
+                    .font(.title2)
+                    .padding(.bottom)
+                
                 VStack {
                     Spacer()
                     if stepSixMinuteManager.stepCount > 0 {
                         Grid {
-                            // Step Count
                             VStack {
                                 Text("Steps:")
                                     .font(.largeTitle)
@@ -64,7 +64,7 @@ struct SixMinuteWalkTestView: View {
                             .padding()
                             .background(Color.secondary.opacity(0.1))
                             .cornerRadius(25)
-
+                            
                             Spacer()
                             
                             // Distance
@@ -72,17 +72,10 @@ struct SixMinuteWalkTestView: View {
                                 Text("Distance:")
                                     .font(.title3)
                                     .gridCellAnchor(.leading)
-                                if let distance = stepSixMinuteManager.distance {
-                                    Text(String(format: "%.2f meters", distance))
-                                        .font(.title3)
-                                        .foregroundColor(.blue)
-                                        .gridCellAnchor(.trailing)
-                                } else {
-                                    Text("Not available")
-                                        .font(.title3)
-                                        .foregroundColor(.secondary)
-                                        .gridCellAnchor(.trailing)
-                                }
+                                Text(String(format: "%.2f meters", stepSixMinuteManager.distance))
+                                    .font(.title3)
+                                    .foregroundColor(.blue)
+                                    .gridCellAnchor(.trailing)
                             }
 
                             // Average Active Pace
@@ -180,17 +173,16 @@ struct SixMinuteWalkTestView: View {
             }
             Spacer()
             
-            // Start/Stop button for 6MWT recording
             VStack {
                 Button(action: {
-                    stepSixMinuteManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
+                    stepSixMinuteManager.savedFilePath = nil
                     
                     if isRecording {
                         stepSixMinuteManager.stopStepCountCollection()
-                        stopTimer() // Stop the timer
-                        stepSixMinuteManager.removeDataCollectionNotification() // Remove notification on stop
+                        stopTest()
+                        stepSixMinuteManager.removeDataCollectionNotification()
                     } else {
-                        startCountdown() // Start the 3-second countdown before starting the test
+                        startCountdown()
                     }
                     isRecording.toggle()
                 }) {
@@ -231,12 +223,6 @@ struct SixMinuteWalkTestView: View {
                                 .padding(.vertical, 5)
                                 .padding(.horizontal, 5)
                                 .foregroundStyle(Color.primary)
-                            Text("For more information go to: https://developer.apple.com/documentation/coremotion/cmpedometer")
-                                .font(.callout)
-                                .multilineTextAlignment(.leading)
-                                .padding(.vertical, 5)
-                                .padding(.horizontal, 5)
-                                .foregroundStyle(Color.primary)
                             Text("6-Minute Walk Test records the data automatically and stops after six minutes.")
                                 .font(.body)
                                 .multilineTextAlignment(.center)
@@ -251,24 +237,27 @@ struct SixMinuteWalkTestView: View {
                                 .foregroundStyle(Color.pink)
                                 .background(Color.white)
                                 .cornerRadius(25)
-                                .overlay(  // Adding black outline
+                                .overlay(
                                     RoundedRectangle(cornerRadius: 25)
-                                        .stroke(Color.pink, lineWidth: 2)  // Outline color and width
+                                        .stroke(Color.pink, lineWidth: 2)
                                 )
                         }
                         .scrollIndicators(.hidden)
                         .padding(.horizontal)
                         .padding(.bottom, 5)
-                        // Adding a chevron as a swipe indicator
-                        AnimatedSwipeDownCloseView()
                     }
                     .padding()
                 }
             }
         }
     }
-    
-    // Start a 3-second countdown before starting data collection
+
+    private var formattedTime: String {
+        let minutes = timeElapsed / 60
+        let seconds = timeElapsed % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+
     private func startCountdown() {
         isCountdownActive = true
         countdownTimer = 3
@@ -279,17 +268,29 @@ struct SixMinuteWalkTestView: View {
             } else {
                 timer.invalidate()
                 isCountdownActive = false
-                stepSixMinuteManager.startStepCountCollection() // Start the 6-minute walk test after countdown
-                stepSixMinuteManager.updateCurrentPaceAndCadence() // Start the timer if periodic updates are needed
-                stepSixMinuteManager.showDataCollectionNotification() // Show notification on start
+                startTest()
             }
         }
     }
-    
-    // Stop the timer
-    private func stopTimer() {
+
+    private func startTest() {
+        timeElapsed = 0
+        stepSixMinuteManager.startStepCountCollection(serverURL: ServerConfig.serverURL)
+        
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            timeElapsed += 1
+        }
+
+        Timer.scheduledTimer(withTimeInterval: 360.0, repeats: false) { _ in
+            stopTest()
+        }
+    }
+
+    private func stopTest() {
+        stepSixMinuteManager.stopStepCountCollection()
         timer?.invalidate()
         timer = nil
+        isRecording = false
     }
 }
 

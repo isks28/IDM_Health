@@ -9,13 +9,15 @@ import SwiftUI
 import CoreMotion
 import CoreLocation
 import UserNotifications
+import AudioToolbox
+import AVFoundation
 
 class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     private let pedometer = CMPedometer()
     @Published var isCollectingData = false
     @Published var stepCount: Int = 0
-    @Published var distance: Double? // Distance in meters from GPS
+    @Published var distance: Double = 0.0 // Distance in meters from GPS
     @Published var averageActivePace: Double? // Average active pace in meters per second
     @Published var currentPace: Double? // Current pace in meters per second
     @Published var currentCadence: Double? // Current cadence in steps per second
@@ -25,9 +27,11 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     
     let baseFolder: String = "ProcessedStepCountsData"
     
+    private var recordingMode: String = "Six-Minute-Walk test"
+    private var serverURL: URL?
     private var locationManager: CLLocationManager?
-    private var initialLocation: CLLocation?
-    private var stopTime: Date?
+    private var previousLocation: CLLocation?
+    private var timer: Timer? // Timer property for precise control
 
     override init() {
         super.init()
@@ -36,7 +40,6 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         setupAppLifecycleObservers()
     }
     
-    // App lifecycle event observers
     private func setupAppLifecycleObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
@@ -60,7 +63,9 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         locationManager?.delegate = self
         locationManager?.requestAlwaysAuthorization()
         locationManager?.allowsBackgroundLocationUpdates = true
-        locationManager?.startMonitoringSignificantLocationChanges()
+        locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        locationManager?.distanceFilter = 4.9 // Minimum distance in meters before an update
+        locationManager?.startUpdatingLocation()
     }
 
     // Request Notification permissions
@@ -97,26 +102,26 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dataCollectionNotification"])
     }
 
-    // Start step count collection for 6MWT
-    func startStepCountCollection() {
+    func startStepCountCollection(serverURL: URL) {
         guard !isCollectingData else { return }
         
+        self.serverURL = serverURL
         isCollectingData = true
         stepCount = 0
-        distance = nil
+        distance = 0.0
         averageActivePace = nil
         currentPace = nil
         currentCadence = nil
         floorAscended = nil
         floorDescended = nil
+        recordingMode = "Six-Minute-Walk Test"
         
-        // Start GPS tracking
-        initialLocation = nil
-        locationManager?.startUpdatingLocation()
+        previousLocation = nil
+        locationManager?.startUpdatingLocation() // Start high-accuracy location tracking
         
         showDataCollectionNotification()
+        playStartAlert()
         
-        // Start pedometer updates
         guard CMPedometer.isStepCountingAvailable() else {
             print("Step counting is not available on this device")
             return
@@ -130,9 +135,6 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
             
             DispatchQueue.main.async {
                 self?.stepCount = pedometerData.numberOfSteps.intValue
-                if let distance = pedometerData.distance?.doubleValue {
-                    self?.distance = distance
-                }
                 if let averageActivePace = pedometerData.averageActivePace?.doubleValue {
                     self?.averageActivePace = averageActivePace
                 }
@@ -151,58 +153,149 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
             }
         }
         
-        // Stop data collection after 6 minutes (6MWT)
-        stopTime = Date().addingTimeInterval(6 * 60)
-        Timer.scheduledTimer(withTimeInterval: 6 * 60, repeats: false) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 360, repeats: false) { [weak self] _ in
             self?.stopStepCountCollection()
         }
     }
-    
+
     func stopStepCountCollection() {
         guard isCollectingData else { return }
         
         isCollectingData = false
         pedometer.stopUpdates()
         locationManager?.stopUpdatingLocation()
+        locationManager?.desiredAccuracy = kCLLocationAccuracyHundredMeters // Reduce accuracy after test
+        timer?.invalidate()
+        timer = nil
+
+        playEndAlert()
         removeDataCollectionNotification()
-    }
-    
-    // Update current pace and cadence
-    func updateCurrentPaceAndCadence() {
-        guard CMPedometer.isPaceAvailable(), CMPedometer.isCadenceAvailable() else {
-            print("Pace or Cadence is not available on this device")
-            return
-        }
         
-        let now = Date()
-        pedometer.queryPedometerData(from: now.addingTimeInterval(-1), to: now) { [weak self] pedometerData, error in
-            guard let pedometerData = pedometerData, error == nil else {
-                print("Error fetching pedometer data: \(String(describing: error))")
-                return
-            }
-            
-            DispatchQueue.main.async {
-                if let currentPace = pedometerData.currentPace?.doubleValue {
-                    self?.currentPace = currentPace
-                }
-                if let currentCadence = pedometerData.currentCadence?.doubleValue {
-                    self?.currentCadence = currentCadence
-                }
-            }
+        if let serverURL = serverURL {
+            saveDataToCSV(serverURL: serverURL, baseFolder: self.baseFolder, recordingMode: self.recordingMode)
         }
     }
 
-    // CLLocationManagerDelegate method for updating location
+    // Save collected data to CSV
+    func saveDataToCSV(serverURL: URL, baseFolder: String, recordingMode: String) {
+        print("Attempting to save data to CSV")
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            print("Documents directory not found")
+            return
+        }
+
+        let folderURL = documentsDirectory.appendingPathComponent(baseFolder).appendingPathComponent(recordingMode)
+        
+        do {
+            try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
+        } catch {
+            print("Failed to create directory: \(error)")
+            return
+        }
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+        dateFormatter.timeZone = TimeZone.current
+        let formattedDate = dateFormatter.string(from: Date())
+
+        let csvHeader = "DataType,TimeStamp,StepCount,Distance (m),AverageActivePace (m/s),CurrentPace (m/s),CurrentCadence (steps/s),FloorsAscended,FloorsDescended\n"
+        let csvData = "WalkingData,\(formattedDate),\(stepCount),\(distance),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0),\(floorAscended ?? 0),\(floorDescended ?? 0)"
+        
+        let csvString = csvHeader + csvData
+        let fileName = "SixMinuteWalkTest_\(formattedDate).csv"
+        let fileURL = folderURL.appendingPathComponent(fileName)
+        
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            print("File with the same data already exists: \(fileURL.path)")
+            savedFilePath = fileURL.path
+            return
+        }
+
+        do {
+            print("Attempting to save file at \(fileURL.path)")
+            try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
+            print("File saved at \(fileURL.path)")
+            savedFilePath = fileURL.path
+
+            self.uploadFile(fileURL: fileURL, serverURL: serverURL, category: baseFolder)
+        } catch {
+            print("Failed to save file: \(error)")
+        }
+    }
+
+    // Upload the file to the server
+    func uploadFile(fileURL: URL, serverURL: URL, category: String) {
+        var request = URLRequest(url: serverURL)
+        request.httpMethod = "POST"
+        
+        let boundary = UUID().uuidString
+        let fileName = fileURL.lastPathComponent
+        let mimeType = "text/csv"
+        
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        var body = Data()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"category\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(category)\r\n".data(using: .utf8)!)
+        
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append(try! Data(contentsOf: fileURL))
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        let task = URLSession.shared.uploadTask(with: request, from: body) { data, response, error in
+            if let error = error {
+                print("Error uploading file: \(error)")
+                return
+            }
+            print("File uploaded successfully to server")
+        }
+        
+        task.resume()
+    }
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let newLocation = locations.last else { return }
         
-        // Set the initial location if it’s the first reading
-        if initialLocation == nil {
-            initialLocation = newLocation
-        } else if let initialLocation = initialLocation {
-            // Calculate distance from the initial point
-            let distanceInMeters = newLocation.distance(from: initialLocation)
-            distance = distanceInMeters
+        let movementThreshold: CLLocationDistance = 4.9
+        
+        if let previousLocation = previousLocation {
+            let distanceInMeters = newLocation.distance(from: previousLocation)
+            if distanceInMeters >= movementThreshold {
+                distance += distanceInMeters
+                self.previousLocation = newLocation
+            } else {
+                print("Ignoring small movement: \(distanceInMeters) meters")
+            }
+        } else {
+            previousLocation = newLocation
+        }
+    }
+    
+    // Function to play sound and vibration at the start of the test
+    func playStartAlert() {
+        AudioServicesPlaySystemSound(1007)
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+    }
+    
+    // Function to play sound, vibration, and a notification at the end of the test
+    func playEndAlert() {
+        AudioServicesPlaySystemSound(1007)
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+        
+        let content = UNMutableNotificationContent()
+        content.title = "6-Minute Walk Test Completed"
+        content.body = "The test has ended. You may check your results."
+        content.sound = .default
+        
+        let request = UNNotificationRequest(identifier: "endTestNotification", content: content, trigger: nil)
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Error showing end notification: \(error)")
+            }
         }
     }
 }
