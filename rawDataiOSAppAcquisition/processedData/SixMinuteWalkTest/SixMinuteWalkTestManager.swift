@@ -158,7 +158,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
             }
         }
         
-        timer = Timer.scheduledTimer(withTimeInterval: 360, repeats: false) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 15, repeats: false) { [weak self] _ in
             self?.stopStepCountCollection()
         }
     }

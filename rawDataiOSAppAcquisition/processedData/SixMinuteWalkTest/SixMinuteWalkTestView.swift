@@ -286,7 +286,7 @@ struct SixMinuteWalkTestView: View {
             timeElapsed += 1
         }
 
-        Timer.scheduledTimer(withTimeInterval: 360.0, repeats: false) { _ in
+        Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { _ in
             stopTest()
         }
     }
