@@ -25,6 +25,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     @Published var floorAscended: Int? // Floors ascended, if available
     @Published var floorDescended: Int? // Floors descended, if available
     @Published var savedFilePath: String?
+    @Published var stepLengthInMeters: Double = 0.7 // Approximate step length in meters
     
     let baseFolder: String = "ProcessedStepCountsData"
     
@@ -33,7 +34,6 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     private var locationManager: CLLocationManager?
     private var previousLocation: CLLocation?
     private var timer: Timer? // Timer property for precise control
-    private let stepLengthInMeters: Double = 0.7 // Approximate step length in meters
 
     override init() {
         super.init()
@@ -158,7 +158,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
             }
         }
         
-        timer = Timer.scheduledTimer(withTimeInterval: 15, repeats: false) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 360, repeats: false) { [weak self] _ in
             self?.stopStepCountCollection()
         }
     }

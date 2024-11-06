@@ -18,10 +18,10 @@ struct SixMinuteWalkTestView: View {
     @State private var timeElapsed: Int = 0
     @State private var countdownTimer: Int = 3
     @State private var isCountdownActive = false
-    
+    @State private var canControlStepLength = false
     @State private var showingInfo = false
     @State private var refreshGraph = UUID()
-    
+
     var body: some View {
         VStack {
             if !isCountdownActive && stepSixMinuteManager.stepCount == 0 {
@@ -77,7 +77,7 @@ struct SixMinuteWalkTestView: View {
                                     .foregroundColor(.blue)
                                     .gridCellAnchor(.trailing)
                             }
-
+                            
                             GridRow {
                                 Text("Distance Pedometer:")
                                     .font(.title3)
@@ -87,7 +87,7 @@ struct SixMinuteWalkTestView: View {
                                     .foregroundColor(.blue)
                                     .gridCellAnchor(.trailing)
                             }
-
+                            
                             GridRow {
                                 Text("Average Active Pace:")
                                     .font(.title3)
@@ -104,7 +104,7 @@ struct SixMinuteWalkTestView: View {
                                         .gridCellAnchor(.trailing)
                                 }
                             }
-
+                            
                             GridRow {
                                 Text("Current Pace:")
                                     .font(.title3)
@@ -121,24 +121,24 @@ struct SixMinuteWalkTestView: View {
                                         .gridCellAnchor(.trailing)
                                 }
                             }
-
+                            
                             GridRow {
-                                Text("Current Cadence:")
-                                    .font(.title3)
-                                    .gridCellAnchor(.leading)
-                                if let currentCadence = stepSixMinuteManager.currentCadence {
-                                    Text(String(format: "%.2f steps/second", currentCadence))
+                                    Text("Current Cadence:")
                                         .font(.title3)
-                                        .foregroundColor(.blue)
-                                        .gridCellAnchor(.trailing)
-                                } else {
-                                    Text("Not available")
-                                        .font(.title3)
-                                        .foregroundColor(.secondary)
-                                        .gridCellAnchor(.trailing)
+                                        .gridCellAnchor(.leading)
+                                    if let currentCadence = stepSixMinuteManager.currentCadence {
+                                        Text(String(format: "%.2f steps/second", currentCadence))
+                                            .font(.title3)
+                                            .foregroundColor(.blue)
+                                            .gridCellAnchor(.trailing)
+                                    } else {
+                                        Text("Not available")
+                                            .font(.title3)
+                                            .foregroundColor(.secondary)
+                                            .gridCellAnchor(.trailing)
+                                    }
                                 }
-                            }
-
+                            
                             GridRow {
                                 Text("Floors Ascended:")
                                     .font(.title3)
@@ -155,7 +155,7 @@ struct SixMinuteWalkTestView: View {
                                         .gridCellAnchor(.trailing)
                                 }
                             }
-
+                            
                             GridRow {
                                 Text("Floors Descended:")
                                     .font(.title3)
@@ -174,14 +174,54 @@ struct SixMinuteWalkTestView: View {
                             }
                         }
                     }
+                    
+                    // Step Length Control with Authentication
+                    if !isRecording && stepSixMinuteManager.stepCount == 0{
+                    VStack {
+                        Toggle(isOn: $canControlStepLength) {
+                            if stepSixMinuteManager.stepLengthInMeters == 0.7 {
+                                Text("Step Length:")
+                                    .font(.caption2)
+                                Text("Default: 0.7 meters")
+                                    .font(.caption2)
+                            } else {
+                                Text("Step Length:")
+                                    .font(.caption2)
+                                Text(String(format: "Changed: %.2f meters", stepSixMinuteManager.stepLengthInMeters))
+                                    .font(.caption2)
+                            }
+                        }
+                        .onChange(of: canControlStepLength) { _, newValue in
+                            if newValue {
+                                authenticateUser { success in
+                                    if !success {
+                                        canControlStepLength = false
+                                        showingAuthenticationError = true
+                                    } else {
+                                        showingAuthenticationError = false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding()
+                    
+                    if canControlStepLength {
+                        VStack {
+                            Text("Step Length: \(String(format: "%.2f meters", stepSixMinuteManager.stepLengthInMeters))")
+                            Slider(value: $stepSixMinuteManager.stepLengthInMeters, in: 0.6...0.8, step: 0.01)
+                                .padding([.leading, .trailing], 20)
+                        }
+                    }
                 }
             }
+        }
             Spacer()
-            
+
             VStack {
                 Button(action: {
                     stepSixMinuteManager.savedFilePath = nil
-                    
+
                     if isRecording {
                         stepSixMinuteManager.stopStepCountCollection()
                         stopTest()
@@ -197,7 +237,7 @@ struct SixMinuteWalkTestView: View {
                         .foregroundColor(.white)
                         .cornerRadius(15)
                 }
-                
+
                 if stepSixMinuteManager.savedFilePath != nil {
                     Text("File saved")
                         .font(.footnote)
@@ -266,7 +306,7 @@ struct SixMinuteWalkTestView: View {
     private func startCountdown() {
         isCountdownActive = true
         countdownTimer = 3
-        
+
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
             if countdownTimer > 1 {
                 countdownTimer -= 1
@@ -281,12 +321,12 @@ struct SixMinuteWalkTestView: View {
     private func startTest() {
         timeElapsed = 0
         stepSixMinuteManager.startStepCountCollection(serverURL: ServerConfig.serverURL)
-        
+
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             timeElapsed += 1
         }
 
-        Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { _ in
+        Timer.scheduledTimer(withTimeInterval: 360.0, repeats: false) { _ in
             stopTest()
         }
     }
@@ -296,6 +336,27 @@ struct SixMinuteWalkTestView: View {
         timer?.invalidate()
         timer = nil
         isRecording = false
+    }
+
+    func authenticateUser(completion: @escaping (Bool) -> Void) {
+        let context = LAContext()
+        var error: NSError?
+
+        if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+            let reason = "Authenticate to enable step length control."
+
+            context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, authenticationError in
+                DispatchQueue.main.async {
+                    if success {
+                        completion(true)
+                    } else {
+                        completion(false)
+                    }
+                }
+            }
+        } else {
+            completion(false)
+        }
     }
 }
 
