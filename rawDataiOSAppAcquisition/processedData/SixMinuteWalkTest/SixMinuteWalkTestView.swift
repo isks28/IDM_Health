@@ -231,7 +231,7 @@ struct SixMinuteWalkTestView: View {
                     }
                     isRecording.toggle()
                 }) {
-                    Text(isRecording ? "Stop and Save" : "Start 6-Minute Walk Test")
+                    Text(isRecording ? "6-Minute Walk Test is Running" : "Start 6-Minute Walk Test")
                         .padding()
                         .background(isRecording ? Color.gray : Color.blue)
                         .foregroundColor(.white)
