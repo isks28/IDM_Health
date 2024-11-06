@@ -40,6 +40,20 @@ struct processedDataView: View {
                         .foregroundStyle(Color.primary)
                 }
                         .tag("StepCounts")
+                HStack{
+                    Image(systemName: "6.lane")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 100, height: 50)
+                        .foregroundStyle(Color.blue)
+                    Text("Six Minute Walk Test")
+                        .foregroundStyle(Color.primary)
+                        .font(.title)
+                    Spacer()
+                    Image(systemName: "chevron.right.2")
+                        .foregroundStyle(Color.primary)
+                }
+                        .tag("SixMinuteWalkTest")
             }
             .navigationTitle("Walking Data")
             .toolbar {
@@ -70,6 +84,8 @@ struct processedDataView: View {
         } detail: {
             if selectedView == "StepCounts" {
                 StepCountView()
+            } else if selectedView == "SixMinuteWalkTest" {
+                SixMinuteWalkTestView()
             } else {
                 Text("Select a view")
                     .font(.largeTitle)

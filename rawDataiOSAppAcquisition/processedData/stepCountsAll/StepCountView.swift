@@ -65,17 +65,10 @@ struct StepCountView: View {
                             Text("Distance:")
                                 .font(.title3)
                                 .gridCellAnchor(.leading)
-                            if let distance = stepManager.distance {
-                                Text(String(format: "%.2f meters", distance))
-                                    .font(.title3)
-                                    .foregroundColor(.blue)
-                                    .gridCellAnchor(.trailing)
-                            } else {
-                                Text("Not available")
-                                    .font(.title3)
-                                    .foregroundColor(.secondary)
-                                    .gridCellAnchor(.trailing)
-                            }
+                            Text(String(format: "%.2f meters", stepManager.distance))
+                                .font(.title3)
+                                .foregroundColor(.blue)
+                                .gridCellAnchor(.trailing)
                         }
 
                         // Average Active Pace

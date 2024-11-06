@@ -1,8 +1,8 @@
 //
-//  RawDataView.swift
+//  rawDataAllView.swift
 //  rawDataiOSAppAcquisition
 //
-//  Created by Irnu Suryohadi Kusumo on 29.10.24.
+//  Created by Irnu Suryohadi Kusumo on 03.09.24.
 //
 
 import SwiftUI
@@ -10,14 +10,16 @@ import LocalAuthentication
 import CoreMotion
 import UserNotifications
 
-enum DataTypeRawAll: String, CaseIterable {
-case accelerometer = "Accel."
-case gyroscope = "Gyro."
-case magnetometer = "Magneto."
+enum DataType: String, CaseIterable {
+case accelerometer = "User Acc."
+case gyroscope = "Rot. Rate"
+case gravity = "Gravity"
+case attitude = "Attitude"
+    case magnetometer = "Mag. Field"
 }
 
-struct rawDataAccGyroMagView: View {
-@StateObject private var motionManager = RawDataManager()
+struct rawDataAllView: View {
+@StateObject private var motionManager = RawDataAllManager()
 @State private var isRecording = false
 @State private var startDate = Date()
 @State private var endDate = Date().addingTimeInterval(3600)
@@ -26,7 +28,7 @@ struct rawDataAccGyroMagView: View {
 @State private var samplingRate: Double = 60.0 // Default sampling rate
 @State private var canControlSamplingRate = false
 @State private var showingAuthenticationError = false
-    @State private var selectedDataType: DataTypeRawAll = .accelerometer // Default data type
+@State private var selectedDataType: DataType = .accelerometer // Default data type
 
 @State private var showingInfo = false
 @State private var refreshGraph = UUID() // To trigger graph refresh
@@ -35,7 +37,7 @@ var body: some View {
     VStack {
         // Segmented Picker to choose data type
         Picker("Select Data", selection: $selectedDataType) {
-            ForEach(DataTypeRawAll.allCases, id: \.self) { dataType in
+            ForEach(DataType.allCases, id: \.self) { dataType in
                 Text(dataType.rawValue)
                     .tag(dataType)
             }
@@ -48,13 +50,13 @@ var body: some View {
         // Display graphs based on the selected data type
         switch selectedDataType {
         case .accelerometer:
-            if motionManager.AccelerometerData.last != nil {
+            if motionManager.userAccelerometerData.last != nil {
                 VStack {
-                    RawDataGraphView(dataPoints: motionManager.accelerometerDataPointsX, lineColor: .red.opacity(0.5), graphTitle: "Acceleration X-Axis")
+                    RawDataGraphView(dataPoints: motionManager.accelerometerDataPointsX, lineColor: .red.opacity(0.5), graphTitle: "User Acceleration X-Axis")
                         .frame(height: 100)
-                    RawDataGraphView(dataPoints: motionManager.accelerometerDataPointsY, lineColor: .green.opacity(0.5), graphTitle: "Acceleration Y-Axis")
+                    RawDataGraphView(dataPoints: motionManager.accelerometerDataPointsY, lineColor: .green.opacity(0.5), graphTitle: "User Acceleration Y-Axis")
                         .frame(height: 100)
-                    RawDataGraphView(dataPoints: motionManager.accelerometerDataPointsZ, lineColor: .blue.opacity(0.5), graphTitle: "Acceleration Z-Axis")
+                    RawDataGraphView(dataPoints: motionManager.accelerometerDataPointsZ, lineColor: .blue.opacity(0.5), graphTitle: "User Acceleration Z-Axis")
                         .frame(height: 100)
                 }
             } else {
@@ -62,13 +64,42 @@ var body: some View {
             }
 
         case .gyroscope:
-            if motionManager.gyroscopeData.last != nil {
+            if motionManager.rotationalData.last != nil {
                 VStack {
-                    RawDataGraphView(dataPoints: motionManager.gyroscopeDataPointsX, lineColor: .red.opacity(0.5), graphTitle: "Gyroscope X-Axis")
+                    RawDataGraphView(dataPoints: motionManager.rotationalDataPointsX, lineColor: .red.opacity(0.5), graphTitle: "Rotation Rate X-Axis")
                         .frame(height: 100)
-                    RawDataGraphView(dataPoints: motionManager.gyroscopeDataPointsY, lineColor: .green.opacity(0.5), graphTitle: "Gyroscope Y-Axis")
+                    RawDataGraphView(dataPoints: motionManager.rotationalDataPointsY, lineColor: .green.opacity(0.5), graphTitle: "Rotation Rate Y-Axis")
                         .frame(height: 100)
-                    RawDataGraphView(dataPoints: motionManager.gyroscopeDataPointsZ, lineColor: .blue.opacity(0.5), graphTitle: "Gyroscope Z-Axis")
+                    RawDataGraphView(dataPoints: motionManager.rotationalDataPointsZ, lineColor: .blue.opacity(0.5), graphTitle: "Rotation Rate Z-Axis")
+                        .frame(height: 100)
+                }
+            } else {
+                showNoDataMessage()
+            }
+
+
+        case .gravity:
+            if motionManager.gravityDataPointsX.last != nil {
+                VStack {
+                    RawDataGraphView(dataPoints: motionManager.gravityDataPointsX, lineColor: .red.opacity(0.5), graphTitle: "Gravity X-Axis")
+                        .frame(height: 100)
+                    RawDataGraphView(dataPoints: motionManager.gravityDataPointsY, lineColor: .green.opacity(0.5), graphTitle: "Gravity Y-Axis")
+                        .frame(height: 100)
+                    RawDataGraphView(dataPoints: motionManager.gravityDataPointsZ, lineColor: .blue.opacity(0.5), graphTitle: "Gravity Z-Axis")
+                        .frame(height: 100)
+                }
+            } else {
+                showNoDataMessage()
+            }
+
+        case .attitude:
+            if motionManager.attitudeDataRoll.last != nil {
+                VStack {
+                    RawDataGraphView(dataPoints: motionManager.attitudeDataRoll, lineColor: .red.opacity(0.5), graphTitle: "Attitude Roll")
+                        .frame(height: 100)
+                    RawDataGraphView(dataPoints: motionManager.attitudeDataPitch, lineColor: .green.opacity(0.5), graphTitle: "Attitude Pitch")
+                        .frame(height: 100)
+                    RawDataGraphView(dataPoints: motionManager.attitudeDataYaw, lineColor: .blue.opacity(0.5), graphTitle: "Attitude Yaw")
                         .frame(height: 100)
                 }
             } else {
@@ -76,13 +107,13 @@ var body: some View {
             }
             
         case .magnetometer:
-            if motionManager.magnetometerData.last != nil {
+            if motionManager.magneticFieldData.last != nil {
                 VStack {
-                    RawDataGraphView(dataPoints: motionManager.magnetometerDataPointsX, lineColor: .red.opacity(0.5), graphTitle: "Magnetometer X-Axis")
+                    RawDataGraphView(dataPoints: motionManager.magneticDataPointsX, lineColor: .red.opacity(0.5), graphTitle: "Magnetic Field X-Axis")
                         .frame(height: 100)
-                    RawDataGraphView(dataPoints: motionManager.magnetometerDataPointsY, lineColor: .green.opacity(0.5), graphTitle: "Magnetometer Y-Axis")
+                    RawDataGraphView(dataPoints: motionManager.magneticDataPointsY, lineColor: .green.opacity(0.5), graphTitle: "Magnetic Field Y-Axis")
                         .frame(height: 100)
-                    RawDataGraphView(dataPoints: motionManager.magnetometerDataPointsZ, lineColor: .blue.opacity(0.5), graphTitle: "Magnetometer Z-Axis")
+                    RawDataGraphView(dataPoints: motionManager.magneticDataPointsZ, lineColor: .blue.opacity(0.5), graphTitle: "Magnetic Field Z-Axis")
                         .frame(height: 100)
                 }
             } else {
@@ -137,22 +168,22 @@ var body: some View {
                 Toggle("Real-Time", isOn: $isRecordingRealTime)
                     .onChange(of: isRecordingRealTime) { _, newValue in
                         isRecording = false
-                        motionManager.stoprawDataCollection()
+                        motionManager.stopRawDataAllCollection()
                         motionManager.savedFilePath = nil // Reset "File saved" text
                         
                         // Reset accelerometer data
-                        motionManager.AccelerometerData = []
-                        motionManager.gyroscopeData = []
-                        motionManager.magnetometerData = []
+                        motionManager.userAccelerometerData = []
+                        motionManager.rotationalData = []
+                        motionManager.magneticFieldData = []
                         motionManager.accelerometerDataPointsX = []
                         motionManager.accelerometerDataPointsY = []
                         motionManager.accelerometerDataPointsZ = []
-                        motionManager.gyroscopeDataPointsX = []
-                        motionManager.gyroscopeDataPointsY = []
-                        motionManager.gyroscopeDataPointsZ = []
-                        motionManager.magnetometerDataPointsX = []
-                        motionManager.magnetometerDataPointsY = []
-                        motionManager.magnetometerDataPointsZ = []
+                        motionManager.rotationalDataPointsX = []
+                        motionManager.rotationalDataPointsY = []
+                        motionManager.rotationalDataPointsZ = []
+                        motionManager.magneticDataPointsX = []
+                        motionManager.magneticDataPointsY = []
+                        motionManager.magneticDataPointsZ = []
                         
                         if newValue {
                             isRecordingInterval = false
@@ -162,22 +193,22 @@ var body: some View {
                 Toggle("Time-Interval", isOn: $isRecordingInterval)
                     .onChange(of: isRecordingInterval) { _, newValue in
                         isRecording = false
-                        motionManager.stoprawDataCollection()
+                        motionManager.stopRawDataAllCollection()
                         motionManager.savedFilePath = nil // Reset "File saved" text
                         
                         // Reset accelerometer data
-                        motionManager.AccelerometerData = []
-                        motionManager.gyroscopeData = []
-                        motionManager.magnetometerData = []
+                        motionManager.userAccelerometerData = []
+                        motionManager.rotationalData = []
+                        motionManager.magneticFieldData = []
                         motionManager.accelerometerDataPointsX = []
                         motionManager.accelerometerDataPointsY = []
                         motionManager.accelerometerDataPointsZ = []
-                        motionManager.gyroscopeDataPointsX = []
-                        motionManager.gyroscopeDataPointsY = []
-                        motionManager.gyroscopeDataPointsZ = []
-                        motionManager.magnetometerDataPointsX = []
-                        motionManager.magnetometerDataPointsY = []
-                        motionManager.magnetometerDataPointsZ = []
+                        motionManager.rotationalDataPointsX = []
+                        motionManager.rotationalDataPointsY = []
+                        motionManager.rotationalDataPointsZ = []
+                        motionManager.magneticDataPointsX = []
+                        motionManager.magneticDataPointsY = []
+                        motionManager.magneticDataPointsZ = []
                         
                         if newValue {
                             isRecordingRealTime = false
@@ -210,7 +241,7 @@ var body: some View {
                                 // Define the server URL
                                 let serverURL = ServerConfig.serverURL  // Update this URL as needed
 
-                                motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "RawData") {
+                                motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "RawDataAll") {
                                     DispatchQueue.main.async {
                                         isRecording = false
                                         motionManager.removeDataCollectionNotification() // Remove notification when recording stops
@@ -218,7 +249,7 @@ var body: some View {
                                 }
                                 motionManager.showDataCollectionNotification() // Show notification on start
                             } else {
-                                motionManager.stoprawDataCollection()
+                                motionManager.stopRawDataAllCollection()
                                 motionManager.removeDataCollectionNotification() // Remove notification on stop
                             }
                         }
@@ -238,15 +269,15 @@ var body: some View {
                             motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
                             
                             if isRecording {
-                                motionManager.stoprawDataCollection()
+                                motionManager.stopRawDataAllCollection()
                                 motionManager.removeDataCollectionNotification() // Remove notification on stop
                                 // Define the server URL
                                 let serverURL = ServerConfig.serverURL  // Update this URL as needed
-                                motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "RawData", recordingMode: "RealTime")
+                                motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "RawDataAll", recordingMode: "RealTime")
                             } else {
                                 let serverURL = ServerConfig.serverURL
                                 
-                                motionManager.startrawDataCollection(realTime: true, serverURL: serverURL)
+                                motionManager.startRawDataAllCollection(realTime: true, serverURL: serverURL)
                                 motionManager.showDataCollectionNotification() // Show notification on start
                             }
                             isRecording.toggle()
@@ -269,11 +300,11 @@ var body: some View {
             }
             .padding()
         }
-        .navigationTitle("Raw Data All")
+        .navigationTitle("Device Motion")
         .onDisappear {
                     // Ensure the recording stops and resources are released when the view disappears
                     if isRecording || isRecordingRealTime || isRecordingInterval {
-                        motionManager.stoprawDataCollection()
+                        motionManager.stopRawDataAllCollection()
                         isRecording = false
                         isRecordingRealTime = false
                         isRecordingInterval = false
@@ -295,13 +326,13 @@ var body: some View {
                             .multilineTextAlignment(.leading)
                             .padding(.top)
                         ScrollView {
-                            Text("RAW DATA ALL measures unfiltered raw data of accelerometer, gyroscope and magnetometer all at the same time")
+                            Text("DEVICE MOTION measures how an iPhone or Apple Watch moves and orients in space by combining FOLTERED data from the accelerometer (measuring linear acceleration), gyroscope (measuring rotational movement), and magnetometer (measuring orientation relative to Earth’s magnetic field). It also tracks gravity and the device’s attitude (orientation defined by roll, pitch, and yaw)")
                                 .font(.callout)
                                 .multilineTextAlignment(.leading)
                                 .padding(.vertical, 5)
                                 .padding(.horizontal, 5)
                                 .foregroundStyle(Color.primary)
-                            Text("For more information go to: https://developer.apple.com/documentation/coremotion/getting_raw_accelerometer_events")
+                            Text("For more information go to: https://developer.apple.com/documentation/coremotion/getting_processed_device-motion_data")
                                 .font(.callout)
                                 .multilineTextAlignment(.leading)
                                 .padding(.vertical, 5)
@@ -380,7 +411,7 @@ var body: some View {
 }
 
 // Custom RawDataGraphView to display one axis at a time
-struct RawDataAllGraphView: View {
+struct RawDataGraphView: View {
     var dataPoints: [Double]
     var lineColor: Color
     var graphTitle: String
@@ -424,5 +455,5 @@ struct RawDataAllGraphView: View {
 }
 
 #Preview {
-    rawDataAccGyroMagView()
+    rawDataAllView()
 }

@@ -1,40 +1,50 @@
 //
-//  rawDataManager.swift
+//  rawDataAllManager.swift
 //  rawDataiOSAppAcquisition
 //
-//  Created by Irnu Suryohadi Kusumo on 29.10.24.
+//  Created by Irnu Suryohadi Kusumo on 03.09.24.
 //
 
 import SwiftUI
 import CoreMotion
 import UserNotifications
 
-class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
-    private let rawDataManager = CMMotionManager()
+    private let rawDataAllManager = CMMotionManager()
     @Published var isCollectingData = false
     
     // Accelerometer Data Points
-    @Published var AccelerometerData: [String] = []
+    @Published var userAccelerometerData: [String] = []
     @Published var accelerometerDataPointsX: [Double] = []
     @Published var accelerometerDataPointsY: [Double] = []
     @Published var accelerometerDataPointsZ: [Double] = []
     
     // Gyroscope Data Points (Rotation)
-    @Published var gyroscopeData: [String] = []
-    @Published var gyroscopeDataPointsX: [Double] = []
-    @Published var gyroscopeDataPointsY: [Double] = []
-    @Published var gyroscopeDataPointsZ: [Double] = []
+    @Published var rotationalData: [String] = []
+    @Published var rotationalDataPointsX: [Double] = []
+    @Published var rotationalDataPointsY: [Double] = []
+    @Published var rotationalDataPointsZ: [Double] = []
     
     // Magnetometer Data Points
-    @Published var magnetometerData: [String] = []
-    @Published var magnetometerDataPointsX: [Double] = []
-    @Published var magnetometerDataPointsY: [Double] = []
-    @Published var magnetometerDataPointsZ: [Double] = []
+    @Published var magneticFieldData: [String] = []
+    @Published var magneticDataPointsX: [Double] = []
+    @Published var magneticDataPointsY: [Double] = []
+    @Published var magneticDataPointsZ: [Double] = []
+    
+    @Published var gravityData: [String] = []
+    @Published var gravityDataPointsX: [Double] = []
+    @Published var gravityDataPointsY: [Double] = []
+    @Published var gravityDataPointsZ: [Double] = []
+
+    @Published var attitudeData: [String] = []
+    @Published var attitudeDataRoll: [Double] = []
+    @Published var attitudeDataPitch: [Double] = []
+    @Published var attitudeDataYaw: [Double] = []
     
     @Published var savedFilePath: String?
     
-    let baseFolder: String = "RawData"
+    let baseFolder: String = "DeviceMotion"
     
     private var locationManager: CLLocationManager?
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
@@ -149,85 +159,86 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dataCollectionNotification"])
     }
 
-    // Updating the startrawDataCollection method
-    func startrawDataCollection(realTime: Bool, serverURL: URL) {
+    // Updating the startRawDataAllCollection method
+    func startRawDataAllCollection(realTime: Bool, serverURL: URL) {
         guard !isCollectingData else { return }
         
         self.serverURL = serverURL
         isCollectingData = true
-        AccelerometerData = []
-        gyroscopeData = []
-        magnetometerData = []
+        userAccelerometerData = []
+        rotationalData = []
+        magneticFieldData = []
         accelerometerDataPointsX = []
         accelerometerDataPointsY = []
         accelerometerDataPointsZ = []
-        gyroscopeDataPointsX = []
-        gyroscopeDataPointsY = []
-        gyroscopeDataPointsZ = []
-        magnetometerDataPointsX = []
-        magnetometerDataPointsY = []
-        magnetometerDataPointsZ = []
+        rotationalDataPointsX = []
+        rotationalDataPointsY = []
+        rotationalDataPointsZ = []
+        magneticDataPointsX = []
+        magneticDataPointsY = []
+        magneticDataPointsZ = []
+        gravityDataPointsX = []  // Clear gravity data points
+        gravityDataPointsY = []
+        gravityDataPointsZ = []
+        attitudeDataRoll = []  // Clear attitude data points
+        attitudeDataPitch = []
+        attitudeDataYaw = []
         recordingMode = realTime ? "RealTime" : "TimeInterval"
         
         startBackgroundTask()
         showDataCollectionNotification() // Show the notification
         
-        // Set sampling intervals
-        rawDataManager.accelerometerUpdateInterval = 1.0 / currentSamplingRate
-        rawDataManager.gyroUpdateInterval = 1.0 / currentSamplingRate
-        rawDataManager.magnetometerUpdateInterval = 1.0 / currentSamplingRate
-        
-        // Start accelerometer updates
-        if rawDataManager.isAccelerometerAvailable {
-            rawDataManager.startAccelerometerUpdates(to: .main) { [weak self] (data, error) in
-                if let accData = data {
+        if rawDataAllManager.isDeviceMotionAvailable {
+            rawDataAllManager.deviceMotionUpdateInterval = 1.0 / currentSamplingRate // Apply the current sampling rate
+            rawDataAllManager.startDeviceMotionUpdates(to: .main) { [weak self] (data, error) in
+                if let validData = data {
                     let timestamp = Date().timeIntervalSince1970
-                    let accDataString = "Accelerometer,\(timestamp),\(accData.acceleration.x),\(accData.acceleration.y),\(accData.acceleration.z)"
-                    self?.AccelerometerData.append(accDataString)
-                    self?.accelerometerDataPointsX.append(accData.acceleration.x)
-                    self?.accelerometerDataPointsY.append(accData.acceleration.y)
-                    self?.accelerometerDataPointsZ.append(accData.acceleration.z)
-                }
-            }
-        }
-        
-        // Start gyroscope updates
-        if rawDataManager.isGyroAvailable {
-            rawDataManager.startGyroUpdates(to: .main) { [weak self] (data, error) in
-                if let gyroData = data {
-                    let timestamp = Date().timeIntervalSince1970
-                    let gyroDataString = "Gyroscope,\(timestamp),\(gyroData.rotationRate.x),\(gyroData.rotationRate.y),\(gyroData.rotationRate.z)"
-                    self?.gyroscopeData.append(gyroDataString)
-                    self?.gyroscopeDataPointsX.append(gyroData.rotationRate.x)
-                    self?.gyroscopeDataPointsY.append(gyroData.rotationRate.y)
-                    self?.gyroscopeDataPointsZ.append(gyroData.rotationRate.z)
-                }
-            }
-        }
-        
-        // Start magnetometer updates
-        if rawDataManager.isMagnetometerAvailable {
-            rawDataManager.startMagnetometerUpdates(to: .main) { [weak self] (data, error) in
-                if let magData = data {
-                    let timestamp = Date().timeIntervalSince1970
-                    let magDataString = "Magnetometer,\(timestamp),\(magData.magneticField.x),\(magData.magneticField.y),\(magData.magneticField.z)"
-                    self?.magnetometerData.append(magDataString)
-                    self?.magnetometerDataPointsX.append(magData.magneticField.x)
-                    self?.magnetometerDataPointsY.append(magData.magneticField.y)
-                    self?.magnetometerDataPointsZ.append(magData.magneticField.z)
+                    
+                    // Collect accelerometer data
+                    let userAccDataString = "UserAcceleration,\(timestamp),\(validData.userAcceleration.x),\(validData.userAcceleration.y),\(validData.userAcceleration.z)"
+                    self?.userAccelerometerData.append(userAccDataString)
+                    self?.accelerometerDataPointsX.append(validData.userAcceleration.x)
+                    self?.accelerometerDataPointsY.append(validData.userAcceleration.y)
+                    self?.accelerometerDataPointsZ.append(validData.userAcceleration.z)
+                    
+                    // Collect gyroscope (rotation) data
+                    let userGyroDataString = "RotationRate,\(timestamp),\(validData.rotationRate.x),\(validData.rotationRate.y),\(validData.rotationRate.z)"
+                    self?.rotationalData.append(userGyroDataString)
+                    self?.rotationalDataPointsX.append(validData.rotationRate.x)
+                    self?.rotationalDataPointsY.append(validData.rotationRate.y)
+                    self?.rotationalDataPointsZ.append(validData.rotationRate.z)
+                    
+                    // Collect magnetometer data
+                    let userMagnetoDataString = "MagneticField,\(timestamp),\(validData.magneticField.field.x),\(validData.magneticField.field.y),\(validData.magneticField.field.z)"
+                    self?.magneticFieldData.append(userMagnetoDataString)
+                    self?.magneticDataPointsX.append(validData.magneticField.field.x)
+                    self?.magneticDataPointsY.append(validData.magneticField.field.y)
+                    self?.magneticDataPointsZ.append(validData.magneticField.field.z)
+
+                    // Collect gravity data
+                    let gravityDataString = "Gravity,\(timestamp),\(validData.gravity.x),\(validData.gravity.y),\(validData.gravity.z)"
+                    self?.gravityData.append(gravityDataString)
+                    self?.gravityDataPointsX.append(validData.gravity.x)
+                    self?.gravityDataPointsY.append(validData.gravity.y)
+                    self?.gravityDataPointsZ.append(validData.gravity.z)
+
+                    // Collect attitude data (roll, pitch, yaw)
+                    let attitudeDataString = "Attitude,\(timestamp),\(validData.attitude.roll),\(validData.attitude.pitch),\(validData.attitude.yaw)"
+                    self?.attitudeData.append(attitudeDataString)
+                    self?.attitudeDataRoll.append(validData.attitude.roll)
+                    self?.attitudeDataPitch.append(validData.attitude.pitch)
+                    self?.attitudeDataYaw.append(validData.attitude.yaw)
                 }
             }
         }
     }
-
-    func stoprawDataCollection() {
+    
+    func stopRawDataAllCollection() {
         guard isCollectingData else { return }
         
         isCollectingData = false
         
-        rawDataManager.stopAccelerometerUpdates()
-        rawDataManager.stopGyroUpdates()
-        rawDataManager.stopMagnetometerUpdates()
+        rawDataAllManager.stopDeviceMotionUpdates()
         endBackgroundTask()
         removeDataCollectionNotification()  // Remove the notification
         showDataCollectionStoppedNotification()
@@ -239,25 +250,33 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func resetData() {
             // Reset any internal data states to prepare for a fresh start when the view is reopened
-            AccelerometerData = []
-            gyroscopeData = []
-            magnetometerData = []
+            userAccelerometerData = []
+            rotationalData = []
+            magneticFieldData = []
             accelerometerDataPointsX = []
             accelerometerDataPointsY = []
             accelerometerDataPointsZ = []
-            gyroscopeDataPointsX = []
-            gyroscopeDataPointsY = []
-            gyroscopeDataPointsZ = []
-            magnetometerDataPointsX = []
-            magnetometerDataPointsY = []
-            magnetometerDataPointsZ = []
+            rotationalDataPointsX = []
+            rotationalDataPointsY = []
+            rotationalDataPointsZ = []
+            magneticDataPointsX = []
+            magneticDataPointsY = []
+            magneticDataPointsZ = []
+            gravityData = []
+            gravityDataPointsX = []
+            gravityDataPointsY = []
+            gravityDataPointsZ = []
+            attitudeData = []
+            attitudeDataYaw = []
+            attitudeDataPitch = []
+            attitudeDataRoll = []
         }
     
     func updateSamplingRate(rate: Double) {
         currentSamplingRate = rate
         if isCollectingData {
-            stoprawDataCollection()
-            startrawDataCollection(realTime: recordingMode == "RealTime", serverURL: self.serverURL!)
+            stopRawDataAllCollection()
+            startRawDataAllCollection(realTime: recordingMode == "RealTime", serverURL: self.serverURL!)
         }
     }
     
@@ -266,57 +285,54 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             print("Documents directory not found")
             return
         }
-        
+
         let folderURL = documentsDirectory.appendingPathComponent(baseFolder).appendingPathComponent(recordingMode)
-        
+
         do {
             try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true, attributes: nil)
         } catch {
             print("Failed to create directory: \(error)")
             return
         }
-        
-        // Create a date formatter for local time string
+
+        // Create a date formatter for converting the timestamp to local time string
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"  // Add milliseconds to date format
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"  // Desired date format
         dateFormatter.timeZone = TimeZone.current  // Local timezone
-        
-        // Create ISO8601 formatter for precise timestamp
-        let isoDateFormatter = ISO8601DateFormatter()
-        isoDateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]  // Include fractional seconds
-        
-        // CSV header with additional TimeStamp column
-        let csvHeader = "DataType,DateAndTime,TimeStamp,x,y,z\n"
-        
-        // Process and format CSV data with both formatted and unformatted timestamps
-        let csvData = (AccelerometerData + gyroscopeData + magnetometerData).map { dataEntry -> String in
+
+        // Create the CSV header
+        let csvHeader = "DataType,TimeStamp,x,y,z\n"
+
+        // Replace the timestamp with formatted date strings for all data types
+        let csvData = (userAccelerometerData + rotationalData + magneticFieldData + gravityData + attitudeData).map { dataEntry -> String in
             var components = dataEntry.split(separator: ",").map(String.init)
             if let timestamp = Double(components[1]) {
                 let date = Date(timeIntervalSince1970: timestamp)
-                components[1] = dateFormatter.string(from: date)  // Formatted date with milliseconds
-                components.insert(String(timestamp), at: 2)  // Insert unformatted timestamp
+                components[1] = dateFormatter.string(from: date)  // Replace timestamp with formatted date
             }
             return components.joined(separator: ",")
         }.joined(separator: "\n")
-        
+
         let csvString = csvHeader + csvData
-        
-        // Compute a hash of the data for duplicate check
+
+        // Compute a hash of the current data to see if it's already been saved
         let dataHash = csvString.hashValue
-        let fileURL = folderURL.appendingPathComponent("rawDataAll_\(dataHash)_\(recordingMode).csv")
-        
+
+        // Check if the file with the same data (hash) already exists
+        let fileURL = folderURL.appendingPathComponent("DeviceMotion_\(dataHash)_\(recordingMode).csv")
+
         if FileManager.default.fileExists(atPath: fileURL.path) {
             print("File with the same data already exists: \(fileURL.path)")
             savedFilePath = fileURL.path
             return
         }
-        
+
         do {
             print("Attempting to save file at \(fileURL.path)")
             try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
             print("File saved at \(fileURL.path)")
             savedFilePath = fileURL.path
-            
+
             self.uploadFile(fileURL: fileURL, serverURL: serverURL, category: baseFolder)
         } catch {
             print("Failed to save file: \(error)")
@@ -364,7 +380,7 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             while self.isCollectingData {
                 if let stopTime = self.stopTime, Date() >= stopTime {
                     DispatchQueue.main.async {
-                        self.stoprawDataCollection()
+                        self.stopRawDataAllCollection()
                     }
                     break
                 }
@@ -390,15 +406,15 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         if startDate > now {
             let startInterval = startDate.timeIntervalSince(now)
             Timer.scheduledTimer(withTimeInterval: startInterval, repeats: false) { [weak self] _ in
-                self?.startrawDataCollection(realTime: false, serverURL: serverURL)
+                self?.startRawDataAllCollection(realTime: false, serverURL: serverURL)
             }
         } else {
-            startrawDataCollection(realTime: false, serverURL: serverURL)
+            startRawDataAllCollection(realTime: false, serverURL: serverURL)
         }
         
         let endInterval = endDate.timeIntervalSince(now)
         Timer.scheduledTimer(withTimeInterval: endInterval, repeats: false) { [weak self] _ in
-            self?.stoprawDataCollection()
+            self?.stopRawDataAllCollection()
             self?.removeDataCollectionNotification()
             self?.showDataCollectionStoppedNotification()
             completion()
