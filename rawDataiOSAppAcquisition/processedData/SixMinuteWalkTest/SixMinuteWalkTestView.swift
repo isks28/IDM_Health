@@ -25,7 +25,7 @@ struct SixMinuteWalkTestView: View {
     var body: some View {
         VStack {
             if !isCountdownActive && stepSixMinuteManager.stepCount == 0 {
-                Text("Put the phone in the trouser pocket after clicking start")
+                Text("Put the phone in the pants pocket after clicking start")
                     .font(.title3)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(Color.secondary)
@@ -305,7 +305,7 @@ struct SixMinuteWalkTestView: View {
 
     private func startCountdown() {
         isCountdownActive = true
-        countdownTimer = 3
+        countdownTimer = 5
 
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
             if countdownTimer > 1 {
