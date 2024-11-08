@@ -190,7 +190,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         isCollectingData = false
         pedometer.stopUpdates()
         
-        locationManager?.stopMonitoringSignificantLocationChanges()
+        locationManager?.stopUpdatingLocation()
         endBackgroundTask()
         removeDataCollectionNotification()  // Remove the notification
         
