@@ -26,6 +26,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     @Published var floorDescended: Int? // Floors descended, if available
     @Published var savedFilePath: String?
     @Published var stepLengthInMeters: Double = 0.7 // Approximate step length in meters
+    @Published var elapsedTime: TimeInterval = 0
     
     let baseFolder: String = "ProcessedStepCountsData"
     
@@ -91,30 +92,48 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     }
     
     // Show a notification when data collection starts
-    func showDataCollectionNotification() {
+    func showDataCollectionNotification(elapsedTime: Int, isFinalUpdate: Bool = false) {
         let content = UNMutableNotificationContent()
-        content.title = "Six Minute Walk Test is running"
-        content.body = "Data collection is active."
-        content.sound = .default
+        content.title = "Six Minute Walk Test"
+        content.body = "Elapsed Time: \(formattedTime(from: elapsedTime))"
         
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-        let request = UNNotificationRequest(identifier: "dataCollectionNotification", content: content, trigger: trigger)
-
+        // Only play sound at the start and end of the test
+        if isFinalUpdate {
+            content.sound = .default
+        }
+        
+        content.categoryIdentifier = "persistentNotification"
+        let request = UNNotificationRequest(identifier: "dataCollectionNotification", content: content, trigger: nil)
+        
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Error showing notification: \(error)")
             }
         }
     }
+        
+    // Helper function to format elapsed time
+    private func formattedTime(from seconds: Int) -> String {
+        let minutes = seconds / 60
+        let seconds = seconds % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
 
     // Remove the notification when data collection stops
     func removeDataCollectionNotification() {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dataCollectionNotification"])
+        let notificationCenter = UNUserNotificationCenter.current()
+        let identifier = "dataCollectionNotification"
+        
+        // Remove pending notification requests
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
+        
+        // Remove delivered notifications
+        notificationCenter.removeDeliveredNotifications(withIdentifiers: [identifier])
     }
 
     func startStepCountCollection(serverURL: URL) {
         guard !isCollectingData else { return }
-        
+
         self.serverURL = serverURL
         isCollectingData = true
         stepCount = 0
@@ -126,19 +145,21 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         floorAscended = nil
         floorDescended = nil
         recordingMode = "Six-Minute-Walk Test"
-        
+        let startTime = Date()
+        var elapsedTime = 0
+
         previousLocation = nil
         locationManager?.startUpdatingLocation()
-        
-        showDataCollectionNotification()
-        
+
+        // Show initial notification at the start of data collection
         playStartAlert()
-        
+        showDataCollectionNotification(elapsedTime: elapsedTime, isFinalUpdate: true)
+
         guard CMPedometer.isStepCountingAvailable() else {
             print("Step counting is not available on this device")
             return
         }
-        
+
         pedometer.startUpdates(from: Date()) { [weak self] pedometerData, error in
             guard let pedometerData = pedometerData, error == nil else {
                 print("Error fetching pedometer data: \(String(describing: error))")
@@ -165,15 +186,24 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
                 }
             }
         }
-        
-        // Begin background task to keep app active
+
         backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "SixMinuteWalkTest") {
             UIApplication.shared.endBackgroundTask(self.backgroundTask)
             self.backgroundTask = .invalid
         }
-        
-        timer = Timer.scheduledTimer(withTimeInterval: 360, repeats: false) { [weak self] _ in
-            self?.stopStepCountCollection()
+
+        // Timer to track elapsed time without updating notification
+        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
+            guard let self = self else { timer.invalidate(); return }
+            
+            elapsedTime = Int(Date().timeIntervalSince(startTime))
+            
+            // Stop after 6 minutes
+            if elapsedTime >= 360 {
+                timer.invalidate()
+                self.showDataCollectionNotification(elapsedTime: elapsedTime, isFinalUpdate: true)
+                self.stopStepCountCollection()
+            }
         }
     }
 
