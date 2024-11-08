@@ -34,6 +34,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     private var locationManager: CLLocationManager?
     private var previousLocation: CLLocation?
     private var timer: Timer? // Timer property for precise control
+    private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
 
     override init() {
         super.init()
@@ -50,12 +51,18 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     
     @objc private func appDidEnterBackground() {
         if isCollectingData {
-            showDataCollectionNotification()  // Show notification when app enters background
+            backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "KeepDataCollectionActive") {
+                UIApplication.shared.endBackgroundTask(self.backgroundTask)
+                self.backgroundTask = .invalid
+            }
         }
     }
     
     @objc private func appWillEnterForeground() {
-        removeDataCollectionNotification()  // Remove notification when app enters foreground
+        if backgroundTask != .invalid {
+            UIApplication.shared.endBackgroundTask(backgroundTask)
+            backgroundTask = .invalid
+        }
     }
     
     @objc private func appDidBecomeActive() {}
@@ -66,7 +73,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         locationManager?.requestAlwaysAuthorization()
         locationManager?.allowsBackgroundLocationUpdates = true
         locationManager?.startUpdatingLocation()
-        locationManager?.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
         locationManager?.distanceFilter = 4.9 // Customize this value as appropriate
     }
 
@@ -158,12 +165,18 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
             }
         }
         
+        // Begin background task to keep app active
+        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "SixMinuteWalkTest") {
+            UIApplication.shared.endBackgroundTask(self.backgroundTask)
+            self.backgroundTask = .invalid
+        }
+        
         timer = Timer.scheduledTimer(withTimeInterval: 360, repeats: false) { [weak self] _ in
             self?.stopStepCountCollection()
         }
     }
 
-    func stopStepCountCollection() {
+    func stopStepCountCollection(saveData: Bool = true) {
         guard isCollectingData else {
             print("Data collection already stopped.")
             return
@@ -178,10 +191,14 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         playEndAlert()
         removeDataCollectionNotification()
         
-        if let serverURL = serverURL {
+        if saveData, let serverURL = serverURL {
             saveDataToCSV(serverURL: serverURL, baseFolder: self.baseFolder, recordingMode: self.recordingMode)
         } else {
             print("Error: serverURL is nil. CSV will not be saved.")
+        }
+        if backgroundTask != .invalid {
+            UIApplication.shared.endBackgroundTask(backgroundTask)
+            backgroundTask = .invalid
         }
     }
 

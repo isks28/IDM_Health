@@ -247,6 +247,13 @@ struct SixMinuteWalkTestView: View {
             .padding()
         }
         .navigationTitle("Step Counts")
+        .onDisappear  {
+            if isRecording {
+                stepSixMinuteManager.stopStepCountCollection(saveData: false)
+                stopTest()
+                isRecording = false
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
