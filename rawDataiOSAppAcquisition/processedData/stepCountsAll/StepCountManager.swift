@@ -15,13 +15,15 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let pedometer = CMPedometer()
     @Published var isCollectingData = false
     @Published var stepCount: Int = 0
-    @Published var distance: Double = 0.0 // Distance in meters, if available
+    @Published var distanceGPS: Double = 0.0 // Distance in meters from GPS
+    @Published var distancePedometer: Double = 0.0 // Distance in meters estimated from steps
     @Published var averageActivePace: Double? // Average active pace in meters per second
     @Published var currentPace: Double? // Current pace in meters per second
     @Published var currentCadence: Double? // Current cadence in steps per second
     @Published var floorAscended: Int? // Floors ascended, if available
     @Published var floorDescended: Int? // Floors descended, if available
     @Published var savedFilePath: String?
+    @Published var stepLengthInMeters: Double = 0.7 // Approximate step length in meters
     
     let baseFolder: String = "ProcessedStepCountsData"
     
@@ -47,27 +49,34 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     @objc private func appDidEnterBackground() {
-        print("App entered background")
         if isCollectingData {
-            showDataCollectionNotification()  // Show notification when app enters background
+            backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "KeepDataCollectionActive") {
+                UIApplication.shared.endBackgroundTask(self.backgroundTask)
+                self.backgroundTask = .invalid
+            }
         }
+        showDataCollectionNotification()
     }
     
     @objc private func appWillEnterForeground() {
-        print("App will enter foreground")
-        removeDataCollectionNotification()  // Remove notification when app enters foreground
+        if backgroundTask != .invalid {
+            UIApplication.shared.endBackgroundTask(backgroundTask)
+            backgroundTask = .invalid
+        }
+        removeDataCollectionNotification()
     }
     
-    @objc private func appDidBecomeActive() {
-        print("App became active")
-    }
+    @objc private func appDidBecomeActive() {}
     
     private func setupLocationManager() {
         locationManager = CLLocationManager()
         locationManager?.delegate = self
         locationManager?.requestAlwaysAuthorization()
         locationManager?.allowsBackgroundLocationUpdates = true
-        locationManager?.startMonitoringSignificantLocationChanges()
+        locationManager?.pausesLocationUpdatesAutomatically = false
+        locationManager?.startUpdatingLocation()
+        locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        locationManager?.distanceFilter = 4.9 // Customize this value as appropriate
     }
 
     // Request Notification permissions
@@ -129,7 +138,8 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         self.serverURL = serverURL
         isCollectingData = true
         stepCount = 0
-        distance = 0.0
+        distanceGPS = 0.0
+        distancePedometer = 0.0
         averageActivePace = nil
         currentPace = nil
         currentCadence = nil
@@ -137,7 +147,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         floorDescended = nil
         recordingMode = realTime ? "RealTime" : "TimeInterval"
         
-        locationManager?.startMonitoringSignificantLocationChanges()
+        locationManager?.startUpdatingLocation()
         startBackgroundTask()
         showDataCollectionNotification() // Show the notification
         
@@ -154,6 +164,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             
             DispatchQueue.main.async {
                 self?.stepCount = pedometerData.numberOfSteps.intValue
+                self?.distancePedometer = Double(pedometerData.numberOfSteps.intValue) * (self?.stepLengthInMeters ?? 0.7)
                 if let averageActivePace = pedometerData.averageActivePace?.doubleValue {
                     self?.averageActivePace = averageActivePace
                 }
@@ -240,7 +251,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         
         // Prepare CSV header and data with floors ascended/descended included
         let csvHeader = "DataType,TimeStamp,StepCount,Distance (m),AverageActivePace (m/s),CurrentPace (m/s),CurrentCadence (steps/s),FloorsAscended,FloorsDescended\n"
-        let csvData = "WalkingData,\(formattedDate),\(stepCount),\(distance),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0),\(floorAscended ?? 0),\(floorDescended ?? 0)"
+        let csvData = "WalkingData,\(formattedDate),\(stepCount),\(distanceGPS),\(distancePedometer),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0),\(floorAscended ?? 0),\(floorDescended ?? 0)"
         
         let csvString = csvHeader + csvData  // Include formatted timestamp in the CSV data
 
@@ -353,13 +364,21 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     // CLLocationManagerDelegate method for updating location
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let newLocation = locations.last else { return }
-        
-        // Calculate the distance incrementally
-        if let previousLocation = previousLocation {
-            let distanceInMeters = newLocation.distance(from: previousLocation)
-            distance += distanceInMeters
+            guard let newLocation = locations.last else { return }
+            
+        let movementThreshold: CLLocationDistance = 4.9
+            
+            if let previousLocation = previousLocation {
+                let distanceInMeters = newLocation.distance(from: previousLocation)
+                
+                if distanceInMeters >= movementThreshold {
+                    distanceGPS += distanceInMeters
+                    self.previousLocation = newLocation
+                } else {
+                    print("Ignoring small movement: \(distanceInMeters) meters")
+                }
+            } else {
+                previousLocation = newLocation
+            }
         }
-        previousLocation = newLocation
     }
-}

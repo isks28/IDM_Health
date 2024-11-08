@@ -18,6 +18,7 @@ struct StepCountView: View {
     @State private var isRecordingRealTime = false
     @State private var isRecordingInterval = false
     @State private var showingAuthenticationError = false
+    @State private var canControlStepLength = false
     @State private var timer: Timer? // Timer to update current pace and cadence
     
     @State private var showingInfo = false
@@ -39,6 +40,45 @@ struct StepCountView: View {
             // Step Count Display
             VStack {
                 Spacer()
+                if !isRecording && stepManager.stepCount == 0{
+                VStack {
+                    Toggle(isOn: $canControlStepLength) {
+                        if stepManager.stepLengthInMeters == 0.7 {
+                            Text("Step Length:")
+                                .font(.caption2)
+                            Text("Default: 0.7 meters")
+                                .font(.caption2)
+                        } else {
+                            Text("Step Length:")
+                                .font(.caption2)
+                            Text(String(format: "Changed: %.2f meters", stepManager.stepLengthInMeters))
+                                .font(.caption2)
+                        }
+                    }
+                    .onChange(of: canControlStepLength) { _, newValue in
+                        if newValue {
+                            authenticateUser { success in
+                                if !success {
+                                    canControlStepLength = false
+                                    showingAuthenticationError = true
+                                } else {
+                                    showingAuthenticationError = false
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding()
+                
+                if canControlStepLength {
+                    VStack {
+                        Text("Step Length: \(String(format: "%.2f meters", stepManager.stepLengthInMeters))")
+                        Slider(value: $stepManager.stepLengthInMeters, in: 0.6...0.8, step: 0.01)
+                            .padding([.leading, .trailing], 20)
+                    }
+                }
+            }
+                
                 if stepManager.stepCount > 0 {
                     Grid {
                         // Step Count
@@ -62,10 +102,20 @@ struct StepCountView: View {
                         
                         // Distance
                         GridRow {
-                            Text("Distance:")
+                            Text("Distance GPS:")
                                 .font(.title3)
                                 .gridCellAnchor(.leading)
-                            Text(String(format: "%.2f meters", stepManager.distance))
+                            Text(String(format: "%.2f meters", stepManager.distanceGPS))
+                                .font(.title3)
+                                .foregroundColor(.blue)
+                                .gridCellAnchor(.trailing)
+                        }
+                        
+                        GridRow {
+                            Text("Distance Pedometer:")
+                                .font(.title3)
+                                .gridCellAnchor(.leading)
+                            Text(String(format: "%.2f meters", stepManager.distancePedometer))
                                 .font(.title3)
                                 .foregroundColor(.blue)
                                 .gridCellAnchor(.trailing)

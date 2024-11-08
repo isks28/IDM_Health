@@ -72,6 +72,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         locationManager?.delegate = self
         locationManager?.requestAlwaysAuthorization()
         locationManager?.allowsBackgroundLocationUpdates = true
+        locationManager?.pausesLocationUpdatesAutomatically = false
         locationManager?.startUpdatingLocation()
         locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
         locationManager?.distanceFilter = 4.9 // Customize this value as appropriate
@@ -92,8 +93,8 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     // Show a notification when data collection starts
     func showDataCollectionNotification() {
         let content = UNMutableNotificationContent()
-        content.title = "Data Collection Running"
-        content.body = "Step count data collection is active."
+        content.title = "Six Minute Walk Test is running"
+        content.body = "Data collection is active."
         content.sound = .default
         
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
@@ -146,7 +147,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
             
             DispatchQueue.main.async {
                 self?.stepCount = pedometerData.numberOfSteps.intValue
-                self?.distancePedometer = Double(pedometerData.numberOfSteps.intValue) * (self?.stepLengthInMeters ?? 0.75)
+                self?.distancePedometer = Double(pedometerData.numberOfSteps.intValue) * (self?.stepLengthInMeters ?? 0.7)
                 if let averageActivePace = pedometerData.averageActivePace?.doubleValue {
                     self?.averageActivePace = averageActivePace
                 }
