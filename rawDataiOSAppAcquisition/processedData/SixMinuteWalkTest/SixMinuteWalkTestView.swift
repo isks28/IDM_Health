@@ -250,6 +250,7 @@ struct SixMinuteWalkTestView: View {
         .onDisappear  {
             if isRecording {
                 stepSixMinuteManager.stopStepCountCollection(saveData: false)
+                stepSixMinuteManager.removeDataCollectionNotification()
                 stopTest()
                 isRecording = false
             }
