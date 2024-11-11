@@ -93,16 +93,16 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     
     // Show a notification when data collection starts
     func showDataCollectionNotification(elapsedTime: Int, isFinalUpdate: Bool = false) {
+        guard isCollectingData else { return } // Only update if collecting data
+        
         let content = UNMutableNotificationContent()
         content.title = "Six Minute Walk Test"
         content.body = "Elapsed Time: \(formattedTime(from: elapsedTime))"
         
-        // Only play sound at the start and end of the test
         if isFinalUpdate {
             content.sound = .default
         }
         
-        content.categoryIdentifier = "persistentNotification"
         let request = UNNotificationRequest(identifier: "dataCollectionNotification", content: content, trigger: nil)
         
         UNUserNotificationCenter.current().add(request) { error in

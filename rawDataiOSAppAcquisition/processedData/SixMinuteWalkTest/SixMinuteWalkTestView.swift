@@ -249,9 +249,9 @@ struct SixMinuteWalkTestView: View {
         .navigationTitle("Step Counts")
         .onDisappear  {
             if isRecording {
+                stopTest()
                 stepSixMinuteManager.stopStepCountCollection(saveData: false)
                 stepSixMinuteManager.removeDataCollectionNotification()
-                stopTest()
                 isRecording = false
             }
         }
