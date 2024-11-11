@@ -145,16 +145,16 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         floorAscended = nil
         floorDescended = nil
         recordingMode = "Six-Minute-Walk Test"
-        let startTime = Date()
-        var elapsedTime = 0
+        let startTime = Date() // Record the start time
+        var elapsedTime = 0 // Initialize elapsed time
 
         previousLocation = nil
         locationManager?.startUpdatingLocation()
-
-        // Show initial notification at the start of data collection
+        
+        // Play start sound and vibration alert once
         playStartAlert()
         showDataCollectionNotification(elapsedTime: elapsedTime, isFinalUpdate: true)
-
+        
         guard CMPedometer.isStepCountingAvailable() else {
             print("Step counting is not available on this device")
             return
@@ -192,13 +192,14 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
             self.backgroundTask = .invalid
         }
 
-        // Timer to track elapsed time without updating notification
+        // Timer to update elapsed time in the notification
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
             guard let self = self else { timer.invalidate(); return }
             
             elapsedTime = Int(Date().timeIntervalSince(startTime))
+            self.showDataCollectionNotification(elapsedTime: elapsedTime)
             
-            // Stop after 6 minutes
+            // Stop and play end sound after 6 minutes
             if elapsedTime >= 360 {
                 timer.invalidate()
                 self.showDataCollectionNotification(elapsedTime: elapsedTime, isFinalUpdate: true)
