@@ -420,7 +420,7 @@ struct StepCountView: View {
         var error: NSError?
 
         if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
-            let reason = "Authenticate to start step count recording."
+            let reason = "Authenticate to enable step length control."
             
             context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, authenticationError in
                 DispatchQueue.main.async {

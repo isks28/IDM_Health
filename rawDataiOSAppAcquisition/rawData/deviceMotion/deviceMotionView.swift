@@ -326,7 +326,7 @@ var body: some View {
                             .multilineTextAlignment(.leading)
                             .padding(.top)
                         ScrollView {
-                            Text("DEVICE MOTION measures how an iPhone or Apple Watch moves and orients in space by combining FOLTERED data from the accelerometer (measuring linear acceleration), gyroscope (measuring rotational movement), and magnetometer (measuring orientation relative to Earth’s magnetic field). It also tracks gravity and the device’s attitude (orientation defined by roll, pitch, and yaw)")
+                            Text("DEVICE MOTION measures how an iPhone or Apple Watch moves and orients in space by combining FILTERED data from the accelerometer (measuring linear acceleration), gyroscope (measuring rotational movement), and magnetometer (measuring orientation relative to Earth’s magnetic field). It also tracks gravity and the device’s attitude (orientation defined by roll, pitch, and yaw)")
                                 .font(.callout)
                                 .multilineTextAlignment(.leading)
                                 .padding(.vertical, 5)
