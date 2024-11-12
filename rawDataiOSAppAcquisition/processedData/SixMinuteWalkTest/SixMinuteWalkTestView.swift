@@ -246,7 +246,7 @@ struct SixMinuteWalkTestView: View {
             }
             .padding()
         }
-        .navigationTitle("Step Counts")
+        .navigationTitle("Six-Minute-Walk Test")
         .onDisappear  {
             if isRecording {
                 stopTest()
