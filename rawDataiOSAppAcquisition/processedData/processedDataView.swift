@@ -73,6 +73,11 @@ struct processedDataView: View {
                                 .padding()
                                 .padding()
                                 .foregroundStyle(Color.primary)
+                            Text("SIX MINUTE WALK TEST is a dedicated test to collect users Six-Minute-Walk data with a touch of an integrated button")
+                                .font(.body)
+                                .padding()
+                                .padding()
+                                .foregroundStyle(Color.primary)
                             Spacer()
                             // Adding a chevron as a swipe indicator
                             AnimatedSwipeDownCloseView()

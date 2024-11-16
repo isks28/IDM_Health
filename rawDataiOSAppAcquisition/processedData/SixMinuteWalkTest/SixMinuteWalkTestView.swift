@@ -270,7 +270,7 @@ struct SixMinuteWalkTestView: View {
                             .multilineTextAlignment(.leading)
                             .padding(.top)
                         ScrollView {
-                            Text("The pedometer used for STEP COUNTS measures the number of steps a person takes using data from the accelerometer. It detects repetitive motion patterns typical of walking or running and calculates the total step count accordingly.")
+                            Text("The pedometer used for SIX MINUTE WALK TEST measures the number of steps a person takes using data from the accelerometer. It detects repetitive motion patterns typical of walking or running and calculates the total step count accordingly. Distance GPS is collected through Core Location using real-GPS data.")
                                 .font(.callout)
                                 .multilineTextAlignment(.leading)
                                 .padding(.vertical, 5)
