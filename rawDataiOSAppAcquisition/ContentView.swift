@@ -11,7 +11,6 @@ struct ContentView: View {
     @State var selectedTab = "Home"
     
     init() {
-        // Set the appearance of the tab bar globally
         let appearance = UITabBarAppearance()
         appearance.stackedLayoutAppearance.normal.iconColor = UIColor.label
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.label]
@@ -20,7 +19,6 @@ struct ContentView: View {
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
         
-        // Set the appearance for the navigation bar
         let navAppearance = UINavigationBarAppearance()
         navAppearance.configureWithOpaqueBackground()
         navAppearance.backgroundColor = UIColor.systemBackground
@@ -31,7 +29,6 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            // Main TabView content
             TabView(selection: $selectedTab) {
                 
                 healthKitView()

@@ -16,13 +16,12 @@ struct gyroscopeDataView: View {
     @State private var endDate = Date().addingTimeInterval(3600)
     @State private var isRecordingRealTime = false
     @State private var isRecordingInterval = false
-    @State private var samplingRate: Double = 60.0 // Default sampling rate
+    @State private var samplingRate: Double = 60.0
     
     @State private var canControlSamplingRate = false
     @State private var showingAuthenticationError = false
     
     @State private var showingInfo = false
-    // New state to trigger the graph refresh
     @State private var refreshGraph = UUID()
     
     var body: some View {
@@ -39,7 +38,6 @@ struct gyroscopeDataView: View {
                     .multilineTextAlignment(.center)
             }
             
-            // Simple Graph View
             VStack {
                 if motionManager.gyroscopeData.last != nil {
                     Text("X-Axis")
@@ -114,9 +112,7 @@ struct gyroscopeDataView: View {
                     .onChange(of: isRecordingRealTime) { _, newValue in
                         isRecording = false
                         motionManager.stopGyroscopeDataCollection()
-                        motionManager.savedFilePath = nil // Reset "File saved" text
-                        
-                        // Reset accelerometer data
+                        motionManager.savedFilePath = nil
                         motionManager.gyroscopeData = []
                         motionManager.gyroscopeDataPointsX = []
                         motionManager.gyroscopeDataPointsY = []
@@ -131,9 +127,7 @@ struct gyroscopeDataView: View {
                     .onChange(of: isRecordingInterval) { _, newValue in
                         isRecording = false
                         motionManager.stopGyroscopeDataCollection()
-                        motionManager.savedFilePath = nil // Reset "File saved" text
-                        
-                        // Reset accelerometer data
+                        motionManager.savedFilePath = nil
                         motionManager.gyroscopeData = []
                         motionManager.gyroscopeDataPointsX = []
                         motionManager.gyroscopeDataPointsY = []
@@ -165,27 +159,26 @@ struct gyroscopeDataView: View {
                                 .multilineTextAlignment(.center)
                         }
                         .onChange(of: isRecording) { _, newValue in
-                            motionManager.savedFilePath = nil // Reset "File saved" text
+                            motionManager.savedFilePath = nil
 
                             if newValue {
-                                // Define the server URL
-                                let serverURL = ServerConfig.serverURL  // Update this URL as needed
+                                let serverURL = ServerConfig.serverURL
 
                                 motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "GyroscopeData") {
                                     DispatchQueue.main.async {
                                         isRecording = false
-                                        motionManager.removeDataCollectionNotification() // Remove notification when recording stops
+                                        motionManager.removeDataCollectionNotification()
                                     }
                                 }
-                                motionManager.showDataCollectionNotification() // Show notification on start
+                                motionManager.showDataCollectionNotification()
                             } else {
                                 motionManager.stopGyroscopeDataCollection()
-                                motionManager.removeDataCollectionNotification() // Remove notification on stop
+                                motionManager.removeDataCollectionNotification()
                             }
                         }
 
                         if motionManager.savedFilePath != nil {
-                            Text("File saved")  // Display the saved file path
+                            Text("File saved")
                                 .font(.footnote)
                                 .foregroundStyle(Color.primary)
                         }
@@ -195,20 +188,18 @@ struct gyroscopeDataView: View {
                 HStack(alignment: .bottom) {
                     if isRecordingRealTime {
                         Button(action: {
-                            motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
+                            motionManager.savedFilePath = nil
 
                             if isRecording {
                                 motionManager.stopGyroscopeDataCollection()
-                                motionManager.removeDataCollectionNotification() // Remove notification on stop
-                                
-                                // Define the server URL
-                                let serverURL = ServerConfig.serverURL // Update this URL as needed
+                                motionManager.removeDataCollectionNotification()
+                                let serverURL = ServerConfig.serverURL
                                 motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "GyroscopeData", recordingMode: "RealTime")
                             } else {
                                 let serverURL = ServerConfig.serverURL
                                 
                                 motionManager.startGyroscopeDataCollection(realTime: true, serverURL: serverURL)
-                                motionManager.showDataCollectionNotification() // Show notification on start
+                                motionManager.showDataCollectionNotification()
                             }
                             isRecording.toggle()
                         }) {
@@ -232,7 +223,6 @@ struct gyroscopeDataView: View {
         }
         .navigationTitle("Gyroscope")
         .onDisappear {
-                    // Ensure the recording stops and resources are released when the view disappears
                     if isRecording || isRecordingRealTime || isRecordingInterval {
                         motionManager.stopGyroscopeDataCollection()
                         isRecording = false
@@ -293,15 +283,14 @@ struct gyroscopeDataView: View {
                                 .foregroundStyle(Color.pink)
                                 .background(Color.white)
                                 .cornerRadius(25)
-                                .overlay(  // Adding black outline
+                                .overlay(
                                     RoundedRectangle(cornerRadius: 25)
-                                        .stroke(Color.pink, lineWidth: 2)  // Outline color and width
+                                        .stroke(Color.pink, lineWidth: 2)
                                 )
                         }
                         .scrollIndicators(.hidden)
                         .padding(.horizontal)
                         .padding(.bottom, 5)
-                        // Adding a chevron as a swipe indicator
                         AnimatedSwipeDownCloseView()
                     }
                     .padding()
@@ -310,7 +299,6 @@ struct gyroscopeDataView: View {
         }
     }
     
-    // Function to authenticate the user using Face ID/Touch ID or passcode
     func authenticateUser(completion: @escaping (Bool) -> Void) {
         let context = LAContext()
         var error: NSError?

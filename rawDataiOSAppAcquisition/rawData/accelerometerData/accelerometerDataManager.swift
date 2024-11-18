@@ -32,10 +32,9 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         super.init()
         setupLocationManager()
         requestNotificationPermissions()
-        setupAppLifecycleObservers() // Add lifecycle observers
+        setupAppLifecycleObservers()
     }
 
-    // App lifecycle event observers
     private func setupAppLifecycleObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
@@ -45,13 +44,13 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
     @objc private func appDidEnterBackground() {
         print("App entered background")
         if isCollectingData {
-            showDataCollectionNotification()  // Show notification when app enters background
+            showDataCollectionNotification()
         }
     }
 
     @objc private func appWillEnterForeground() {
         print("App will enter foreground")
-        removeDataCollectionNotification()  // Remove notification when app enters foreground
+        removeDataCollectionNotification()
     }
 
     @objc private func appDidBecomeActive() {
@@ -66,7 +65,6 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         locationManager?.startMonitoringSignificantLocationChanges()
     }
 
-    // Request Notification permissions
     private func requestNotificationPermissions() {
         let center = UNUserNotificationCenter.current()
         center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
@@ -77,7 +75,6 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
             }
         }
 
-        // Ensure notifications are allowed
         center.getNotificationSettings { settings in
             if settings.authorizationStatus == .authorized {
                 DispatchQueue.main.async {
@@ -89,7 +86,6 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         }
     }
 
-    // Show a notification on the lock screen when data collection starts
     func showDataCollectionNotification() {
         let state = UIApplication.shared.applicationState
         if state == .background || state == .inactive {
@@ -127,7 +123,6 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         }
     }
 
-    // Remove the notification when data collection stops
     func removeDataCollectionNotification() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dataCollectionNotification"])
     }
@@ -144,20 +139,17 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         recordingMode = realTime ? "RealTime" : "TimeInterval"
 
         startBackgroundTask()
-        showDataCollectionNotification() // Show the notification
+        showDataCollectionNotification()
 
-        // Collect raw accelerometer data
         if accelerometerManager.isAccelerometerAvailable {
-            accelerometerManager.accelerometerUpdateInterval = 1.0 / currentSamplingRate // Set sampling rate
+            accelerometerManager.accelerometerUpdateInterval = 1.0 / currentSamplingRate
             
-            // Start collecting raw accelerometer data
             accelerometerManager.startAccelerometerUpdates(to: .main) { [weak self] (data, error) in
                 if let validData = data {
                     let timestamp = Date().timeIntervalSince1970
                     let rawAccDataString = "Accelerometer,\(timestamp),\(validData.acceleration.x),\(validData.acceleration.y),\(validData.acceleration.z)"
                     self?.accelerometerData.append(rawAccDataString)
 
-                    // Append raw accelerometer data to the arrays
                     self?.accelerometerDataPointsX.append(validData.acceleration.x)
                     self?.accelerometerDataPointsY.append(validData.acceleration.y)
                     self?.accelerometerDataPointsZ.append(validData.acceleration.z)
@@ -176,16 +168,14 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         isCollectingData = false
         accelerometerManager.stopAccelerometerUpdates()
         endBackgroundTask()
-        removeDataCollectionNotification() // Remove the notification
-        showDataCollectionStoppedNotification() // show the notification if data collection is stopped
-
+        removeDataCollectionNotification()
+        showDataCollectionStoppedNotification()
         if let serverURL = serverURL {
             saveDataToCSV(serverURL: serverURL, baseFolder: self.baseFolder, recordingMode: self.recordingMode)
         }
     }
     
     func resetData() {
-            // Reset any internal data states to prepare for a fresh start when the view is reopened
         accelerometerData = []
         accelerometerDataPointsX = []
         accelerometerDataPointsY = []
@@ -215,30 +205,25 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
             return
         }
 
-        // Create a date formatter for converting the timestamp to local time string
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"  // Desired date format
-        dateFormatter.timeZone = TimeZone.current  // Local timezone
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        dateFormatter.timeZone = TimeZone.current
 
-        // Create the CSV header
         let csvHeader = "DataType,TimeStamp,x,y,z\n"
 
-        // Replace the timestamp with formatted date strings
         let csvData = accelerometerData.map { dataEntry -> String in
             var components = dataEntry.split(separator: ",").map(String.init)
             if let timestamp = Double(components[1]) {
                 let date = Date(timeIntervalSince1970: timestamp)
-                components[1] = dateFormatter.string(from: date)  // Replace timestamp with formatted date
+                components[1] = dateFormatter.string(from: date)
             }
             return components.joined(separator: ",")
         }.joined(separator: "\n")
 
         let csvString = csvHeader + csvData
 
-        // Compute a hash of the current data to see if it's already been saved
         let dataHash = csvString.hashValue
 
-        // Check if the file with the same data (hash) already exists
         let fileURL = folderURL.appendingPathComponent("AccelerometerData_\(dataHash)_\(recordingMode).csv")
 
         if FileManager.default.fileExists(atPath: fileURL.path) {
@@ -265,7 +250,7 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
 
         let boundary = UUID().uuidString
         let fileName = fileURL.lastPathComponent
-        let mimeType = "text/csv"  // Assuming you're uploading CSV files
+        let mimeType = "text/csv"
 
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
@@ -321,7 +306,6 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
             let now = Date()
             stopTime = endDate
 
-            // Since this is scheduled, set the recording mode to "ScheduledTime"
             recordingMode = "TimeInterval"
 
             if startDate > now {
@@ -342,8 +326,6 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
             }
         }
 
-    // CLLocationManagerDelegate method
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        // Handle location updates if needed
     }
 }

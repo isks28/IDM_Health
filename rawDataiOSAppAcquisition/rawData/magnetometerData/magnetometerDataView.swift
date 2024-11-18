@@ -16,12 +16,11 @@ struct magnetometerDataView: View {
     @State private var endDate = Date().addingTimeInterval(3600)
     @State private var isRecordingRealTime = false
     @State private var isRecordingInterval = false
-    @State private var samplingRate: Double = 60.0 // Default sampling rate
+    @State private var samplingRate: Double = 60.0
     @State private var canControlSamplingRate = false
     @State private var showingAuthenticationError = false
     
     @State private var showingInfo = false
-    // New state to trigger the graph refresh
     @State private var refreshGraph = UUID()
     
     var body: some View {
@@ -38,7 +37,6 @@ struct magnetometerDataView: View {
                     .multilineTextAlignment(.center)
             }
             
-            // Simple Graph View
             VStack {
                 if motionManager.magnetometerData.last != nil {
                     Text("X-Axis")
@@ -113,9 +111,7 @@ struct magnetometerDataView: View {
                     .onChange(of: isRecordingRealTime) { _, newValue in
                         isRecording = false
                         motionManager.stopMagnetometerDataCollection()
-                        motionManager.savedFilePath = nil // Reset "File saved" text
-                        
-                        // Reset accelerometer data
+                        motionManager.savedFilePath = nil
                         motionManager.magnetometerData = []
                         motionManager.magnetometerDataPointsX = []
                         motionManager.magnetometerDataPointsY = []
@@ -130,7 +126,7 @@ struct magnetometerDataView: View {
                     .onChange(of: isRecordingInterval) { _, newValue in
                         isRecording = false
                         motionManager.stopMagnetometerDataCollection()
-                        motionManager.savedFilePath = nil // Reset "File saved" text
+                        motionManager.savedFilePath = nil
                         
                         if newValue {
                             isRecordingRealTime = false
@@ -159,22 +155,20 @@ struct magnetometerDataView: View {
                                 .multilineTextAlignment(.center)
                         }
                         .onChange(of: isRecording) { _, newValue in
-                            motionManager.savedFilePath = nil // Reset "File saved" text
-
+                            motionManager.savedFilePath = nil
                             if newValue {
-                                // Define the server URL
-                                let serverURL = ServerConfig.serverURL  // Update this URL as needed
+                                let serverURL = ServerConfig.serverURL
 
                                 motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "MagnetometerData") {
                                     DispatchQueue.main.async {
                                         isRecording = false
-                                        motionManager.removeDataCollectionNotification() // Remove notification when recording stops
+                                        motionManager.removeDataCollectionNotification()
                                     }
                                 }
-                                motionManager.showDataCollectionNotification() // Show notification on start
+                                motionManager.showDataCollectionNotification()
                             } else {
                                 motionManager.stopMagnetometerDataCollection()
-                                motionManager.removeDataCollectionNotification() // Remove notification on stop
+                                motionManager.removeDataCollectionNotification()
                             }
                         }
                         
@@ -190,20 +184,19 @@ struct magnetometerDataView: View {
                 HStack(alignment: .bottom) {
                     if isRecordingRealTime {
                         Button(action: {
-                            motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
+                            motionManager.savedFilePath = nil
 
                             if isRecording {
                                 motionManager.stopMagnetometerDataCollection()
-                                motionManager.removeDataCollectionNotification() // Remove notification on stop
+                                motionManager.removeDataCollectionNotification()
                                 
-                                // Define the server URL
-                                let serverURL = ServerConfig.serverURL // Update this URL as needed
+                                let serverURL = ServerConfig.serverURL
                                 motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "MagnetometerData", recordingMode: "RealTime")
                             } else {
                                 let serverURL = ServerConfig.serverURL
                                 
                                 motionManager.startMagnetometerDataCollection(realTime: true, serverURL: serverURL)
-                                motionManager.showDataCollectionNotification() // Show notification on start
+                                motionManager.showDataCollectionNotification()
                             }
                             isRecording.toggle()
                         }) {
@@ -227,7 +220,6 @@ struct magnetometerDataView: View {
         }
         .navigationTitle("Magnetometer")
         .onDisappear {
-                    // Ensure the recording stops and resources are released when the view disappears
                     if isRecording || isRecordingRealTime || isRecordingInterval {
                         motionManager.stopMagnetometerDataCollection()
                         isRecording = false
@@ -288,15 +280,14 @@ struct magnetometerDataView: View {
                                 .foregroundStyle(Color.pink)
                                 .background(Color.white)
                                 .cornerRadius(25)
-                                .overlay(  // Adding black outline
+                                .overlay(
                                     RoundedRectangle(cornerRadius: 25)
-                                        .stroke(Color.pink, lineWidth: 2)  // Outline color and width
+                                        .stroke(Color.pink, lineWidth: 2)
                                 )
                         }
                         .scrollIndicators(.hidden)
                         .padding(.horizontal)
                         .padding(.bottom, 5)
-                        // Adding a chevron as a swipe indicator
                         AnimatedSwipeDownCloseView()
                     }
                     .padding()
@@ -305,7 +296,6 @@ struct magnetometerDataView: View {
         }
     }
     
-    // Function to authenticate the user using Face ID/Touch ID or passcode
     func authenticateUser(completion: @escaping (Bool) -> Void) {
         let context = LAContext()
         var error: NSError?
@@ -342,7 +332,6 @@ struct MagnetometerGraphView: View {
                 let maxValue = dataPoints.max() ?? 1
                 let minValue = dataPoints.min() ?? 0
                 
-                // Ensure that if all values are zero, the graph is still visible
                 let maxY = max(maxValue, 0.1)
                 let scaleX = width / CGFloat(dataPoints.count - 1)
                 let scaleY = height / CGFloat(maxY - minValue)

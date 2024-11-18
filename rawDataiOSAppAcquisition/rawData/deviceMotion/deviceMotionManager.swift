@@ -14,19 +14,16 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let rawDataAllManager = CMMotionManager()
     @Published var isCollectingData = false
     
-    // Accelerometer Data Points
     @Published var userAccelerometerData: [String] = []
     @Published var accelerometerDataPointsX: [Double] = []
     @Published var accelerometerDataPointsY: [Double] = []
     @Published var accelerometerDataPointsZ: [Double] = []
     
-    // Gyroscope Data Points (Rotation)
     @Published var rotationalData: [String] = []
     @Published var rotationalDataPointsX: [Double] = []
     @Published var rotationalDataPointsY: [Double] = []
     @Published var rotationalDataPointsZ: [Double] = []
     
-    // Magnetometer Data Points
     @Published var magneticFieldData: [String] = []
     @Published var magneticDataPointsX: [Double] = []
     @Published var magneticDataPointsY: [Double] = []
@@ -57,10 +54,9 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         super.init()
         setupLocationManager()
         requestNotificationPermissions()
-        setupAppLifecycleObservers() // Add lifecycle observers
+        setupAppLifecycleObservers()
     }
     
-    // App lifecycle event observers
     private func setupAppLifecycleObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
@@ -70,13 +66,13 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @objc private func appDidEnterBackground() {
         print("App entered background")
         if isCollectingData {
-            showDataCollectionNotification()  // Show notification when app enters background
+            showDataCollectionNotification()
         }
     }
     
     @objc private func appWillEnterForeground() {
         print("App will enter foreground")
-        removeDataCollectionNotification()  // Remove notification when app enters foreground
+        removeDataCollectionNotification()
     }
     
     @objc private func appDidBecomeActive() {
@@ -91,7 +87,6 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager?.startMonitoringSignificantLocationChanges()
     }
 
-    // Request Notification permissions
     private func requestNotificationPermissions() {
         let center = UNUserNotificationCenter.current()
         
@@ -114,7 +109,6 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    // Show a notification on the lock screen when data collection starts
     func showDataCollectionNotification() {
         let state = UIApplication.shared.applicationState
         if state == .background || state == .inactive {
@@ -154,12 +148,10 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
 
-    // Remove the notification when data collection stops
     func removeDataCollectionNotification() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dataCollectionNotification"])
     }
 
-    // Updating the startRawDataAllCollection method
     func startRawDataAllCollection(realTime: Bool, serverURL: URL) {
         guard !isCollectingData else { return }
         
@@ -177,52 +169,47 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         magneticDataPointsX = []
         magneticDataPointsY = []
         magneticDataPointsZ = []
-        gravityDataPointsX = []  // Clear gravity data points
+        gravityDataPointsX = []
         gravityDataPointsY = []
         gravityDataPointsZ = []
-        attitudeDataRoll = []  // Clear attitude data points
+        attitudeDataRoll = []
         attitudeDataPitch = []
         attitudeDataYaw = []
         recordingMode = realTime ? "RealTime" : "TimeInterval"
         
         startBackgroundTask()
-        showDataCollectionNotification() // Show the notification
+        showDataCollectionNotification()
         
         if rawDataAllManager.isDeviceMotionAvailable {
-            rawDataAllManager.deviceMotionUpdateInterval = 1.0 / currentSamplingRate // Apply the current sampling rate
+            rawDataAllManager.deviceMotionUpdateInterval = 1.0 / currentSamplingRate
             rawDataAllManager.startDeviceMotionUpdates(to: .main) { [weak self] (data, error) in
                 if let validData = data {
                     let timestamp = Date().timeIntervalSince1970
                     
-                    // Collect accelerometer data
                     let userAccDataString = "UserAcceleration,\(timestamp),\(validData.userAcceleration.x),\(validData.userAcceleration.y),\(validData.userAcceleration.z)"
                     self?.userAccelerometerData.append(userAccDataString)
                     self?.accelerometerDataPointsX.append(validData.userAcceleration.x)
                     self?.accelerometerDataPointsY.append(validData.userAcceleration.y)
                     self?.accelerometerDataPointsZ.append(validData.userAcceleration.z)
                     
-                    // Collect gyroscope (rotation) data
                     let userGyroDataString = "RotationRate,\(timestamp),\(validData.rotationRate.x),\(validData.rotationRate.y),\(validData.rotationRate.z)"
                     self?.rotationalData.append(userGyroDataString)
                     self?.rotationalDataPointsX.append(validData.rotationRate.x)
                     self?.rotationalDataPointsY.append(validData.rotationRate.y)
                     self?.rotationalDataPointsZ.append(validData.rotationRate.z)
                     
-                    // Collect magnetometer data
                     let userMagnetoDataString = "MagneticField,\(timestamp),\(validData.magneticField.field.x),\(validData.magneticField.field.y),\(validData.magneticField.field.z)"
                     self?.magneticFieldData.append(userMagnetoDataString)
                     self?.magneticDataPointsX.append(validData.magneticField.field.x)
                     self?.magneticDataPointsY.append(validData.magneticField.field.y)
                     self?.magneticDataPointsZ.append(validData.magneticField.field.z)
 
-                    // Collect gravity data
                     let gravityDataString = "Gravity,\(timestamp),\(validData.gravity.x),\(validData.gravity.y),\(validData.gravity.z)"
                     self?.gravityData.append(gravityDataString)
                     self?.gravityDataPointsX.append(validData.gravity.x)
                     self?.gravityDataPointsY.append(validData.gravity.y)
                     self?.gravityDataPointsZ.append(validData.gravity.z)
 
-                    // Collect attitude data (roll, pitch, yaw)
                     let attitudeDataString = "Attitude,\(timestamp),\(validData.attitude.roll),\(validData.attitude.pitch),\(validData.attitude.yaw)"
                     self?.attitudeData.append(attitudeDataString)
                     self?.attitudeDataRoll.append(validData.attitude.roll)
@@ -240,7 +227,7 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         
         rawDataAllManager.stopDeviceMotionUpdates()
         endBackgroundTask()
-        removeDataCollectionNotification()  // Remove the notification
+        removeDataCollectionNotification()
         showDataCollectionStoppedNotification()
         
         if let serverURL = serverURL {
@@ -249,7 +236,6 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func resetData() {
-            // Reset any internal data states to prepare for a fresh start when the view is reopened
             userAccelerometerData = []
             rotationalData = []
             magneticFieldData = []
@@ -295,30 +281,25 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             return
         }
 
-        // Create a date formatter for converting the timestamp to local time string
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"  // Desired date format
-        dateFormatter.timeZone = TimeZone.current  // Local timezone
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        dateFormatter.timeZone = TimeZone.current
 
-        // Create the CSV header
         let csvHeader = "DataType,TimeStamp,x,y,z\n"
 
-        // Replace the timestamp with formatted date strings for all data types
         let csvData = (userAccelerometerData + rotationalData + magneticFieldData + gravityData + attitudeData).map { dataEntry -> String in
             var components = dataEntry.split(separator: ",").map(String.init)
             if let timestamp = Double(components[1]) {
                 let date = Date(timeIntervalSince1970: timestamp)
-                components[1] = dateFormatter.string(from: date)  // Replace timestamp with formatted date
+                components[1] = dateFormatter.string(from: date)
             }
             return components.joined(separator: ",")
         }.joined(separator: "\n")
 
         let csvString = csvHeader + csvData
 
-        // Compute a hash of the current data to see if it's already been saved
         let dataHash = csvString.hashValue
 
-        // Check if the file with the same data (hash) already exists
         let fileURL = folderURL.appendingPathComponent("DeviceMotion_\(dataHash)_\(recordingMode).csv")
 
         if FileManager.default.fileExists(atPath: fileURL.path) {
@@ -345,7 +326,7 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
         let boundary = UUID().uuidString
         let fileName = fileURL.lastPathComponent
-        let mimeType = "text/csv"  // Assuming you're uploading CSV files
+        let mimeType = "text/csv"
 
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
@@ -421,8 +402,6 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    // CLLocationManagerDelegate method
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        // Handle location updates if needed
     }
 }

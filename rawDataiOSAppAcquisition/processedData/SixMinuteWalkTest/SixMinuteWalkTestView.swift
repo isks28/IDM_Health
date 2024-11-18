@@ -175,7 +175,6 @@ struct SixMinuteWalkTestView: View {
                         }
                     }
                     
-                    // Step Length Control with Authentication
                     if !isRecording && stepSixMinuteManager.stepCount == 0{
                     VStack {
                         Toggle(isOn: $canControlStepLength) {
@@ -330,13 +329,11 @@ struct SixMinuteWalkTestView: View {
         timeElapsed = 0
         stepSixMinuteManager.startStepCountCollection(serverURL: ServerConfig.serverURL)
         
-        // Start the timer for updating elapsed time and notification
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             timeElapsed += 1
             stepSixMinuteManager.showDataCollectionNotification(elapsedTime: timeElapsed)
         }
         
-        // Stop test after 6 minutes (360 seconds)
         Timer.scheduledTimer(withTimeInterval: 360.0, repeats: false) { _ in
             stopTest()
         }
@@ -348,7 +345,6 @@ struct SixMinuteWalkTestView: View {
         timer = nil
         isRecording = false
         
-        // Optionally remove the notification once the test stops
         stepSixMinuteManager.removeDataCollectionNotification()
     }
 

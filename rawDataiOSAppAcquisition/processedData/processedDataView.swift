@@ -9,14 +9,13 @@ import SwiftUI
 
 struct processedDataView: View {
     @State private var selectedView: String? = nil
-    @State private var showingInfo = false // State to show the info sheet
+    @State private var showingInfo = false
     
     init() {
-            // Customize navigation bar appearance
             let appearance = UINavigationBarAppearance()
         
-        appearance.titleTextAttributes = [.foregroundColor: UIColor.secondarySystemFill]  // Title color
-        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.black]  // Large title color
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.secondarySystemFill]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.black]
     
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
@@ -79,7 +78,7 @@ struct processedDataView: View {
                                 .padding()
                                 .foregroundStyle(Color.primary)
                             Spacer()
-                            // Adding a chevron as a swipe indicator
+                            
                             AnimatedSwipeDownCloseView()
                         }
                         .padding()

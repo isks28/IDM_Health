@@ -15,15 +15,14 @@ struct cameraBasedView: View {
     @State private var capturedVideoURL: URL?
     @State private var shouldTakePhoto = false
     @State private var flashOverlayOpacity = 0.0
-    @State private var useFrontCamera = false  // New state for toggling camera
-    var serverURL: URL? // Server URL for uploading
+    @State private var useFrontCamera = false
+    var serverURL: URL?
     
     @State private var showingInfo = false
     
     var body: some View {
         NavigationView {
             ZStack(alignment: .center) {
-                // Camera-based controller
                 CameraBasedController(
                     onPhotoCaptured: { image in
                         capturedImage = image
@@ -39,13 +38,12 @@ struct cameraBasedView: View {
                     },
                     isRecording: $isRecording,
                     shouldTakePhoto: $shouldTakePhoto,
-                    useFrontCamera: $useFrontCamera  // Pass to controller
+                    useFrontCamera: $useFrontCamera
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .zIndex(0)
                 .edgesIgnoringSafeArea(.all)
                 
-                // Flash overlay
                 Color.white
                     .opacity(flashOverlayOpacity)
                     .edgesIgnoringSafeArea(.all)
@@ -71,7 +69,6 @@ struct cameraBasedView: View {
                         }
                         .padding(20)
 
-                        // New button for toggling camera
                         Button(action: {
                             useFrontCamera.toggle()
                         }) {
@@ -149,7 +146,6 @@ struct cameraBasedView: View {
         }
     }
     
-    // Save a captured photo and upload it to the server
     func savePhotoToDocuments(_ image: UIImage, serverURL: URL) {
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             print("Documents directory not found")
@@ -182,7 +178,6 @@ struct cameraBasedView: View {
         }
     }
 
-    // Save a recorded video and upload it to the server
     func saveVideoToDocuments(_ videoURL: URL, serverURL: URL) {
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             print("Documents directory not found")
@@ -213,7 +208,6 @@ struct cameraBasedView: View {
         }
     }
 
-    // Upload the file (supports both JPEG, MP4, and CSV)
     func uploadFile(fileURL: URL, serverURL: URL, category: String) {
         var request = URLRequest(url: serverURL)
         request.httpMethod = "POST"

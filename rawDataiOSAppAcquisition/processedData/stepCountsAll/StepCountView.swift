@@ -19,7 +19,7 @@ struct StepCountView: View {
     @State private var isRecordingInterval = false
     @State private var showingAuthenticationError = false
     @State private var canControlStepLength = false
-    @State private var timer: Timer? // Timer to update current pace and cadence
+    @State private var timer: Timer?
     
     @State private var showingInfo = false
     @State private var refreshGraph = UUID()
@@ -37,7 +37,6 @@ struct StepCountView: View {
             }
             Spacer()
             
-            // Step Count Display
             VStack {
                 Spacer()
                 if !isRecording && stepManager.stepCount == 0{
@@ -81,7 +80,6 @@ struct StepCountView: View {
                 
                 if stepManager.stepCount > 0 {
                     Grid {
-                        // Step Count
                         VStack {
                             Text("Steps:")
                                 .font(.largeTitle)
@@ -100,7 +98,6 @@ struct StepCountView: View {
 
                         Spacer()
                         
-                        // Distance
                         GridRow {
                             Text("Distance GPS:")
                                 .font(.title3)
@@ -121,7 +118,6 @@ struct StepCountView: View {
                                 .gridCellAnchor(.trailing)
                         }
 
-                        // Average Active Pace
                         GridRow {
                             Text("Average Active Pace:")
                                 .font(.title3)
@@ -139,7 +135,6 @@ struct StepCountView: View {
                             }
                         }
 
-                        // Current Pace
                         GridRow {
                             Text("Current Pace:")
                                 .font(.title3)
@@ -157,7 +152,6 @@ struct StepCountView: View {
                             }
                         }
 
-                        // Current Cadence
                         GridRow {
                             Text("Current Cadence:")
                                 .font(.title3)
@@ -175,7 +169,6 @@ struct StepCountView: View {
                             }
                         }
 
-                        // Floors Ascended
                         GridRow {
                             Text("Floors Ascended:")
                                 .font(.title3)
@@ -193,7 +186,6 @@ struct StepCountView: View {
                             }
                         }
 
-                        // Floors Descended
                         GridRow {
                             Text("Floors Descended:")
                                 .font(.title3)
@@ -220,14 +212,13 @@ struct StepCountView: View {
             }
             Spacer()
             
-            // Toggle controls for real-time and interval-based recording
             HStack {
                 Toggle("Real-Time", isOn: $isRecordingRealTime)
                     .onChange(of: isRecordingRealTime) { _, newValue in
                         isRecording = false
                         stepManager.stopStepCountCollection()
-                        stopTimer() // Stop the timer
-                        stepManager.savedFilePath = nil // Reset "File saved" text
+                        stopTimer()
+                        stepManager.savedFilePath = nil
                         
                         if newValue {
                             isRecordingInterval = false
@@ -238,8 +229,8 @@ struct StepCountView: View {
                     .onChange(of: isRecordingInterval) { _, newValue in
                         isRecording = false
                         stepManager.stopStepCountCollection()
-                        stopTimer() // Stop the timer
-                        stepManager.savedFilePath = nil // Reset "File saved" text
+                        stopTimer()
+                        stepManager.savedFilePath = nil
                         
                         if newValue {
                             isRecordingRealTime = false
@@ -248,7 +239,6 @@ struct StepCountView: View {
             }
             .padding(.horizontal)
             
-            // Start/Stop buttons for recording
             VStack {
                 if isRecordingInterval && !isRecording {
                     DatePicker("Start Date and Time", selection: $startDate)
@@ -268,24 +258,23 @@ struct StepCountView: View {
                                 .multilineTextAlignment(.center)
                         }
                         .onChange(of: isRecording) { _, newValue in
-                            stepManager.savedFilePath = nil // Reset "File saved" text
+                            stepManager.savedFilePath = nil
                             if newValue {
                                 
-                                // Define the server URL
-                                let serverURL = ServerConfig.serverURL  // Update this URL as needed
+                                let serverURL = ServerConfig.serverURL
                                 
                                 stepManager.scheduleStepCountCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "ProcessedStepCountsData") {
                                     DispatchQueue.main.async {
                                         isRecording = false
-                                        stopTimer() // Stop the timer
-                                        stepManager.removeDataCollectionNotification() // Remove notification
+                                        stopTimer()
+                                        stepManager.removeDataCollectionNotification()
                                     }
                                 }
-                                stepManager.showDataCollectionNotification() // Show notification on start
+                                stepManager.showDataCollectionNotification()
                             } else {
                                 stepManager.stopStepCountCollection()
-                                stopTimer() // Stop the timer
-                                stepManager.removeDataCollectionNotification() // Remove notification on stop
+                                stopTimer()
+                                stepManager.removeDataCollectionNotification()
                             }
                         }
                         
@@ -300,21 +289,20 @@ struct StepCountView: View {
                 HStack {
                     if isRecordingRealTime {
                         Button(action: {
-                            stepManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
+                            stepManager.savedFilePath = nil
                             
                             if isRecording {
                                 stepManager.stopStepCountCollection()
-                                stopTimer() // Stop the timer
-                                stepManager.removeDataCollectionNotification() // Remove notification on stop
-                                // Define the server URL
-                                let serverURL = ServerConfig.serverURL  // Update this URL as needed
+                                stopTimer()
+                                stepManager.removeDataCollectionNotification()
+                                let serverURL = ServerConfig.serverURL
                                 stepManager.saveDataToCSV(serverURL: serverURL, baseFolder: "ProcessedStepCountsData", recordingMode: "RealTime")
                             } else {
                                 let serverURL = ServerConfig.serverURL
                                 
                                 stepManager.startStepCountCollection(realTime: true, serverURL: serverURL)
-                                startTimer() // Start the timer to update current pace and cadence every second
-                                stepManager.showDataCollectionNotification() // Show notification on start
+                                startTimer()
+                                stepManager.showDataCollectionNotification()
                             }
                             isRecording.toggle()
                         }) {
@@ -383,15 +371,15 @@ struct StepCountView: View {
                                 .foregroundStyle(Color.pink)
                                 .background(Color.white)
                                 .cornerRadius(25)
-                                .overlay(  // Adding black outline
+                                .overlay(
                                     RoundedRectangle(cornerRadius: 25)
-                                        .stroke(Color.pink, lineWidth: 2)  // Outline color and width
+                                        .stroke(Color.pink, lineWidth: 2)
                                 )
                         }
                         .scrollIndicators(.hidden)
                         .padding(.horizontal)
                         .padding(.bottom, 5)
-                        // Adding a chevron as a swipe indicator
+                        
                         AnimatedSwipeDownCloseView()
                     }
                     .padding()
@@ -400,7 +388,6 @@ struct StepCountView: View {
         }
     }
     
-    // Start timer to update pace and cadence every second
     private func startTimer() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
@@ -414,7 +401,6 @@ struct StepCountView: View {
         timer = nil
     }
     
-    // Function to authenticate the user using Face ID/Touch ID or passcode
     func authenticateUser(completion: @escaping (Bool) -> Void) {
         let context = LAContext()
         var error: NSError?

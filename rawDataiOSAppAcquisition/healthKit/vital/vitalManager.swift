@@ -9,7 +9,6 @@ import HealthKit
 import Foundation
 import SwiftUI
 
-// Define a struct to store min, max, and average values with the date
 struct VitalStatistics {
     let startDate: Date
     let endDate: Date
@@ -21,7 +20,7 @@ struct VitalStatistics {
 class VitalManager: ObservableObject {
     let healthStore = HKHealthStore()
     
-    @Published var heartRateData: [VitalStatistics] = []  // Heart rate data storage for min, max, average
+    @Published var heartRateData: [VitalStatistics] = []
     @Published var savedFilePath: String?
     
     let baseFolder: String = "VitalData"
@@ -53,10 +52,8 @@ class VitalManager: ObservableObject {
     }
     
     func fetchVitalData(startDate: Date, endDate: Date) {
-        // Clear cache for new data fetch
         dataCache.removeAll()
         
-        // Fetch heart rate data
         fetchData(identifier: .heartRate, startDate: startDate, endDate: endDate) { [weak self] result in
             let statistics = self?.convertSamplesToStatistics(samples: result, unit: HKUnit.count().unitDivided(by: HKUnit.minute()))
             DispatchQueue.main.async {
@@ -66,12 +63,10 @@ class VitalManager: ObservableObject {
     }
     
     private func convertSamplesToStatistics(samples: [HKQuantitySample], unit: HKUnit) -> [VitalStatistics] {
-        // Group samples by date or desired interval, and calculate min, max, and average
         var statistics: [VitalStatistics] = []
         
-        // Process samples and calculate min, max, and average
         for sample in samples {
-            let heartRateValue = sample.quantity.doubleValue(for: unit)  // Value in BPM
+            let heartRateValue = sample.quantity.doubleValue(for: unit)
             
             let vitalStat = VitalStatistics(
                 startDate: sample.startDate,
@@ -127,26 +122,23 @@ class VitalManager: ObservableObject {
     }
     
     private func saveCSV(for samples: [VitalStatistics], fileName: String, unitLabel: String, serverURL: URL, baseFolder: String, decimalPlaces: Int) {
-        // Add headers for the CSV
         var csvString = "Recorded Date and Time,Value (\(unitLabel))\n"
         
-        let dateFormatter = ISO8601DateFormatter()  // ISO8601 for formatting dates
+        let dateFormatter = ISO8601DateFormatter()
         dateFormatter.timeZone = TimeZone.current
         
         for sample in samples {
             let dateString = dateFormatter.string(from: sample.endDate)
-            let formatString = "%.\(decimalPlaces)f"  // Format the value based on the decimal places
-            let value = String(format: formatString, sample.averageValue.isNaN ? 0 : sample.averageValue)  // Handle NaN and format value
+            let formatString = "%.\(decimalPlaces)f"
+            let value = String(format: formatString, sample.averageValue.isNaN ? 0 : sample.averageValue)
             csvString += "\(dateString),\(value)\n"
         }
         
-        // Get the local documents directory to save locally
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             print("Documents directory not found")
             return
         }
         
-        // Use the baseFolder parameter to define where to save the file (e.g., "VitalData", "ActivityData")
         let folderURL = documentsDirectory.appendingPathComponent(baseFolder)
         
         do {
@@ -158,13 +150,11 @@ class VitalManager: ObservableObject {
         
         let fileURL = folderURL.appendingPathComponent(fileName)
         
-        // Save the CSV file locally
         do {
             try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
             print("File saved locally at \(fileURL.path)")
             savedFilePath = fileURL.path
             
-            // After saving locally, upload the file to the web server
             self.uploadFile(fileURL: fileURL, serverURL: serverURL, category: baseFolder)
         } catch {
             print("Failed to save file locally: \(error)")
@@ -177,7 +167,7 @@ class VitalManager: ObservableObject {
         
         let boundary = UUID().uuidString
         let fileName = fileURL.lastPathComponent
-        let mimeType = "text/csv"  // Assuming you're uploading CSV files
+        let mimeType = "text/csv"  
         
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 

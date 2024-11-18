@@ -14,7 +14,7 @@ struct PreviewView: View {
     var onDismiss: () -> Void
     var onSaveAndUpload: (UIImage?, URL?) -> Void
     
-    @State private var player: AVPlayer?  // State to hold the AVPlayer instance
+    @State private var player: AVPlayer?
     
     var body: some View {
         ZStack {
@@ -25,30 +25,28 @@ struct PreviewView: View {
                     .foregroundColor(.white)
                     .font(.headline)
                 
-                // Define a consistent frame size
                 let frameSize: CGFloat = 390
                 
                 if let image = image {
                     Image(uiImage: image)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: frameSize, height: frameSize) // Apply consistent frame size
+                        .frame(width: frameSize, height: frameSize)
                 } else if videoURL != nil {
                     if let player = player {
                         VideoPlayer(player: player)
-                            .frame(width: frameSize, height: frameSize) // Apply consistent frame size
+                            .frame(width: frameSize, height: frameSize)
                             .aspectRatio(contentMode: .fit)
                             .onAppear {
-                                player.play()  // Automatically play the video on appear
+                                player.play()
                             }
                             .onDisappear {
-                                player.pause()  // Pause the video when view disappears
+                                player.pause()
                             }
                     }
                 }
                 
                 HStack {
-                    // Retake Button
                     Button(action: onDismiss) {
                         Text("Retake")
                             .font(.system(size: 20, weight: .bold))
@@ -64,7 +62,6 @@ struct PreviewView: View {
                     }
                     .padding(.horizontal, 20)
                     
-                    // Save and Upload Button
                     Button(action: {
                         onSaveAndUpload(image, videoURL)
                     }) {
@@ -86,7 +83,7 @@ struct PreviewView: View {
         }
         .onAppear {
             if let videoURL = videoURL {
-                player = AVPlayer(url: videoURL)  // Initialize the player once when the view appears
+                player = AVPlayer(url: videoURL)  
             }
         }
     }

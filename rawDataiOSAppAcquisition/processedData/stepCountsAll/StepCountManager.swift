@@ -15,15 +15,15 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let pedometer = CMPedometer()
     @Published var isCollectingData = false
     @Published var stepCount: Int = 0
-    @Published var distanceGPS: Double = 0.0 // Distance in meters from GPS
-    @Published var distancePedometer: Double = 0.0 // Distance in meters estimated from steps
-    @Published var averageActivePace: Double? // Average active pace in meters per second
-    @Published var currentPace: Double? // Current pace in meters per second
-    @Published var currentCadence: Double? // Current cadence in steps per second
-    @Published var floorAscended: Int? // Floors ascended, if available
-    @Published var floorDescended: Int? // Floors descended, if available
+    @Published var distanceGPS: Double = 0.0
+    @Published var distancePedometer: Double = 0.0
+    @Published var averageActivePace: Double?
+    @Published var currentPace: Double?
+    @Published var currentCadence: Double?
+    @Published var floorAscended: Int?
+    @Published var floorDescended: Int?
     @Published var savedFilePath: String?
-    @Published var stepLengthInMeters: Double = 0.7 // Approximate step length in meters
+    @Published var stepLengthInMeters: Double = 0.7
     
     let baseFolder: String = "ProcessedStepCountsData"
     
@@ -41,7 +41,6 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         setupAppLifecycleObservers()
     }
     
-    // App lifecycle event observers
     private func setupAppLifecycleObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
@@ -76,10 +75,9 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager?.pausesLocationUpdatesAutomatically = false
         locationManager?.startUpdatingLocation()
         locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
-        locationManager?.distanceFilter = 4.9 // Customize this value as appropriate
+        locationManager?.distanceFilter = 4.9
     }
 
-    // Request Notification permissions
     private func requestNotificationPermissions() {
         let center = UNUserNotificationCenter.current()
         
@@ -102,7 +100,6 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    // Show a notification on the lock screen when data collection starts
     func showDataCollectionNotification() {
         let state = UIApplication.shared.applicationState
         if state == .background || state == .inactive {
@@ -126,12 +123,10 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
 
-    // Remove the notification when data collection stops
     func removeDataCollectionNotification() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dataCollectionNotification"])
     }
 
-    // Start step count collection
     func startStepCountCollection(realTime: Bool, serverURL: URL) {
         guard !isCollectingData else { return }
         
@@ -149,7 +144,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         
         locationManager?.startUpdatingLocation()
         startBackgroundTask()
-        showDataCollectionNotification() // Show the notification
+        showDataCollectionNotification()
         
         guard CMPedometer.isStepCountingAvailable() else {
             print("Step counting is not available on this device")
@@ -192,14 +187,13 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         
         locationManager?.stopUpdatingLocation()
         endBackgroundTask()
-        removeDataCollectionNotification()  // Remove the notification
+        removeDataCollectionNotification()
         
         if let serverURL = serverURL {
             saveDataToCSV(serverURL: serverURL, baseFolder: self.baseFolder, recordingMode: self.recordingMode)
         }
     }
     
-    // Update current pace and cadence
     func updateCurrentPaceAndCadence() {
         guard CMPedometer.isPaceAvailable(), CMPedometer.isCadenceAvailable() else {
             print("Pace or Cadence is not available on this device")
@@ -224,7 +218,6 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    // Save collected data to CSV
     func saveDataToCSV(serverURL: URL, baseFolder: String, recordingMode: String) {
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             print("Documents directory not found")
@@ -240,25 +233,20 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             return
         }
 
-        // Create a date formatter for converting the timestamp to local time string
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"  // Desired date format
-        dateFormatter.timeZone = TimeZone.current  // Local timezone
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        dateFormatter.timeZone = TimeZone.current
 
-        // Get the current date and time for the CSV entry
         let currentDate = Date()
         let formattedDate = dateFormatter.string(from: currentDate)
         
-        // Prepare CSV header and data with floors ascended/descended included
         let csvHeader = "DataType,TimeStamp,StepCount,Distance (m),AverageActivePace (m/s),CurrentPace (m/s),CurrentCadence (steps/s),FloorsAscended,FloorsDescended\n"
         let csvData = "WalkingData,\(formattedDate),\(stepCount),\(distanceGPS),\(distancePedometer),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0),\(floorAscended ?? 0),\(floorDescended ?? 0)"
         
-        let csvString = csvHeader + csvData  // Include formatted timestamp in the CSV data
+        let csvString = csvHeader + csvData
 
-        // Compute a hash of the current data to see if it's already been saved
         let dataHash = csvString.hashValue
         
-        // Create a unique file name based on the current data hash
         let fileName = "StepCountData_\(formattedDate)_\(dataHash)_\(recordingMode).csv"
         let fileURL = folderURL.appendingPathComponent(fileName)
         
@@ -280,15 +268,13 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
 
-    
-    // Upload the file to the server
     func uploadFile(fileURL: URL, serverURL: URL, category: String) {
         var request = URLRequest(url: serverURL)
         request.httpMethod = "POST"
         
         let boundary = UUID().uuidString
         let fileName = fileURL.lastPathComponent
-        let mimeType = "text/csv"  // Assuming you're uploading CSV files
+        let mimeType = "text/csv"
         
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         
@@ -362,7 +348,6 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    // CLLocationManagerDelegate method for updating location
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
             guard let newLocation = locations.last else { return }
             

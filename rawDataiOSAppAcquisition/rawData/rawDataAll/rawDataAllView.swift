@@ -23,17 +23,16 @@ struct rawDataAccGyroMagView: View {
 @State private var endDate = Date().addingTimeInterval(3600)
 @State private var isRecordingRealTime = false
 @State private var isRecordingInterval = false
-@State private var samplingRate: Double = 60.0 // Default sampling rate
+@State private var samplingRate: Double = 60.0
 @State private var canControlSamplingRate = false
 @State private var showingAuthenticationError = false
-    @State private var selectedDataType: DataTypeRawAll = .accelerometer // Default data type
+    @State private var selectedDataType: DataTypeRawAll = .accelerometer
 
 @State private var showingInfo = false
-@State private var refreshGraph = UUID() // To trigger graph refresh
+@State private var refreshGraph = UUID()
 
 var body: some View {
     VStack {
-        // Segmented Picker to choose data type
         Picker("Select Data", selection: $selectedDataType) {
             ForEach(DataTypeRawAll.allCases, id: \.self) { dataType in
                 Text(dataType.rawValue)
@@ -45,7 +44,6 @@ var body: some View {
 
         Spacer()
 
-        // Display graphs based on the selected data type
         switch selectedDataType {
         case .accelerometer:
             if motionManager.AccelerometerData.last != nil {
@@ -163,9 +161,8 @@ var body: some View {
                     .onChange(of: isRecordingInterval) { _, newValue in
                         isRecording = false
                         motionManager.stoprawDataCollection()
-                        motionManager.savedFilePath = nil // Reset "File saved" text
+                        motionManager.savedFilePath = nil
                         
-                        // Reset accelerometer data
                         motionManager.AccelerometerData = []
                         motionManager.gyroscopeData = []
                         motionManager.magnetometerData = []
@@ -205,21 +202,20 @@ var body: some View {
                                 .multilineTextAlignment(.center)
                         }
                         .onChange(of: isRecording) { _, newValue in
-                            motionManager.savedFilePath = nil // Reset "File saved" text
+                            motionManager.savedFilePath = nil
                             if newValue {
-                                // Define the server URL
-                                let serverURL = ServerConfig.serverURL  // Update this URL as needed
+                                let serverURL = ServerConfig.serverURL
 
                                 motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "RawData") {
                                     DispatchQueue.main.async {
                                         isRecording = false
-                                        motionManager.removeDataCollectionNotification() // Remove notification when recording stops
+                                        motionManager.removeDataCollectionNotification()
                                     }
                                 }
-                                motionManager.showDataCollectionNotification() // Show notification on start
+                                motionManager.showDataCollectionNotification()
                             } else {
                                 motionManager.stoprawDataCollection()
-                                motionManager.removeDataCollectionNotification() // Remove notification on stop
+                                motionManager.removeDataCollectionNotification()
                             }
                         }
                         
@@ -235,19 +231,18 @@ var body: some View {
                 HStack(alignment: .bottom) {
                     if isRecordingRealTime {
                         Button(action: {
-                            motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
+                            motionManager.savedFilePath = nil
                             
                             if isRecording {
                                 motionManager.stoprawDataCollection()
-                                motionManager.removeDataCollectionNotification() // Remove notification on stop
-                                // Define the server URL
-                                let serverURL = ServerConfig.serverURL  // Update this URL as needed
+                                motionManager.removeDataCollectionNotification()
+                                let serverURL = ServerConfig.serverURL
                                 motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "RawData", recordingMode: "RealTime")
                             } else {
                                 let serverURL = ServerConfig.serverURL
                                 
                                 motionManager.startrawDataCollection(realTime: true, serverURL: serverURL)
-                                motionManager.showDataCollectionNotification() // Show notification on start
+                                motionManager.showDataCollectionNotification()
                             }
                             isRecording.toggle()
                         }) {
@@ -271,7 +266,6 @@ var body: some View {
         }
         .navigationTitle("Raw Data All")
         .onDisappear {
-                    // Ensure the recording stops and resources are released when the view disappears
                     if isRecording || isRecordingRealTime || isRecordingInterval {
                         motionManager.stoprawDataCollection()
                         isRecording = false
@@ -332,15 +326,14 @@ var body: some View {
                                 .foregroundStyle(Color.pink)
                                 .background(Color.white)
                                 .cornerRadius(25)
-                                .overlay(  // Adding black outline
+                                .overlay(
                                     RoundedRectangle(cornerRadius: 25)
-                                        .stroke(Color.pink, lineWidth: 2)  // Outline color and width
+                                        .stroke(Color.pink, lineWidth: 2)
                                 )
                         }
                         .scrollIndicators(.hidden)
                         .padding(.horizontal)
                         .padding(.bottom, 5)
-                        // Adding a chevron as a swipe indicator
                         AnimatedSwipeDownCloseView()
                     }
                 }
@@ -348,7 +341,6 @@ var body: some View {
         }
     }
     
-    // Function to authenticate the user using Face ID/Touch ID or passcode
     func authenticateUser(completion: @escaping (Bool) -> Void) {
         let context = LAContext()
         var error: NSError?
@@ -379,7 +371,6 @@ var body: some View {
         }
 }
 
-// Custom RawDataGraphView to display one axis at a time
 struct RawDataAllGraphView: View {
     var dataPoints: [Double]
     var lineColor: Color
@@ -399,13 +390,11 @@ struct RawDataAllGraphView: View {
                     let width = geometry.size.width
                     let height = geometry.size.height
                     
-                    // Ensure there's a minimum value for scaling in case all data points are zero
                     let maxValue = dataPoints.max() ?? 0
                     let minValue = dataPoints.min() ?? 0
                     _ = maxValue - minValue
                     
-                    // Handle case where all values are zero or the same
-                    let adjustedMax = max(maxValue, 0.1) // Ensure there's a minimum range
+                    let adjustedMax = max(maxValue, 0.1) 
                     let scaleX = width / CGFloat(dataPoints.count - 1)
                     let scaleY = height / CGFloat(adjustedMax - minValue)
                     

@@ -16,21 +16,20 @@ struct accelerometerDataView: View {
     @State private var endDate = Date().addingTimeInterval(3600)
     @State private var isRecordingRealTime = false
     @State private var isRecordingInterval = false
-    @State private var samplingRate: Double = 60.0 // Default sampling rate
+    @State private var samplingRate: Double = 60.0
     
     @State private var canControlSamplingRate = false
     @State private var showingAuthenticationError = false
     
     @State private var showingInfo = false
-    // New state to trigger the graph refresh
     @State private var refreshGraph = UUID()
     
     var body: some View {
         VStack {
-            Spacer() // Push content to the bottom
+            Spacer()
             
             if motionManager.accelerometerData.last != nil {
-                // No need to show any message
+              
             } else {
                 Text("No data")
                     .padding()
@@ -39,7 +38,6 @@ struct accelerometerDataView: View {
                     .multilineTextAlignment(.center)
             }
 
-            // Simple Graph View
             VStack {
                 if motionManager.accelerometerData.last != nil {
                     Text("X-Axis")
@@ -114,9 +112,7 @@ struct accelerometerDataView: View {
                     .onChange(of: isRecordingRealTime) { _, newValue in
                         isRecording = false
                         motionManager.stopAccelerometerDataCollection()
-                        motionManager.savedFilePath = nil // Reset "File saved" text
-                        
-                        // Reset accelerometer data
+                        motionManager.savedFilePath = nil
                         motionManager.accelerometerData = []
                         motionManager.accelerometerDataPointsX = []
                         motionManager.accelerometerDataPointsY = []
@@ -131,9 +127,7 @@ struct accelerometerDataView: View {
                     .onChange(of: isRecordingInterval) { _, newValue in
                         isRecording = false
                         motionManager.stopAccelerometerDataCollection()
-                        motionManager.savedFilePath = nil // Reset "File saved" text
-                        
-                        // Reset accelerometer data
+                        motionManager.savedFilePath = nil
                         motionManager.accelerometerData = []
                         motionManager.accelerometerDataPointsX = []
                         motionManager.accelerometerDataPointsY = []
@@ -147,7 +141,6 @@ struct accelerometerDataView: View {
             .padding(.horizontal)
 
             VStack {
-                // Timed interval recording
                 if isRecordingInterval && !isRecording {
                     DatePicker("Start Date and Time", selection: $startDate)
                         .datePickerStyle(CompactDatePickerStyle())
@@ -157,7 +150,6 @@ struct accelerometerDataView: View {
                 }
 
                 HStack(alignment: .bottom) {
-                    // Toggle for timed recording
                     if isRecordingInterval {
                         Toggle(isOn: $isRecording) {
                             Text(isRecording ? "Data will be fetched according to set time interval" : "Start timed recording")
@@ -168,21 +160,21 @@ struct accelerometerDataView: View {
                                 .multilineTextAlignment(.center)
                         }
                         .onChange(of: isRecording) { _, newValue in
-                            motionManager.savedFilePath = nil // Reset "File saved" text
+                            motionManager.savedFilePath = nil
 
                             if newValue {
-                                let serverURL = ServerConfig.serverURL // Update this URL as needed
+                                let serverURL = ServerConfig.serverURL
 
                                 motionManager.scheduleDataCollection(startDate: startDate, endDate: endDate, serverURL: serverURL, baseFolder: "AccelerometerData") {
                                     DispatchQueue.main.async {
                                         isRecording = false
-                                        motionManager.removeDataCollectionNotification() // Remove notification when recording stops
+                                        motionManager.removeDataCollectionNotification()
                                     }
                                 }
-                                motionManager.showDataCollectionNotification() // Show notification on start
+                                motionManager.showDataCollectionNotification()
                             } else {
                                 motionManager.stopAccelerometerDataCollection()
-                                motionManager.removeDataCollectionNotification() // Remove notification on stop
+                                motionManager.removeDataCollectionNotification()
                             }
                         }
 
@@ -196,23 +188,21 @@ struct accelerometerDataView: View {
                 }
 
                 HStack(alignment: .bottom) {
-                    // Real-time recording
                     if isRecordingRealTime {
                         Button(action: {
-                            motionManager.savedFilePath = nil // Reset "File saved" text when starting a new recording
+                            motionManager.savedFilePath = nil
 
                             if isRecording {
                                 motionManager.stopAccelerometerDataCollection()
-                                motionManager.removeDataCollectionNotification() // Remove notification on stop
-
-                                let serverURL = ServerConfig.serverURL // Update this URL as needed
+                                motionManager.removeDataCollectionNotification()
+                                let serverURL = ServerConfig.serverURL
 
                                 motionManager.saveDataToCSV(serverURL: serverURL, baseFolder: "AccelerometerData", recordingMode: "RealTime")
                             } else {
                                 let serverURL = ServerConfig.serverURL
 
                                 motionManager.startAccelerometerDataCollection(realTime: true, serverURL: serverURL)
-                                motionManager.showDataCollectionNotification() // Show notification on start
+                                motionManager.showDataCollectionNotification()
                             }
                             isRecording.toggle()
                         }) {
@@ -236,7 +226,6 @@ struct accelerometerDataView: View {
         }
         .navigationTitle("Accelerometer")
         .onDisappear {
-                    // Ensure the recording stops and resources are released when the view disappears
                     if isRecording || isRecordingRealTime || isRecordingInterval {
                         motionManager.stopAccelerometerDataCollection()
                         isRecording = false
@@ -297,15 +286,14 @@ struct accelerometerDataView: View {
                                 .foregroundStyle(Color.pink)
                                 .background(Color.white)
                                 .cornerRadius(25)
-                                .overlay(  // Adding black outline
+                                .overlay(
                                     RoundedRectangle(cornerRadius: 25)
-                                        .stroke(Color.pink, lineWidth: 2)  // Outline color and width
+                                        .stroke(Color.pink, lineWidth: 2)
                                 )
                         }
                         .scrollIndicators(.hidden)
                         .padding(.horizontal)
                         .padding(.bottom, 5)
-                        // Adding a chevron as a swipe indicator
                         AnimatedSwipeDownCloseView()
                     }
                     .padding()
@@ -314,7 +302,6 @@ struct accelerometerDataView: View {
         }
     }
 
-    // Function to authenticate the user using Face ID/Touch ID or passcode
     func authenticateUser(completion: @escaping (Bool) -> Void) {
         let context = LAContext()
         var error: NSError?

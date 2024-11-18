@@ -28,8 +28,7 @@ struct activityView: View {
     
     @State private var showingInfo = false
     
-    // New state to trigger the graph refresh
-    @State private var refreshGraph = UUID() // Use UUID for forcing refresh
+    @State private var refreshGraph = UUID()
     
     @State private var showingChart: [String: Bool] = [
         "StepCount": false,
@@ -60,14 +59,13 @@ struct activityView: View {
             }
             .onAppear {
                 print("View appeared, forcing data fetch and refresh")
-                // Re-fetch data and force refresh on view appear
                 healthKitManager.fetchActivityData(startDate: startDate, endDate: endDate)
-                refreshGraph = UUID() // Force refresh with UUID
+                refreshGraph = UUID()
                 
             }
             .onChange(of: healthKitManager.stepCountData) { _, newData in
                 print("Step count data changed, forcing graph refresh")
-                refreshGraph = UUID() // Force refresh whenever stepCountData changes
+                refreshGraph = UUID()
             }
             
             Text("Set Start and End-Date to fetched available data:")
@@ -88,7 +86,6 @@ struct activityView: View {
             HStack {
                 Button(action: {
                     if isRecording {
-                        // Define the server URL
                         let serverURL = ServerConfig.serverURL
                         print("serverURL is \(serverURL)")
                         
@@ -141,7 +138,6 @@ struct activityView: View {
         }
     }
     
-    // creating data availability function and info circle for each data
     @ViewBuilder
     private func dataSection(title: String, dataAvailable: Bool, chartKey: String, data: [HKQuantitySample], unit: HKUnit, chartTitle: String) -> some View {
         Section(header: Text(title)
@@ -150,7 +146,6 @@ struct activityView: View {
                 if !isRecording {
                     
                 } else {
-                    // Show data availability information after fetching data
                     if dataAvailable {
                         Button(action: {
                             showingChart[chartKey] = true
@@ -179,7 +174,7 @@ struct activityView: View {
                         ChartWithTimeFramePicker(title: chartTitle, data: data.map {
                             ChartDataactivity(date: $0.startDate, value: $0.quantity.doubleValue(for: unit))
                         }, startDate: healthKitManager.startDate, endDate: healthKitManager.endDate)
-                            .id(refreshGraph) // Force refresh with UUID to ensure the view is recreated
+                            .id(refreshGraph)
                     }
                 }
             }
@@ -260,7 +255,7 @@ struct ChartWithTimeFramePicker: View {
                         .padding(.horizontal, 10)
                         .background(.white)
                         .cornerRadius(25)
-                        .overlay(  // Adding black outline
+                        .overlay(
                             RoundedRectangle(cornerRadius: 25)
                                 .stroke(Color.blue, lineWidth: 2)
                         )
@@ -360,13 +355,12 @@ struct ChartWithTimeFramePicker: View {
             Spacer()
         }
         .onAppear {
-            // Ensure the data is updated and visible upon initial appearance
             DispatchQueue.main.async {
-                updateFilteredData() // Precompute and update the data before displaying
+                updateFilteredData()
                 jumpToPage(for: endDate)
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    refreshGraph = UUID() // Force a chart redraw on appear
+                    refreshGraph = UUID() 
                 }
             }
         }

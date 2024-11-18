@@ -17,15 +17,15 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     private let pedometer = CMPedometer()
     @Published var isCollectingData = false
     @Published var stepCount: Int = 0
-    @Published var distanceGPS: Double = 0.0 // Distance in meters from GPS
-    @Published var distancePedometer: Double = 0.0 // Distance in meters estimated from steps
-    @Published var averageActivePace: Double? // Average active pace in meters per second
-    @Published var currentPace: Double? // Current pace in meters per second
-    @Published var currentCadence: Double? // Current cadence in steps per second
-    @Published var floorAscended: Int? // Floors ascended, if available
-    @Published var floorDescended: Int? // Floors descended, if available
+    @Published var distanceGPS: Double = 0.0
+    @Published var distancePedometer: Double = 0.0
+    @Published var averageActivePace: Double?
+    @Published var currentPace: Double?
+    @Published var currentCadence: Double?
+    @Published var floorAscended: Int?
+    @Published var floorDescended: Int?
     @Published var savedFilePath: String?
-    @Published var stepLengthInMeters: Double = 0.7 // Approximate step length in meters
+    @Published var stepLengthInMeters: Double = 0.7
     @Published var elapsedTime: TimeInterval = 0
     
     let baseFolder: String = "ProcessedStepCountsData"
@@ -34,7 +34,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     private var serverURL: URL?
     private var locationManager: CLLocationManager?
     private var previousLocation: CLLocation?
-    private var timer: Timer? // Timer property for precise control
+    private var timer: Timer?
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
 
     override init() {
@@ -76,10 +76,9 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         locationManager?.pausesLocationUpdatesAutomatically = false
         locationManager?.startUpdatingLocation()
         locationManager?.desiredAccuracy = kCLLocationAccuracyBestForNavigation
-        locationManager?.distanceFilter = 4.9 // Customize this value as appropriate
+        locationManager?.distanceFilter = 4.9
     }
 
-    // Request Notification permissions
     private func requestNotificationPermissions() {
         let center = UNUserNotificationCenter.current()
         center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
@@ -91,9 +90,8 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         }
     }
     
-    // Show a notification when data collection starts
     func showDataCollectionNotification(elapsedTime: Int, isFinalUpdate: Bool = false) {
-        guard isCollectingData else { return } // Only update if collecting data
+        guard isCollectingData else { return }
         
         let content = UNMutableNotificationContent()
         content.title = "Six Minute Walk Test"
@@ -112,22 +110,18 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         }
     }
         
-    // Helper function to format elapsed time
     private func formattedTime(from seconds: Int) -> String {
         let minutes = seconds / 60
         let seconds = seconds % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
 
-    // Remove the notification when data collection stops
     func removeDataCollectionNotification() {
         let notificationCenter = UNUserNotificationCenter.current()
         let identifier = "dataCollectionNotification"
         
-        // Remove pending notification requests
         notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
         
-        // Remove delivered notifications
         notificationCenter.removeDeliveredNotifications(withIdentifiers: [identifier])
     }
 
@@ -145,13 +139,12 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         floorAscended = nil
         floorDescended = nil
         recordingMode = "Six-Minute-Walk Test"
-        let startTime = Date() // Record the start time
-        var elapsedTime = 0 // Initialize elapsed time
+        let startTime = Date()
+        var elapsedTime = 0
 
         previousLocation = nil
         locationManager?.startUpdatingLocation()
         
-        // Play start sound and vibration alert once
         playStartAlert()
         showDataCollectionNotification(elapsedTime: elapsedTime, isFinalUpdate: true)
         
@@ -192,14 +185,12 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
             self.backgroundTask = .invalid
         }
 
-        // Timer to update elapsed time in the notification
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
             guard let self = self else { timer.invalidate(); return }
             
             elapsedTime = Int(Date().timeIntervalSince(startTime))
             self.showDataCollectionNotification(elapsedTime: elapsedTime)
             
-            // Stop and play end sound after 6 minutes
             if elapsedTime >= 360 {
                 timer.invalidate()
                 self.showDataCollectionNotification(elapsedTime: elapsedTime, isFinalUpdate: true)
@@ -234,7 +225,6 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         }
     }
 
-    // Save collected data to CSV
     func saveDataToCSV(serverURL: URL, baseFolder: String, recordingMode: String) {
         print("Attempting to save data to CSV")
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
@@ -279,7 +269,6 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         }
     }
 
-    // Upload the file to the server
     func uploadFile(fileURL: URL, serverURL: URL, category: String) {
         var request = URLRequest(url: serverURL)
         request.httpMethod = "POST"
@@ -331,13 +320,11 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
             }
         }
     
-    // Function to play sound and vibration at the start of the test
     func playStartAlert() {
         AudioServicesPlaySystemSound(1007)
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
     }
-    
-    // Function to play sound, vibration, and a notification at the end of the test
+     
     func playEndAlert() {
         AudioServicesPlaySystemSound(1007)
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)

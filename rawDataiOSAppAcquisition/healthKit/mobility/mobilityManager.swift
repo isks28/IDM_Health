@@ -9,10 +9,9 @@ import HealthKit
 import Foundation
 import SwiftUI
 
-// Define a struct to store min, max, and average values with the date
 struct MobilityStatistics {
     let startDate: Date
-    let endDate: Date // Add endDate property
+    let endDate: Date
     let minValue: Double
     let maxValue: Double
     let averageValue: Double
@@ -61,10 +60,8 @@ class HealthKitMobilityManager: ObservableObject {
     }
     
     func fetchMobilityData(startDate: Date, endDate: Date) {
-        // Clear cache for new data fetch
         dataCache.removeAll()
         
-        // Fetch each mobility-related data type without aggregation
         fetchData(identifier: .walkingDoubleSupportPercentage, startDate: startDate, endDate: endDate) { [weak self] result in
             let statistics = self?.convertSamplesToStatistics(samples: result, unit: HKUnit.percent())
             DispatchQueue.main.async {
@@ -105,24 +102,21 @@ class HealthKitMobilityManager: ObservableObject {
         return samples.map { sample in
             var value = sample.quantity.doubleValue(for: unit)
             
-            // Convert units as needed
             switch unit {
-            case HKUnit.meter().unitDivided(by: HKUnit.second()): // Walking speed in m/s
-                value *= 3.6 // Convert m/s to km/h
-            case HKUnit.meter(): // Walking step length in meters
-                value *= 100 // Convert meters to centimeters
+            case HKUnit.meter().unitDivided(by: HKUnit.second()):
+                value *= 3.6
+            case HKUnit.meter():
+                value *= 100
             case HKUnit.percent():
                 value *= 100
             default:
-                break // For percentages, no change needed
+                break
             }
 
-            // Use both startDate and endDate of the sample
             return MobilityStatistics(startDate: sample.startDate, endDate: sample.endDate, minValue: value, maxValue: value, averageValue: value)
         }
     }
 
-    // Helper function to compute min, max, and average from the fetched data
     private func computeStatistics(from samples: [HKQuantitySample], unit: HKUnit) -> (minValue: Double, maxValue: Double, averageValue: Double)? {
         guard !samples.isEmpty else { return nil }
         
@@ -229,7 +223,7 @@ class HealthKitMobilityManager: ObservableObject {
         
         let boundary = UUID().uuidString
         let fileName = fileURL.lastPathComponent
-        let mimeType = "text/csv"  // Assuming you're uploading CSV files
+        let mimeType = "text/csv"  
         
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 

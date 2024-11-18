@@ -14,19 +14,16 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let rawDataManager = CMMotionManager()
     @Published var isCollectingData = false
     
-    // Accelerometer Data Points
     @Published var AccelerometerData: [String] = []
     @Published var accelerometerDataPointsX: [Double] = []
     @Published var accelerometerDataPointsY: [Double] = []
     @Published var accelerometerDataPointsZ: [Double] = []
     
-    // Gyroscope Data Points (Rotation)
     @Published var gyroscopeData: [String] = []
     @Published var gyroscopeDataPointsX: [Double] = []
     @Published var gyroscopeDataPointsY: [Double] = []
     @Published var gyroscopeDataPointsZ: [Double] = []
     
-    // Magnetometer Data Points
     @Published var magnetometerData: [String] = []
     @Published var magnetometerDataPointsX: [Double] = []
     @Published var magnetometerDataPointsY: [Double] = []
@@ -47,10 +44,9 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         super.init()
         setupLocationManager()
         requestNotificationPermissions()
-        setupAppLifecycleObservers() // Add lifecycle observers
+        setupAppLifecycleObservers()
     }
     
-    // App lifecycle event observers
     private func setupAppLifecycleObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
@@ -60,13 +56,13 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @objc private func appDidEnterBackground() {
         print("App entered background")
         if isCollectingData {
-            showDataCollectionNotification()  // Show notification when app enters background
+            showDataCollectionNotification()
         }
     }
     
     @objc private func appWillEnterForeground() {
         print("App will enter foreground")
-        removeDataCollectionNotification()  // Remove notification when app enters foreground
+        removeDataCollectionNotification()
     }
     
     @objc private func appDidBecomeActive() {
@@ -80,8 +76,7 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager?.allowsBackgroundLocationUpdates = true
         locationManager?.startMonitoringSignificantLocationChanges()
     }
-
-    // Request Notification permissions
+    
     private func requestNotificationPermissions() {
         let center = UNUserNotificationCenter.current()
         
@@ -104,7 +99,6 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    // Show a notification on the lock screen when data collection starts
     func showDataCollectionNotification() {
         let state = UIApplication.shared.applicationState
         if state == .background || state == .inactive {
@@ -144,12 +138,10 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
 
-    // Remove the notification when data collection stops
     func removeDataCollectionNotification() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dataCollectionNotification"])
     }
 
-    // Updating the startrawDataCollection method
     func startrawDataCollection(realTime: Bool, serverURL: URL) {
         guard !isCollectingData else { return }
         
@@ -170,14 +162,12 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         recordingMode = realTime ? "RealTime" : "TimeInterval"
         
         startBackgroundTask()
-        showDataCollectionNotification() // Show the notification
+        showDataCollectionNotification()
         
-        // Set sampling intervals
         rawDataManager.accelerometerUpdateInterval = 1.0 / currentSamplingRate
         rawDataManager.gyroUpdateInterval = 1.0 / currentSamplingRate
         rawDataManager.magnetometerUpdateInterval = 1.0 / currentSamplingRate
         
-        // Start accelerometer updates
         if rawDataManager.isAccelerometerAvailable {
             rawDataManager.startAccelerometerUpdates(to: .main) { [weak self] (data, error) in
                 if let accData = data {
@@ -191,7 +181,6 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
         }
         
-        // Start gyroscope updates
         if rawDataManager.isGyroAvailable {
             rawDataManager.startGyroUpdates(to: .main) { [weak self] (data, error) in
                 if let gyroData = data {
@@ -205,7 +194,6 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
         }
         
-        // Start magnetometer updates
         if rawDataManager.isMagnetometerAvailable {
             rawDataManager.startMagnetometerUpdates(to: .main) { [weak self] (data, error) in
                 if let magData = data {
@@ -229,7 +217,7 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         rawDataManager.stopGyroUpdates()
         rawDataManager.stopMagnetometerUpdates()
         endBackgroundTask()
-        removeDataCollectionNotification()  // Remove the notification
+        removeDataCollectionNotification()
         showDataCollectionStoppedNotification()
         
         if let serverURL = serverURL {
@@ -238,7 +226,6 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func resetData() {
-            // Reset any internal data states to prepare for a fresh start when the view is reopened
             AccelerometerData = []
             gyroscopeData = []
             magnetometerData = []
@@ -276,32 +263,26 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             return
         }
         
-        // Create a date formatter for local time string
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"  // Add milliseconds to date format
-        dateFormatter.timeZone = TimeZone.current  // Local timezone
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+        dateFormatter.timeZone = TimeZone.current
         
-        // Create ISO8601 formatter for precise timestamp
         let isoDateFormatter = ISO8601DateFormatter()
-        isoDateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]  // Include fractional seconds
-        
-        // CSV header with additional TimeStamp column
+        isoDateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         let csvHeader = "DataType,DateAndTime,TimeStamp,x,y,z\n"
         
-        // Process and format CSV data with both formatted and unformatted timestamps
         let csvData = (AccelerometerData + gyroscopeData + magnetometerData).map { dataEntry -> String in
             var components = dataEntry.split(separator: ",").map(String.init)
             if let timestamp = Double(components[1]) {
                 let date = Date(timeIntervalSince1970: timestamp)
-                components[1] = dateFormatter.string(from: date)  // Formatted date with milliseconds
-                components.insert(String(timestamp), at: 2)  // Insert unformatted timestamp
+                components[1] = dateFormatter.string(from: date)
+                components.insert(String(timestamp), at: 2)
             }
             return components.joined(separator: ",")
         }.joined(separator: "\n")
         
         let csvString = csvHeader + csvData
         
-        // Compute a hash of the data for duplicate check
         let dataHash = csvString.hashValue
         let fileURL = folderURL.appendingPathComponent("rawDataAll_\(dataHash)_\(recordingMode).csv")
         
@@ -329,7 +310,7 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
         let boundary = UUID().uuidString
         let fileName = fileURL.lastPathComponent
-        let mimeType = "text/csv"  // Assuming you're uploading CSV files
+        let mimeType = "text/csv"
 
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
@@ -405,8 +386,6 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    // CLLocationManagerDelegate method
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        // Handle location updates if needed
     }
 }

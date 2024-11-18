@@ -17,8 +17,8 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
 
     var onPhotoCaptured: ((UIImage) -> Void)?
     var onVideoRecorded: ((URL) -> Void)?
-    var useFrontCamera = false  // New property to toggle camera
-
+    var useFrontCamera = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -28,7 +28,7 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
     
     private func configureCaptureSession() {
         captureSession.sessionPreset = .photo
-        updateCameraPosition()  // Configure the selected camera
+        updateCameraPosition()
 
         photoOutput = AVCapturePhotoOutput()
         if captureSession.canAddOutput(photoOutput!) {
@@ -102,6 +102,6 @@ extension CameraBasedManager: AVCapturePhotoCaptureDelegate {
             return
         }
         
-        onPhotoCaptured?(image)  // Pass the photo to the view for preview
+        onPhotoCaptured?(image)  
     }
 }

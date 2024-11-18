@@ -15,9 +15,9 @@ struct AnimatedSwipeDownCloseView: View {
     var body: some View {
         Image(systemName: "chevron.compact.down")
             .font(.largeTitle)
-            .offset(y: bounce ? 10 : 0)  // Moves down by 10 points
+            .offset(y: bounce ? 10 : 0)
             .animation(
-                Animation.easeInOut(duration: 0.7).repeatForever(autoreverses: true), // Smooth back and forth
+                Animation.easeInOut(duration: 0.7).repeatForever(autoreverses: true),
                 value: bounce
             )
             .onAppear {
@@ -27,9 +27,9 @@ struct AnimatedSwipeDownCloseView: View {
                     .padding(.top)
                     .font(.footnote)
                     .multilineTextAlignment(.center)
-                    .opacity(showText ? 1 : 0) // Controls the visibility
+                    .opacity(showText ? 1 : 0)
                     .animation(
-                        Animation.easeInOut(duration: 2).repeatForever(autoreverses: true), // Fade in and out
+                        Animation.easeInOut(duration: 2).repeatForever(autoreverses: true),
                         value: showText
                     )
                     .onAppear {

@@ -32,10 +32,9 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
         super.init()
         setupLocationManager()
         requestNotificationPermissions()
-        setupAppLifecycleObservers() // Add lifecycle observers
+        setupAppLifecycleObservers()
     }
     
-    // App lifecycle event observers
     private func setupAppLifecycleObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
@@ -45,13 +44,13 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
     @objc private func appDidEnterBackground() {
         print("App entered background")
         if isCollectingData {
-            showDataCollectionNotification()  // Show notification when app enters background
+            showDataCollectionNotification()
         }
     }
     
     @objc private func appWillEnterForeground() {
         print("App will enter foreground")
-        removeDataCollectionNotification()  // Remove notification when app enters foreground
+        removeDataCollectionNotification()
     }
     
     @objc private func appDidBecomeActive() {
@@ -66,7 +65,6 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
         locationManager?.startMonitoringSignificantLocationChanges()
     }
 
-    // Request Notification permissions
     private func requestNotificationPermissions() {
         let center = UNUserNotificationCenter.current()
         
@@ -89,7 +87,6 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
         }
     }
     
-    // Show a notification on the lock screen when data collection starts
     func showDataCollectionNotification() {
         let state = UIApplication.shared.applicationState
         if state == .background || state == .inactive {
@@ -129,7 +126,6 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
         }
     }
 
-    // Remove the notification when data collection stops
     func removeDataCollectionNotification() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dataCollectionNotification"])
     }
@@ -146,20 +142,15 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
         recordingMode = realTime ? "RealTime" : "TimeInterval"
 
         startBackgroundTask()
-        showDataCollectionNotification() // Show the notification
-
-        // Collect raw magnetometer data
+        showDataCollectionNotification()
         if magnetometerManager.isMagnetometerAvailable {
-            magnetometerManager.magnetometerUpdateInterval = 1.0 / currentSamplingRate // Set sampling rate
-
-            // Start collecting raw magnetometer data
+            magnetometerManager.magnetometerUpdateInterval = 1.0 / currentSamplingRate
             magnetometerManager.startMagnetometerUpdates(to: .main) { [weak self] (data, error) in
                 if let validData = data {
                     let timestamp = Date().timeIntervalSince1970
                     let rawMagnetometerString = "Magnetometer,\(timestamp),\(validData.magneticField.x),\(validData.magneticField.y),\(validData.magneticField.z)"
                     self?.magnetometerData.append(rawMagnetometerString)
 
-                    // Append raw magnetometer data to the arrays
                     self?.magnetometerDataPointsX.append(validData.magneticField.x)
                     self?.magnetometerDataPointsY.append(validData.magneticField.y)
                     self?.magnetometerDataPointsZ.append(validData.magneticField.z)
@@ -179,7 +170,7 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
         
         magnetometerManager.stopMagnetometerUpdates()
         endBackgroundTask()
-        removeDataCollectionNotification()  // Remove the notification
+        removeDataCollectionNotification()
         showDataCollectionStoppedNotification()
         
         if let serverURL = serverURL {
@@ -188,7 +179,6 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
     }
     
     func resetData() {
-            // Reset any internal data states to prepare for a fresh start when the view is reopened
         magnetometerData = []
         magnetometerDataPointsX = []
         magnetometerDataPointsY = []
@@ -218,30 +208,25 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
             return
         }
 
-        // Create a date formatter for converting the timestamp to local time string
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"  // Desired date format
-        dateFormatter.timeZone = TimeZone.current  // Local timezone
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        dateFormatter.timeZone = TimeZone.current
 
-        // Create the CSV header
         let csvHeader = "DataType,TimeStamp,x,y,z\n"
 
-        // Replace the timestamp with formatted date strings
         let csvData = magnetometerData.map { dataEntry -> String in
             var components = dataEntry.split(separator: ",").map(String.init)
             if let timestamp = Double(components[1]) {
                 let date = Date(timeIntervalSince1970: timestamp)
-                components[1] = dateFormatter.string(from: date)  // Replace timestamp with formatted date
+                components[1] = dateFormatter.string(from: date)
             }
             return components.joined(separator: ",")
         }.joined(separator: "\n")
 
         let csvString = csvHeader + csvData
 
-        // Compute a hash of the current data to see if it's already been saved
         let dataHash = csvString.hashValue
 
-        // Check if the file with the same data (hash) already exists
         let fileURL = folderURL.appendingPathComponent("MagnetometerData_\(dataHash)_\(recordingMode).csv")
 
         if FileManager.default.fileExists(atPath: fileURL.path) {
@@ -268,7 +253,7 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
 
         let boundary = UUID().uuidString
         let fileName = fileURL.lastPathComponent
-        let mimeType = "text/csv"  // Assuming you're uploading CSV files
+        let mimeType = "text/csv"
 
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
@@ -344,8 +329,6 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
         }
     }
     
-    // CLLocationManagerDelegate method
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        // Handle location updates if needed
     }
 }
