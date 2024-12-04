@@ -703,67 +703,73 @@ struct ChartWithTimeFramePicker: View {
             let monthDifference = calendar.dateComponents([.month], from: startDate, to: endDate).month ?? 0
             return max((monthDifference / 6) + 1, 1)
         case .yearly:
-            let yearDifference = calendar.dateComponents([.year], from: startDate, to: endDate).year ?? 0
-            return max(yearDifference, 1)
+                let startYear = calendar.component(.year, from: startDate)
+                let endYear = calendar.component(.year, from: endDate)
+                return max(endYear - startYear + 1, 1)
         }
     }
     
-private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFrame: TimeFrame, page: Int, startDate: Date, endDate: Date) -> [ChartDataactivity] {
-        let calendar = Calendar.current
-        var filteredData: [ChartDataactivity] = []
-        
-        switch timeFrame {
-        case .daily:
-            let pageDate = calendar.date(byAdding: .day, value: page, to: startDate) ?? startDate
-            if pageDate <= endDate {
-                let hourlyData = aggregateDataByHour(for: pageDate, data: data, endDate: endDate)
-                filteredData = hourlyData
-            }
+    private func filterAndAggregateDataForPage(_ data: [ChartDataactivity], timeFrame: TimeFrame, page: Int, startDate: Date, endDate: Date) -> [ChartDataactivity] {
+            let calendar = Calendar.current
+            var filteredData: [ChartDataactivity] = []
             
-        case .weekly:
-            let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: calendar.date(byAdding: .weekOfYear, value: page, to: startDate)!)
-            let mondayOfWeek = calendar.date(from: components) ?? startDate
-            
-            let dailyData = (0..<8).map { offset -> ChartDataactivity in
-                let date = calendar.date(byAdding: .day, value: offset, to: mondayOfWeek)!
-                if offset == 7 {
-                return ChartDataactivity(date: date, value: 0)
-                            }
-                return aggregateDataByDay(for: date, data: data)
-            }
-            filteredData = dailyData
-            
-        case .monthly:
-            let pageDate = calendar.date(byAdding: .month, value: page, to: startDate) ?? startDate
-            
-            let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: pageDate))!
-            
-            let range = calendar.range(of: .day, in: .month, for: startOfMonth)!
-            let numberOfDaysInMonth = range.count
-            
-            let dailyData = (0..<numberOfDaysInMonth).map { offset -> ChartDataactivity in
-                let date = calendar.date(byAdding: .day, value: offset, to: startOfMonth)!
-                return aggregateDataByDay(for: date, data: data)
-            }
-            filteredData = dailyData
-            
-        case .sixMonths:
-            let startOfSixMonths = calendar.date(byAdding: .month, value: (page * 6), to: startDate) ?? startDate
-            
-            let sixMonthsData = aggregateDataByWeek(for: startOfSixMonths, data: data, weeks: 26)
-            filteredData = sixMonthsData
+            switch timeFrame {
+            case .daily:
+                let pageDate = calendar.date(byAdding: .day, value: page, to: startDate) ?? startDate
+                if pageDate <= endDate {
+                    let hourlyData = aggregateDataByHour(for: pageDate, data: data, endDate: endDate)
+                    filteredData = hourlyData
+                }
+                
+            case .weekly:
+                let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: calendar.date(byAdding: .weekOfYear, value: page, to: startDate)!)
+                let mondayOfWeek = calendar.date(from: components) ?? startDate
+                
+                let dailyData = (0..<8).map { offset -> ChartDataactivity in
+                    let date = calendar.date(byAdding: .day, value: offset, to: mondayOfWeek)!
+                    if offset == 7 {
+                    return ChartDataactivity(date: date, value: 0)
+                                }
+                    return aggregateDataByDay(for: date, data: data)
+                }
+                filteredData = dailyData
+                
+            case .monthly:
+                let pageDate = calendar.date(byAdding: .month, value: page, to: startDate) ?? startDate
+                
+                let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: pageDate))!
+                
+                let range = calendar.range(of: .day, in: .month, for: startOfMonth)!
+                let numberOfDaysInMonth = range.count
+                
+                let dailyData = (0..<numberOfDaysInMonth).map { offset -> ChartDataactivity in
+                    let date = calendar.date(byAdding: .day, value: offset, to: startOfMonth)!
+                    return aggregateDataByDay(for: date, data: data)
+                }
+                filteredData = dailyData
+                
+            case .sixMonths:
+                let startOfSixMonths = calendar.date(byAdding: .month, value: (page * 6), to: startDate) ?? startDate
+                
+                let sixMonthsData = aggregateDataByWeek(for: startOfSixMonths, data: data, weeks: 26)
+                filteredData = sixMonthsData
 
-        case .yearly:
-            let selectedYear = calendar.component(.year, from: startDate) - page
-            let startOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 1))!
-            
-            let yearlyData = aggregateDataByMonth(for: startOfYear, data: data, months: 12)
-            filteredData = yearlyData
-
+            case .yearly:
+                let startYear = calendar.component(.year, from: startDate)
+                let endYear = calendar.component(.year, from: endDate)
+                
+                if page < (endYear - startYear + 1) {
+                    let currentYear = startYear + page
+                    if let startOfYear = calendar.date(from: DateComponents(year: currentYear, month: 1, day: 1)),
+                       let endOfYear = calendar.date(from: DateComponents(year: currentYear, month: 12, day: 31)) {
+                        let yearlyData = aggregateDataByMonth(for: startOfYear, data: data, months: 12)
+                        filteredData = yearlyData.filter { $0.date >= startOfYear && $0.date <= endOfYear }
+                    }
+                }
+            }
+                
+            return filteredData
         }
-            
-        return filteredData
-    }
 
     private func aggregateDataByHour(for date: Date, data: [ChartDataactivity], endDate: Date) -> [ChartDataactivity] {
         let calendar = Calendar.current

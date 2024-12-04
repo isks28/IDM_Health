@@ -552,8 +552,9 @@ struct VitalChartWithTimeFramePicker: View {
             let monthDifference = calendar.dateComponents([.month], from: startDate, to: endDate).month ?? 0
             return max((monthDifference / 6) + 1, 1)
         case .yearly:
-            let yearDifference = calendar.dateComponents([.year], from: startDate, to: endDate).year ?? 0
-            return max(yearDifference, 1)
+            let startYear = calendar.component(.year, from: startDate)
+            let endYear = calendar.component(.year, from: endDate)
+            return max(endYear - startYear + 1, 1)
         }
     }
 
@@ -670,10 +671,16 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataVital], timeFrame: 
             }
             
         case .yearly:
-            let startOfYear = calendar.date(byAdding: .year, value: page, to: startDate) ?? startDate
-            if startOfYear <= endDate {
-                let yearlyData = aggregateDataByMonth(for: startOfYear, data: data, months: 12, endDate: endDate)
-                filteredData = yearlyData
+            let startYear = calendar.component(.year, from: startDate)
+            let endYear = calendar.component(.year, from: endDate)
+            
+            if page < (endYear - startYear + 1) {
+                let currentYear = startYear + page
+                if let startOfYear = calendar.date(from: DateComponents(year: currentYear, month: 1, day: 1)),
+                   let endOfYear = calendar.date(from: DateComponents(year: currentYear, month: 12, day: 31)) {
+                    let yearlyData = aggregateDataByMonth(for: startOfYear, data: data, months: 12, endDate: endDate)
+                    filteredData = yearlyData.filter { $0.date >= startOfYear && $0.date <= endOfYear }
+                }
             }
         }
         
