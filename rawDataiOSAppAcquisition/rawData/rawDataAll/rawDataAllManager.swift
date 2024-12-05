@@ -374,6 +374,7 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
         } else {
             startrawDataCollection(realTime: false, serverURL: serverURL)
+            showDataCollectionNotification()
         }
         
         let endInterval = endDate.timeIntervalSince(now)

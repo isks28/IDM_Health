@@ -318,6 +318,7 @@ class GyroscopeManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
         } else {
             startGyroscopeDataCollection(realTime: false, serverURL: serverURL)
+            showDataCollectionNotification()
         }
         
         let endInterval = endDate.timeIntervalSince(now)

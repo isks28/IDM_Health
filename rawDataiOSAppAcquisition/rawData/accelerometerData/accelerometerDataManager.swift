@@ -43,7 +43,7 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
 
     @objc private func appDidEnterBackground() {
         print("App entered background")
-        if isCollectingData {
+        if accelerometerManager.isAccelerometerActive{
             showDataCollectionNotification()
         }
     }
@@ -86,15 +86,27 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         }
     }
 
-    func showDataCollectionNotification() {
+    func showDataCollectionNotification(startTime: Date? = nil, endTime: Date? = nil) {
         let state = UIApplication.shared.applicationState
         if state == .background || state == .inactive {
-            print("App is in background, showing notification")
+            print("App is in background and running, showing notification")
         }
 
         let content = UNMutableNotificationContent()
         content.title = "Accelerometer Running"
-        content.body = "Collecting data..."
+        
+        if recordingMode == "RealTime" {
+                content.body = "Collecting realtime data..."
+            } else if recordingMode == "TimeInterval", let start = startTime, let end = endTime {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                let startFormatted = formatter.string(from: start)
+                let endFormatted = formatter.string(from: end)
+                content.body = "Collecting timeinterval data from \(startFormatted) to \(endFormatted)."
+            } else {
+                content.body = "Collecting data..."
+            }
+        
         content.sound = .default
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
@@ -315,6 +327,7 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
                 }
             } else {
                 startAccelerometerDataCollection(realTime: false, serverURL: serverURL)
+                showDataCollectionNotification()
             }
 
             let endInterval = endDate.timeIntervalSince(now)

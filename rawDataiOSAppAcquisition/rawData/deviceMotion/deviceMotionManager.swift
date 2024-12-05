@@ -298,9 +298,9 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
         let csvString = csvHeader + csvData
 
-        let dataHash = csvString.hashValue
+        let uniqueFilename = UUID().uuidString
 
-        let fileURL = folderURL.appendingPathComponent("DeviceMotion_\(dataHash)_\(recordingMode).csv")
+        let fileURL = folderURL.appendingPathComponent("DeviceMotion_\(uniqueFilename)_\(recordingMode).csv")
 
         if FileManager.default.fileExists(atPath: fileURL.path) {
             print("File with the same data already exists: \(fileURL.path)")
@@ -391,6 +391,7 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
         } else {
             startRawDataAllCollection(realTime: false, serverURL: serverURL)
+            showDataCollectionNotification()
         }
         
         let endInterval = endDate.timeIntervalSince(now)

@@ -318,6 +318,7 @@ class MagnetometerManager: NSObject, ObservableObject, CLLocationManagerDelegate
             }
         } else {
             startMagnetometerDataCollection(realTime: false, serverURL: serverURL)
+            showDataCollectionNotification()
         }
         
         let endInterval = endDate.timeIntervalSince(now)
