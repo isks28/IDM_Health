@@ -93,8 +93,8 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
         }
 
         let content = UNMutableNotificationContent()
-        content.title = "Data Collection Running"
-        content.body = "Accelerometer data collection is active."
+        content.title = "Accelerometer Running"
+        content.body = "Collecting data..."
         content.sound = .default
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
@@ -109,8 +109,8 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
     
     func showDataCollectionStoppedNotification() {
         let content = UNMutableNotificationContent()
-        content.title = "Data Collection Stopped"
-        content.body = "Accelerometer data collection has stopped and the data has been saved."
+        content.title = "Accelerometer Stopped"
+        content.body = "Data has been saved"
         content.sound = .default
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)

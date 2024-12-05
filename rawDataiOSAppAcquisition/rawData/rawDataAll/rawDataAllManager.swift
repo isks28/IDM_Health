@@ -108,8 +108,8 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         
         let content = UNMutableNotificationContent()
-        content.title = "Data Collection Running"
-        content.body = "Sensor data collection is active."
+        content.title = "Raw Data All Running"
+        content.body = "Collecting data..."
         content.sound = .default
         
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
@@ -124,8 +124,8 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func showDataCollectionStoppedNotification() {
         let content = UNMutableNotificationContent()
-        content.title = "Data Collection Stopped"
-        content.body = "Sensor data collection has stopped and the data has been saved."
+        content.title = "Raw Data All Stopped"
+        content.body = "Data has been saved"
         content.sound = .default
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)

@@ -94,7 +94,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         guard isCollectingData else { return }
         
         let content = UNMutableNotificationContent()
-        content.title = "Six Minute Walk Test"
+        content.title = "Six Minute Walk Test Running"
         content.body = "Elapsed Time: \(formattedTime(from: elapsedTime))"
         
         if isFinalUpdate {
@@ -106,6 +106,22 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Error showing notification: \(error)")
+            }
+        }
+    }
+    
+    func showDataCollectionStoppedNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Six Minute Walk Test Stopped"
+        content.body = "Data has been saved"
+        content.sound = .default
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let request = UNNotificationRequest(identifier: "dataCollectionStoppedNotification", content: content, trigger: trigger)
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Error showing stop notification: \(error)")
             }
         }
     }
@@ -213,6 +229,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
 
         playEndAlert()
         removeDataCollectionNotification()
+        showDataCollectionStoppedNotification()
         
         if saveData, let serverURL = serverURL {
             saveDataToCSV(serverURL: serverURL, baseFolder: self.baseFolder, recordingMode: self.recordingMode)

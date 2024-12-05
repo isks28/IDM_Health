@@ -109,8 +109,8 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         
         let content = UNMutableNotificationContent()
-        content.title = "Data Collection Running"
-        content.body = "Step count data collection is active."
+        content.title = "Step Count Running"
+        content.body = "Collecting data..."
         content.sound = .default
         
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
@@ -125,6 +125,22 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     func removeDataCollectionNotification() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dataCollectionNotification"])
+    }
+    
+    func showDataCollectionStoppedNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Step Count Stopped"
+        content.body = "Data has been saved"
+        content.sound = .default
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let request = UNNotificationRequest(identifier: "dataCollectionStoppedNotification", content: content, trigger: trigger)
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Error showing stop notification: \(error)")
+            }
+        }
     }
 
     func startStepCountCollection(realTime: Bool, serverURL: URL) {
@@ -188,6 +204,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager?.stopUpdatingLocation()
         endBackgroundTask()
         removeDataCollectionNotification()
+        showDataCollectionStoppedNotification()
         
         if let serverURL = serverURL {
             saveDataToCSV(serverURL: serverURL, baseFolder: self.baseFolder, recordingMode: self.recordingMode)
