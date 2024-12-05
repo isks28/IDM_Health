@@ -276,15 +276,14 @@ class RawDataManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             if let timestamp = Double(components[1]) {
                 let date = Date(timeIntervalSince1970: timestamp)
                 components[1] = dateFormatter.string(from: date)
-                components.insert(String(timestamp), at: 2)
             }
             return components.joined(separator: ",")
         }.joined(separator: "\n")
         
         let csvString = csvHeader + csvData
         
-        let dataHash = csvString.hashValue
-        let fileURL = folderURL.appendingPathComponent("rawDataAll_\(dataHash)_\(recordingMode).csv")
+        let uniqueFilename = UUID().uuidString
+        let fileURL = folderURL.appendingPathComponent("rawDataAll_\(uniqueFilename)_\(recordingMode).csv")
         
         if FileManager.default.fileExists(atPath: fileURL.path) {
             print("File with the same data already exists: \(fileURL.path)")
