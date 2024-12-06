@@ -101,12 +101,6 @@ struct gyroscopeDataView: View {
                 }
             }
             
-            if showingAuthenticationError && !isRecording && !isRecordingInterval && !isRecordingRealTime {
-                Text("Authentication Failed. Unable to control sampling rate.")
-                    .foregroundColor(.red)
-                    .font(.caption2)
-            }
-            
             HStack(alignment: .bottom) {
                 Toggle("Real-Time", isOn: $isRecordingRealTime)
                     .onChange(of: isRecordingRealTime) { _, newValue in
