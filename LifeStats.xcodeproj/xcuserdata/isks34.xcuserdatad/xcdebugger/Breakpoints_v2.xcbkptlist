@@ -14,9 +14,25 @@
             filePath = "rawDataiOSAppAcquisition/rawData/gyroscopeData/gyroscopeDataManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "293"
-            endingLineNumber = "293"
+            startingLineNumber = "318"
+            endingLineNumber = "318"
             landmarkName = "startBackgroundTask()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "34E1A4CC-FB6B-46F0-A818-2695227D906F"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "rawDataiOSAppAcquisition/rawData/gyroscopeData/gyroscopeDataManager.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "88"
+            endingLineNumber = "88"
+            landmarkName = "requestNotificationPermissions()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

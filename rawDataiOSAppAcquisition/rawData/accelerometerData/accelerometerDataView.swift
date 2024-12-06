@@ -171,7 +171,7 @@ struct accelerometerDataView: View {
                                         motionManager.removeDataCollectionNotification()
                                     }
                                 }
-                                motionManager.showDataCollectionNotification()
+                                motionManager.showDataCollectionNotification(startTime: startDate, endTime: endDate)
                             } else {
                                 motionManager.stopAccelerometerDataCollection()
                                 motionManager.removeDataCollectionNotification()
@@ -181,7 +181,7 @@ struct accelerometerDataView: View {
                         if motionManager.savedFilePath != nil {
                             Text("File saved")
                                 .font(.footnote)
-                                .foregroundStyle(Color.primary)
+                                .foregroundStyle(Color.blue)
                                 .padding()
                         }
                     }

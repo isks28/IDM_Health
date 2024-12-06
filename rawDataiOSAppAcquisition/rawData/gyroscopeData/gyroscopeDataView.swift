@@ -41,7 +41,7 @@ struct gyroscopeDataView: View {
             VStack {
                 if motionManager.gyroscopeData.last != nil {
                     Text("X-Axis")
-                        .font(.title3)
+                        .font(.subheadline)
                         .foregroundStyle(Color.gray)
                 }
                 GyroscopeGraphView(dataPoints: motionManager.gyroscopeDataPointsX, lineColor: .red.opacity(0.5))
@@ -49,7 +49,7 @@ struct gyroscopeDataView: View {
                 
                 if motionManager.gyroscopeData.last != nil {
                     Text("Y-Axis")
-                        .font(.title3)
+                        .font(.subheadline)
                         .foregroundStyle(Color.gray)
                 }
                 GyroscopeGraphView(dataPoints: motionManager.gyroscopeDataPointsY, lineColor: .green.opacity(0.5))
@@ -57,7 +57,7 @@ struct gyroscopeDataView: View {
                 
                 if motionManager.gyroscopeData.last != nil {
                     Text("Z-Axis")
-                        .font(.title3)
+                        .font(.subheadline)
                         .foregroundStyle(Color.gray)
                 }
                 GyroscopeGraphView(dataPoints: motionManager.gyroscopeDataPointsZ, lineColor: .blue.opacity(0.5))
@@ -170,7 +170,7 @@ struct gyroscopeDataView: View {
                                         motionManager.removeDataCollectionNotification()
                                     }
                                 }
-                                motionManager.showDataCollectionNotification()
+                                motionManager.showDataCollectionNotification(startTime: startDate, endTime: endDate)
                             } else {
                                 motionManager.stopGyroscopeDataCollection()
                                 motionManager.removeDataCollectionNotification()
@@ -180,7 +180,8 @@ struct gyroscopeDataView: View {
                         if motionManager.savedFilePath != nil {
                             Text("File saved")
                                 .font(.footnote)
-                                .foregroundStyle(Color.primary)
+                                .foregroundStyle(Color.blue)
+                                .padding()
                         }
                     }
                 }

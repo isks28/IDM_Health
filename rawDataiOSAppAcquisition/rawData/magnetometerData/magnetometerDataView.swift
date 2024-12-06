@@ -40,24 +40,24 @@ struct magnetometerDataView: View {
             VStack {
                 if motionManager.magnetometerData.last != nil {
                     Text("X-Axis")
-                        .font(.title3)
-                        .foregroundStyle(Color.gray)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.secondary)
                 }
                 MagnetometerGraphView(dataPoints: motionManager.magnetometerDataPointsX, lineColor: .red.opacity(0.5))
                     .frame(height: 100)
                 
                 if motionManager.magnetometerData.last != nil {
                     Text("Y-Axis")
-                        .font(.title3)
-                        .foregroundStyle(Color.gray)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.secondary)
                 }
                 MagnetometerGraphView(dataPoints: motionManager.magnetometerDataPointsY, lineColor: .green.opacity(0.5))
                     .frame(height: 100)
                 
                 if motionManager.magnetometerData.last != nil {
                     Text("Z-Axis")
-                        .font(.title3)
-                        .foregroundStyle(Color.gray)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.secondary)
                 }
                 MagnetometerGraphView(dataPoints: motionManager.magnetometerDataPointsZ, lineColor: .blue.opacity(0.5))
                     .frame(height: 100)
@@ -133,7 +133,7 @@ struct magnetometerDataView: View {
                         }
                     }
             }
-            .padding()
+            .padding(.horizontal)
             
             VStack {
                 if isRecordingInterval && !isRecording {
@@ -165,7 +165,7 @@ struct magnetometerDataView: View {
                                         motionManager.removeDataCollectionNotification()
                                     }
                                 }
-                                motionManager.showDataCollectionNotification()
+                                motionManager.showDataCollectionNotification(startTime: startDate, endTime: endDate)
                             } else {
                                 motionManager.stopMagnetometerDataCollection()
                                 motionManager.removeDataCollectionNotification()

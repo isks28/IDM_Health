@@ -212,7 +212,7 @@ var body: some View {
                                         motionManager.removeDataCollectionNotification()
                                     }
                                 }
-                                motionManager.showDataCollectionNotification()
+                                motionManager.showDataCollectionNotification(startTime: startDate, endTime: endDate)
                             } else {
                                 motionManager.stoprawDataCollection()
                                 motionManager.removeDataCollectionNotification()

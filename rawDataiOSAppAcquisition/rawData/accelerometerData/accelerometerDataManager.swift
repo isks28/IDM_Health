@@ -27,6 +27,9 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
     private var recordingMode: String = "RealTime"
     private var currentSamplingRate: Double = 60.0
     private var serverURL: URL?
+    
+    private var currentStartTime: Date?
+    private var currentEndTime: Date?
 
     override init() {
         super.init()
@@ -44,7 +47,7 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
     @objc private func appDidEnterBackground() {
         print("App entered background")
         if accelerometerManager.isAccelerometerActive{
-            showDataCollectionNotification()
+            showDataCollectionNotification(startTime: currentStartTime, endTime: currentEndTime)
         }
     }
 
@@ -87,22 +90,34 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
     }
 
     func showDataCollectionNotification(startTime: Date? = nil, endTime: Date? = nil) {
+        _ = startTime ?? currentStartTime
+        _ = endTime ?? currentEndTime
+        
         let state = UIApplication.shared.applicationState
         if state == .background || state == .inactive {
-            print("App is in background and running, showing notification")
+            print("App is running in the background, showing notification")
+        } else {
+            print("App is in foreground")
         }
 
         let content = UNMutableNotificationContent()
         content.title = "Accelerometer Running"
         
+        print("recordingMode: \(recordingMode)")
+            if let start = startTime, let end = endTime {
+                print("Start time: \(start), End time: \(end)")
+            } else {
+                print("Start time or End time is nil")
+            }
+        
         if recordingMode == "RealTime" {
-                content.body = "Collecting realtime data..."
+                content.body = "Collecting RealTime data..."
             } else if recordingMode == "TimeInterval", let start = startTime, let end = endTime {
                 let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                formatter.dateFormat = "d. MMM, HH:mm"
                 let startFormatted = formatter.string(from: start)
                 let endFormatted = formatter.string(from: end)
-                content.body = "Collecting timeinterval data from \(startFormatted) to \(endFormatted)."
+                content.body = "Collecting TimeInterval data... FROM: \(startFormatted) - UNTIL: \(endFormatted)"
             } else {
                 content.body = "Collecting data..."
             }
@@ -317,17 +332,20 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
     func scheduleDataCollection(startDate: Date, endDate: Date, serverURL: URL, baseFolder: String, completion: @escaping () -> Void) {
             let now = Date()
             stopTime = endDate
-
             recordingMode = "TimeInterval"
+        
+            currentStartTime = startDate
+            currentEndTime = endDate
 
             if startDate > now {
                 let startInterval = startDate.timeIntervalSince(now)
                 Timer.scheduledTimer(withTimeInterval: startInterval, repeats: false) { [weak self] _ in
                     self?.startAccelerometerDataCollection(realTime: false, serverURL: serverURL)
+                    self?.showDataCollectionNotification(startTime: startDate, endTime: endDate)
                 }
             } else {
                 startAccelerometerDataCollection(realTime: false, serverURL: serverURL)
-                showDataCollectionNotification()
+                showDataCollectionNotification(startTime: startDate, endTime: endDate)
             }
 
             let endInterval = endDate.timeIntervalSince(now)

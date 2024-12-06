@@ -50,6 +50,9 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private var currentSamplingRate: Double = 60.0
     private var serverURL: URL?
     
+    private var currentStartTime: Date?
+    private var currentEndTime: Date?
+    
     override init() {
         super.init()
         setupLocationManager()
@@ -66,7 +69,7 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @objc private func appDidEnterBackground() {
         print("App entered background")
         if isCollectingData {
-            showDataCollectionNotification()
+            showDataCollectionNotification(startTime: currentStartTime, endTime: currentEndTime)
         }
     }
     
@@ -109,19 +112,41 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    func showDataCollectionNotification() {
+    func showDataCollectionNotification(startTime: Date? = nil, endTime: Date? = nil) {
+        _ = startTime ?? currentStartTime
+        _ = endTime ?? currentEndTime
+        
         let state = UIApplication.shared.applicationState
         if state == .background || state == .inactive {
-            print("App is in background, showing notification")
+            print("App is running in the background, showing notification")
         } else {
             print("App is in foreground")
         }
-        
+
         let content = UNMutableNotificationContent()
-        content.title = "Device Motion Running"
-        content.body = "Collecting data..."
-        content.sound = .default
+        content.title = "Accelerometer Running"
         
+        print("recordingMode: \(recordingMode)")
+            if let start = startTime, let end = endTime {
+                print("Start time: \(start), End time: \(end)")
+            } else {
+                print("Start time or End time is nil")
+            }
+        
+        if recordingMode == "RealTime" {
+                content.body = "Collecting RealTime data..."
+            } else if recordingMode == "TimeInterval", let start = startTime, let end = endTime {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "d. MMM, HH:mm"
+                let startFormatted = formatter.string(from: start)
+                let endFormatted = formatter.string(from: end)
+                content.body = "Collecting TimeInterval data... FROM: \(startFormatted) - UNTIL: \(endFormatted)"
+            } else {
+                content.body = "Collecting data..."
+            }
+        
+        content.sound = .default
+
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
         let request = UNNotificationRequest(identifier: "dataCollectionNotification", content: content, trigger: trigger)
 
@@ -381,17 +406,20 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func scheduleDataCollection(startDate: Date, endDate: Date, serverURL: URL, baseFolder: String, completion: @escaping () -> Void) {
         let now = Date()
         stopTime = endDate
-        
         recordingMode = "TimeInterval"
+        
+        currentStartTime = startDate
+        currentEndTime = endDate
         
         if startDate > now {
             let startInterval = startDate.timeIntervalSince(now)
             Timer.scheduledTimer(withTimeInterval: startInterval, repeats: false) { [weak self] _ in
                 self?.startRawDataAllCollection(realTime: false, serverURL: serverURL)
+                self?.showDataCollectionNotification(startTime: startDate, endTime: endDate)
             }
         } else {
             startRawDataAllCollection(realTime: false, serverURL: serverURL)
-            showDataCollectionNotification()
+            showDataCollectionNotification(startTime: startDate, endTime: endDate)
         }
         
         let endInterval = endDate.timeIntervalSince(now)
