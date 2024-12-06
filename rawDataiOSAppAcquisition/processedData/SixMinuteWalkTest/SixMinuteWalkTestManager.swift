@@ -113,22 +113,6 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
             }
         }
     }
-    
-    func showDataCollectionStoppedNotification() {
-        let content = UNMutableNotificationContent()
-        content.title = "Six Minute Walk Test Stopped"
-        content.body = "Data has been saved"
-        content.sound = .default
-
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-        let request = UNNotificationRequest(identifier: "dataCollectionStoppedNotification", content: content, trigger: trigger)
-
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("Error showing stop notification: \(error)")
-            }
-        }
-    }
         
     private func formattedTime(from seconds: Int) -> String {
         let minutes = seconds / 60
@@ -233,7 +217,6 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
 
         playEndAlert()
         removeDataCollectionNotification()
-        showDataCollectionStoppedNotification()
         
         if saveData, let serverURL = serverURL {
             saveDataToCSV(serverURL: serverURL, baseFolder: self.baseFolder, recordingMode: self.recordingMode)
@@ -351,8 +334,8 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
         
         let content = UNMutableNotificationContent()
-        content.title = "6-Minute Walk Test Completed"
-        content.body = "The test has ended. You may check your results."
+        content.title = "Six-Minute-Walk Test Completed"
+        content.body = "The test has ended. Data has been saved."
         content.sound = .default
         
         let request = UNNotificationRequest(identifier: "endTestNotification", content: content, trigger: nil)
