@@ -52,12 +52,16 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     @objc private func appDidEnterBackground() {
         print("App entered background")
-        if isCollectingData {
-            backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "KeepDataCollectionActive") {
-                UIApplication.shared.endBackgroundTask(self.backgroundTask)
-                self.backgroundTask = .invalid
-            }
+
+        guard isCollectingData else {
+            return
         }
+
+        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "KeepDataCollectionActive") {
+            UIApplication.shared.endBackgroundTask(self.backgroundTask)
+            self.backgroundTask = .invalid
+        }
+
         showDataCollectionNotification(startTime: currentStartTime, endTime: currentEndTime)
     }
     
@@ -108,9 +112,14 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func showDataCollectionNotification(startTime: Date? = nil, endTime: Date? = nil) {
-        _ = startTime ?? currentStartTime
-        _ = endTime ?? currentEndTime
-        
+        guard isCollectingData else {
+            print("Data collection is not active. No notification will be shown.")
+            return
+        }
+
+        let start = startTime ?? currentStartTime
+        let end = endTime ?? currentEndTime
+
         let state = UIApplication.shared.applicationState
         if state == .background || state == .inactive {
             print("App is running in the background, showing notification")
@@ -120,26 +129,20 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
         let content = UNMutableNotificationContent()
         content.title = "Step Counts Running"
-        
-        print("recordingMode: \(recordingMode)")
-            if let start = startTime, let end = endTime {
-                print("Start time: \(start), End time: \(end)")
-            } else {
-                print("Start time or End time is nil")
-            }
-        
-        if recordingMode == "RealTime" {
-                content.body = "Collecting RealTime data..."
-            } else if recordingMode == "TimeInterval", let start = startTime, let end = endTime {
-                let formatter = DateFormatter()
-                formatter.dateFormat = "d. MMM, HH:mm"
-                let startFormatted = formatter.string(from: start)
-                let endFormatted = formatter.string(from: end)
-                content.body = "Collecting TimeInterval data... (\(startFormatted) - \(endFormatted))"
-            } else {
-                content.body = "Collecting data..."
-            }
-        
+
+        if let start = start, let end = end {
+            print("Start time: \(start), End time: \(end)")
+            let formatter = DateFormatter()
+            formatter.dateFormat = "d. MMM, HH:mm"
+            let startFormatted = formatter.string(from: start)
+            let endFormatted = formatter.string(from: end)
+            content.body = "Collecting TimeInterval data... (\(startFormatted) - \(endFormatted))"
+        } else if recordingMode == "RealTime" {
+            content.body = "Collecting RealTime data..."
+        } else {
+            content.body = "Collecting data..."
+        }
+
         content.sound = .default
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
