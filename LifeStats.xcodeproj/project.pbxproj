@@ -315,8 +315,8 @@
 			isa = PBXGroup;
 			children = (
 				86419FEB2CB988BF0071151C /* walkingDataView.swift */,
-				863757E42CD38D90002F4BEA /* SixMinuteWalkTest */,
 				86419FE42CB97E090071151C /* stepCountsAll */,
+				863757E42CD38D90002F4BEA /* SixMinuteWalkTest */,
 			);
 			path = processedData;
 			sourceTree = "<group>";

@@ -385,24 +385,24 @@ struct RawDataAllGraphView: View {
             
             GeometryReader { geometry in
                 Path { path in
-                    guard dataPoints.count > 1 else { return }
+                    let displayedData = dataPoints.suffix(1000)
+                    guard displayedData.count > 1 else { return }
                     
                     let width = geometry.size.width
                     let height = geometry.size.height
                     
-                    let maxValue = dataPoints.max() ?? 0
-                    let minValue = dataPoints.min() ?? 0
-                    _ = maxValue - minValue
+                    let maxValue = displayedData.max() ?? 0
+                    let minValue = displayedData.min() ?? 0
                     
-                    let adjustedMax = max(maxValue, 0.1) 
-                    let scaleX = width / CGFloat(dataPoints.count - 1)
+                    let adjustedMax = max(maxValue, 0.1)
+                    let scaleX = width / CGFloat(displayedData.count - 1)
                     let scaleY = height / CGFloat(adjustedMax - minValue)
                     
-                    path.move(to: CGPoint(x: 0, y: height - CGFloat(dataPoints[0] - minValue) * scaleY))
+                    path.move(to: CGPoint(x: 0, y: height - CGFloat(displayedData.first! - minValue) * scaleY))
                     
-                    for index in 1..<dataPoints.count {
+                    for (index, dataPoint) in displayedData.enumerated() {
                         let x = CGFloat(index) * scaleX
-                        let y = height - CGFloat(dataPoints[index] - minValue) * scaleY
+                        let y = height - CGFloat(dataPoint - minValue) * scaleY
                         path.addLine(to: CGPoint(x: x, y: y))
                     }
                 }

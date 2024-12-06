@@ -331,20 +331,21 @@ struct AccelerometerGraphView: View {
     var body: some View {
         GeometryReader { geometry in
             Path { path in
-                guard dataPoints.count > 1 else { return }
+                let displayedData = dataPoints.suffix(1000)
+                guard displayedData.count > 1 else { return }
                 
                 let width = geometry.size.width
                 let height = geometry.size.height
-                let maxValue = dataPoints.max() ?? 1
-                let minValue = dataPoints.min() ?? 0
-                let scaleX = width / CGFloat(dataPoints.count - 1)
+                let maxValue = displayedData.max() ?? 1
+                let minValue = displayedData.min() ?? 0
+                let scaleX = width / CGFloat(displayedData.count - 1)
                 let scaleY = height / CGFloat(maxValue - minValue)
 
-                path.move(to: CGPoint(x: 0, y: height - CGFloat(dataPoints[0] - minValue) * scaleY))
+                path.move(to: CGPoint(x: 0, y: height - CGFloat(displayedData.first! - minValue) * scaleY))
                 
-                for index in 1..<dataPoints.count {
+                for (index, dataPoint) in displayedData.enumerated() {
                     let x = CGFloat(index) * scaleX
-                    let y = height - CGFloat(dataPoints[index] - minValue) * scaleY
+                    let y = height - CGFloat(dataPoint - minValue) * scaleY
                     path.addLine(to: CGPoint(x: x, y: y))
                 }
             }
