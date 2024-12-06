@@ -38,7 +38,7 @@
 		863757E82CD38DBA002F4BEA /* SixMinuteWalkTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863757E72CD38DBA002F4BEA /* SixMinuteWalkTestView.swift */; };
 		86419FE62CB97E2B0071151C /* StepCountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE52CB97E2B0071151C /* StepCountManager.swift */; };
 		86419FE82CB97E800071151C /* StepCountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE72CB97E800071151C /* StepCountView.swift */; };
-		86419FEC2CB988BF0071151C /* processedDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FEB2CB988BF0071151C /* processedDataView.swift */; };
+		86419FEC2CB988BF0071151C /* walkingDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FEB2CB988BF0071151C /* walkingDataView.swift */; };
 		86419FEE2CBA8CE20071151C /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FED2CBA8CE20071151C /* PreviewView.swift */; };
 		866B7C4C2CD0F6C8000FC227 /* rawDataAllManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */; };
 		866B7C4E2CD0F6EA000FC227 /* rawDataAllView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866B7C4D2CD0F6EA000FC227 /* rawDataAllView.swift */; };
@@ -99,7 +99,7 @@
 		863757E72CD38DBA002F4BEA /* SixMinuteWalkTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixMinuteWalkTestView.swift; sourceTree = "<group>"; };
 		86419FE52CB97E2B0071151C /* StepCountManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountManager.swift; sourceTree = "<group>"; };
 		86419FE72CB97E800071151C /* StepCountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountView.swift; sourceTree = "<group>"; };
-		86419FEB2CB988BF0071151C /* processedDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = processedDataView.swift; sourceTree = "<group>"; };
+		86419FEB2CB988BF0071151C /* walkingDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = walkingDataView.swift; sourceTree = "<group>"; };
 		86419FED2CBA8CE20071151C /* PreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllManager.swift; sourceTree = "<group>"; };
 		866B7C4D2CD0F6EA000FC227 /* rawDataAllView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllView.swift; sourceTree = "<group>"; };
@@ -314,7 +314,7 @@
 		86419FE92CB9887B0071151C /* processedData */ = {
 			isa = PBXGroup;
 			children = (
-				86419FEB2CB988BF0071151C /* processedDataView.swift */,
+				86419FEB2CB988BF0071151C /* walkingDataView.swift */,
 				863757E42CD38D90002F4BEA /* SixMinuteWalkTest */,
 				86419FE42CB97E090071151C /* stepCountsAll */,
 			);
@@ -480,7 +480,7 @@
 				5A554EA72C8706810081747B /* deviceMotionView.swift in Sources */,
 				86B0DE662CBE973C00003F50 /* ServerConfig.swift in Sources */,
 				5A554E9D2C87063D0081747B /* accelerometerDataManager.swift in Sources */,
-				86419FEC2CB988BF0071151C /* processedDataView.swift in Sources */,
+				86419FEC2CB988BF0071151C /* walkingDataView.swift in Sources */,
 				5A554EA92C87068D0081747B /* deviceMotionManager.swift in Sources */,
 				5A554EAB2C87069D0081747B /* cameraBasedView.swift in Sources */,
 				5A554EAF2C8706BE0081747B /* cameraBasedManager.swift in Sources */,

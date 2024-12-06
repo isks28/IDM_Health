@@ -117,7 +117,7 @@ class AccelerometerManager: NSObject, ObservableObject, CLLocationManagerDelegat
                 formatter.dateFormat = "d. MMM, HH:mm"
                 let startFormatted = formatter.string(from: start)
                 let endFormatted = formatter.string(from: end)
-                content.body = "Collecting TimeInterval data... FROM: \(startFormatted) - UNTIL: \(endFormatted)"
+                content.body = "Collecting TimeInterval data... (\(startFormatted) - \(endFormatted))"
             } else {
                 content.body = "Collecting data..."
             }
