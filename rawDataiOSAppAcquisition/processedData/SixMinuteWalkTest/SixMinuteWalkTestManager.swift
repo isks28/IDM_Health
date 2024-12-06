@@ -51,6 +51,7 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     }
     
     @objc private func appDidEnterBackground() {
+        print("App entered background")
         if isCollectingData {
             backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "KeepDataCollectionActive") {
                 UIApplication.shared.endBackgroundTask(self.backgroundTask)
@@ -60,13 +61,16 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
     }
     
     @objc private func appWillEnterForeground() {
+        print("App will enter foreground")
         if backgroundTask != .invalid {
             UIApplication.shared.endBackgroundTask(backgroundTask)
             backgroundTask = .invalid
         }
     }
     
-    @objc private func appDidBecomeActive() {}
+    @objc private func appDidBecomeActive() {
+        print("App became active")
+    }
 
     private func setupLocationManager() {
         locationManager = CLLocationManager()

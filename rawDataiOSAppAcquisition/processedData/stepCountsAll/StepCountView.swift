@@ -270,7 +270,7 @@ struct StepCountView: View {
                                         stepManager.removeDataCollectionNotification()
                                     }
                                 }
-                                stepManager.showDataCollectionNotification()
+                                stepManager.showDataCollectionNotification(startTime: startDate, endTime: endDate)
                             } else {
                                 stepManager.stopStepCountCollection()
                                 stopTimer()

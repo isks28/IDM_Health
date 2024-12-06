@@ -68,7 +68,7 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     @objc private func appDidEnterBackground() {
         print("App entered background")
-        if isCollectingData {
+        if rawDataAllManager.isDeviceMotionActive {
             showDataCollectionNotification(startTime: currentStartTime, endTime: currentEndTime)
         }
     }
@@ -124,7 +124,7 @@ class RawDataAllManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
 
         let content = UNMutableNotificationContent()
-        content.title = "Accelerometer Running"
+        content.title = "Device Motion Running"
         
         print("recordingMode: \(recordingMode)")
             if let start = startTime, let end = endTime {
