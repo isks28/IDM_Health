@@ -72,7 +72,7 @@ struct StepCountView: View {
                 if canControlStepLength {
                     VStack {
                         Text("Step Length: \(String(format: "%.2f meters", stepManager.stepLengthInMeters))")
-                        Slider(value: $stepManager.stepLengthInMeters, in: 0.6...0.8, step: 0.01)
+                        Slider(value: $stepManager.stepLengthInMeters, in: 0.5...1.2, step: 0.01)
                             .padding([.leading, .trailing], 20)
                     }
                 }

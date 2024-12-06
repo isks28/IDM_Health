@@ -208,7 +208,7 @@ struct SixMinuteWalkTestView: View {
                     if canControlStepLength {
                         VStack {
                             Text("Step Length: \(String(format: "%.2f meters", stepSixMinuteManager.stepLengthInMeters))")
-                            Slider(value: $stepSixMinuteManager.stepLengthInMeters, in: 0.6...0.8, step: 0.01)
+                            Slider(value: $stepSixMinuteManager.stepLengthInMeters, in: 0.5...1.2, step: 0.01)
                                 .padding([.leading, .trailing], 20)
                         }
                     }
