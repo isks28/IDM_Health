@@ -64,7 +64,7 @@ struct ContentView: View {
                     .tag("AVFoundation")
                     .tabItem{
                         Image(systemName: "camera.fill")
-                        Text("Photo and Video")
+                        Text("Visual Data")
                     }
             }
         }
