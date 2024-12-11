@@ -35,7 +35,7 @@ struct ContentView: View {
                     .tag("HealthKit")
                     .tabItem{
                         Image(systemName: "figure.walk")
-                        Text("HealthKit")
+                        Text("HealthKit Data")
                     }
                     .onAppear {
                         let navAppearance = UINavigationBarAppearance()
@@ -60,7 +60,7 @@ struct ContentView: View {
                         Text("Walking Data")
                     }
                 
-                cameraBasedView()
+                visualDataView()
                     .tag("AVFoundation")
                     .tabItem{
                         Image(systemName: "camera.fill")

@@ -445,7 +445,16 @@ struct ChartWithTimeFramePicker: View {
         case ("Active Energy Burned in KiloCalorie", _):
             return average == 0 ? "-- \(unit)" : "\(String(format: "%.0f", average / 1000)) \(unit)"
             
+        case ("Step Count", .daily):
+            return sum == 0 ? "-- \(unit)" : "\(String(format: "%.0f", sum)) \(unit)"
+            
         case ("Step Count", _):
+            return average == 0 ? "-- \(unit)" : "\(String(format: "%.0f", average)) \(unit)"
+            
+        case ("Stand Time (min)", .daily):
+            return sum == 0 ? "-- \(unit)" : "\(String(format: "%.0f", sum)) \(unit)"
+            
+        case ("Stand Time (min)", _):
             return average == 0 ? "-- \(unit)" : "\(String(format: "%.0f", average)) \(unit)"
             
         case ("Distance Walking/Running (Km)", .daily):
@@ -453,6 +462,12 @@ struct ChartWithTimeFramePicker: View {
             
         case ("Distance Walking/Running (Km)", _):
             return average == 0 ? "-- \(unit)" : "\(String(format: "%.1f", average / 1000)) \(unit)"
+            
+        case ("Exercise Time (min)", .daily):
+            return sum == 0 ? "-- \(unit)" : "\(String(format: "%.0f", sum)) \(unit)"
+            
+        case ("Exercise Time (min)", _):
+            return average == 0 ? "-- \(unit)" : "\(String(format: "%.0f", average)) \(unit)"
             
         default:
             return average == 0 ? "-- \(unit)" : "\(String(format: "%.0f", average)) \(unit)"

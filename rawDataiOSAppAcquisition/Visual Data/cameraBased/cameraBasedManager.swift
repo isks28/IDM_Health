@@ -38,6 +38,9 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
         videoOutput = AVCaptureMovieFileOutput()
         if captureSession.canAddOutput(videoOutput!) {
             captureSession.addOutput(videoOutput!)
+        } else {
+            print("Cannot add video output")
+            return
         }
         
         DispatchQueue.global(qos: .userInitiated).async {
@@ -49,9 +52,17 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
         videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
         videoPreviewLayer.videoGravity = .resizeAspect
         videoPreviewLayer.frame = view.bounds
+
+        // Apply mirroring transformation if using the front camera
+        if useFrontCamera {
+            videoPreviewLayer.setAffineTransform(CGAffineTransform(scaleX: -1, y: 1))
+        } else {
+            videoPreviewLayer.setAffineTransform(.identity)
+        }
+
         view.layer.addSublayer(videoPreviewLayer)
     }
-    
+
     func updateCameraPosition() {
         captureSession.beginConfiguration()
         captureSession.inputs.forEach { captureSession.removeInput($0) }
@@ -63,6 +74,15 @@ class CameraBasedManager: UIViewController, AVCaptureFileOutputRecordingDelegate
         
         captureSession.addInput(videoInput)
         captureSession.commitConfiguration()
+
+        // Update mirroring transformation for the preview layer
+        DispatchQueue.main.async {
+            if self.useFrontCamera {
+                self.videoPreviewLayer.setAffineTransform(CGAffineTransform(scaleX: -1, y: 1))
+            } else {
+                self.videoPreviewLayer.setAffineTransform(.identity)
+            }
+        }
     }
     
     func takePhoto() {
