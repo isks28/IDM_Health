@@ -500,7 +500,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
         if minValue == maxValue {
             return "Average"
         } else {
-            return " Average (Range)"
+            return " Average\n(Range)"
         }
     }
     
