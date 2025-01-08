@@ -87,7 +87,7 @@ struct vitalView: View {
             }
         }
         .padding()
-        .navigationTitle("Vital Data")
+        .navigationTitle("Health Data")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
