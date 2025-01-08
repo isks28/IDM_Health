@@ -456,7 +456,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
             return "\(String(format: "%.1f", averageValue))"
         } else {
             let rangeText = "(\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)))"
-            return "\(String(format: "%.1f", averageValue)) \(rangeText)"
+            return "\(String(format: "%.1f", averageValue))\n\(rangeText)"
         }
     }
     
