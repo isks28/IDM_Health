@@ -420,7 +420,7 @@ struct VitalChartWithTimeFramePicker: View {
                 .font(.title3)
                 .padding(.bottom, 3)
                 .foregroundStyle(Color.secondary)
-            Text("https://dimesociety.org/library-of-digital-endpoints/")
+            Link("Digital Medicine Society Library of Digital Endpoints", destination: URL(string: "https://dimesociety.org/library-of-digital-endpoints/")!)
                 .font(.body)
                 .padding(.bottom, 3)
         }
