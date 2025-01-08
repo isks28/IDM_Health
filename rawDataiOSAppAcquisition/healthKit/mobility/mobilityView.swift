@@ -48,7 +48,7 @@ struct mobilityView: View {
             
             ScrollView(.vertical) {
                 VStack(spacing: 10) {
-                    dataSection(title: "Double Support", dataAvailable: !healthKitManager.walkingDoubleSupportData.isEmpty, chartKey: "WalkingDoubleSupport", data: healthKitManager.walkingDoubleSupportData, unit: HKUnit.percent(), chartTitle: "Walking Double Support")
+                    dataSection(title: "Double Support Time", dataAvailable: !healthKitManager.walkingDoubleSupportData.isEmpty, chartKey: "WalkingDoubleSupport", data: healthKitManager.walkingDoubleSupportData, unit: HKUnit.percent(), chartTitle: "Walking Double Support")
                     
                     dataSection(title: "Walking Asymmetry", dataAvailable: !healthKitManager.walkingAsymmetryData.isEmpty, chartKey: "WalkingAsymmetry", data: healthKitManager.walkingAsymmetryData, unit: HKUnit.percent(), chartTitle: "Walking Asymmetry")
                     
