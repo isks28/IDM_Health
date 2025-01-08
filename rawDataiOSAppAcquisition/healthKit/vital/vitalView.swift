@@ -228,7 +228,7 @@ struct VitalChartWithTimeFramePicker: View {
                         .background(.white)
                         .cornerRadius(25)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 25)
+                            RoundedRectangle(cornerRadius: 5)
                                 .stroke(Color.blue, lineWidth: 2)
                         )
                 }
