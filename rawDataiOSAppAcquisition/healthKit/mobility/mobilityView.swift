@@ -48,20 +48,20 @@ struct mobilityView: View {
             
             ScrollView(.vertical) {
                 VStack(spacing: 10) {
-                    dataSection(title: "Walking Double Support", dataAvailable: !healthKitManager.walkingDoubleSupportData.isEmpty, chartKey: "WalkingDoubleSupport", data: healthKitManager.walkingDoubleSupportData, unit: HKUnit.percent(), chartTitle: "Walking Double Support")
+                    dataSection(title: "Double Support", dataAvailable: !healthKitManager.walkingDoubleSupportData.isEmpty, chartKey: "WalkingDoubleSupport", data: healthKitManager.walkingDoubleSupportData, unit: HKUnit.percent(), chartTitle: "Walking Double Support")
                     
                     dataSection(title: "Walking Asymmetry", dataAvailable: !healthKitManager.walkingAsymmetryData.isEmpty, chartKey: "WalkingAsymmetry", data: healthKitManager.walkingAsymmetryData, unit: HKUnit.percent(), chartTitle: "Walking Asymmetry")
                     
                     dataSection(title: "Walking Speed", dataAvailable: !healthKitManager.walkingSpeedData.isEmpty, chartKey: "WalkingSpeed", data: healthKitManager.walkingSpeedData, unit: HKUnit.meter().unitDivided(by: HKUnit.second()), chartTitle: "Walking Speed")
                     
-                    dataSection(title: "Walking Step Length", dataAvailable: !healthKitManager.walkingStepLengthData.isEmpty, chartKey: "WalkingStepLength", data: healthKitManager.walkingStepLengthData, unit: HKUnit.meter(), chartTitle: "Walking Step Length")
+                    dataSection(title: "Step Length", dataAvailable: !healthKitManager.walkingStepLengthData.isEmpty, chartKey: "WalkingStepLength", data: healthKitManager.walkingStepLengthData, unit: HKUnit.meter(), chartTitle: "Walking Step Length")
                     
                     dataSection(title: "Walking Steadiness", dataAvailable: !healthKitManager.walkingSteadinessData.isEmpty, chartKey: "WalkingSteadiness", data: healthKitManager.walkingSteadinessData, unit: HKUnit.percent(), chartTitle: "Walking Steadiness")
                 }
                 .padding()
             }
             
-            Text("Set Start and End-Date to fetched available data:")
+            Text("Set Start and End-Date to pulled available data:")
                 .font(.subheadline)
             
             DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
@@ -86,11 +86,11 @@ struct mobilityView: View {
                         healthKitManager.saveDataAsCSV(serverURL: serverURL)
                     } else {
                         healthKitManager.fetchMobilityData(startDate: startDate, endDate: endDate)
-                        print("Data fetched, refreshing graph")
+                        print("Data pulled, refreshing graph")
                     }
                     isRecording.toggle()
                 }) {
-                    Text(isRecording ? "Save and Upload Data" : "Fetch Data")
+                    Text(isRecording ? "Save and Upload Data" : "Pull Data")
                         .padding()
                         .background(isRecording ? Color.secondary : Color.blue)
                         .foregroundColor(.white)
@@ -105,7 +105,7 @@ struct mobilityView: View {
             }
         }
         .padding()
-        .navigationTitle("Mobility Health Data")
+        .navigationTitle("Mobility Data")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
@@ -118,7 +118,7 @@ struct mobilityView: View {
                     VStack {
                         Text("Data Information")
                             .font(.largeTitle)
-                        Text("Start and End date can only fetch the history or collected data from iOS Health App and not collecting future or unrecorded data.")
+                        Text("Start and end date only collect already recorded data from the iOS Health App")
                             .font(.body)
                             .padding()
                             .padding()
@@ -144,13 +144,13 @@ struct mobilityView: View {
                         Button(action: {
                             showingChart[chartKey] = true
                         }) {
-                            Text("\(title) Data is Available")
+                            Text("Data is Available")
                                 .font(.footnote)
                                 .foregroundStyle(Color.blue)
                                 .multilineTextAlignment(.center)
                         }
                     } else {
-                        Text("\(title) Data is not Available")
+                        Text("Data is not Available")
                             .font(.footnote)
                             .foregroundStyle(Color.pink)
                             .multilineTextAlignment(.center)
@@ -238,10 +238,6 @@ struct ChartWithTimeFrameMobilityPicker: View {
             }
             
             HStack {
-                Text(getTitleForMetric(TimeFrameMobility: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
-                    .font(.footnote)
-                    .foregroundColor(.primary)
-                
                 Button(action: {
                     showDatePicker = true
                 }) {
@@ -252,7 +248,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
                         .background(.white)
                         .cornerRadius(25)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 25)
+                            RoundedRectangle(cornerRadius: 5)
                                 .stroke(Color.blue, lineWidth: 2)
                         )
                 }
@@ -313,6 +309,10 @@ struct ChartWithTimeFrameMobilityPicker: View {
                         .padding(.vertical, 10)
                     }
                 }
+                
+                Text(getTitleForMetric(TimeFrameMobility: selectedTimeFrameMobility, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
+                    .font(.footnote)
+                    .foregroundColor(.primary)
                 
                 Text(": ")
                     .foregroundColor(.primary)
@@ -427,7 +427,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
                 .font(.title3)
                 .padding(.bottom, 3)
                 .foregroundStyle(Color.secondary)
-            Text("https://dimesociety.org/library-of-digital-endpoints/")
+            Link("Digital Medicine Society Library of Digital Endpoints", destination: URL(string: "https://dimesociety.org/library-of-digital-endpoints/")!)
                 .font(.body)
                 .padding(.bottom, 3)
         }
@@ -456,7 +456,7 @@ struct ChartWithTimeFrameMobilityPicker: View {
             return "\(String(format: "%.1f", averageValue))"
         } else {
             let rangeText = "(\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)))"
-            return "\(rangeText) \(String(format: "%.1f", averageValue))"
+            return "\(String(format: "%.1f", averageValue)) \(rangeText)"
         }
     }
     
@@ -498,9 +498,9 @@ struct ChartWithTimeFrameMobilityPicker: View {
     private func getTitleForMetric(TimeFrameMobility: TimeFrameMobility, minValue: Double, maxValue: Double, averageValue: Double) -> String {
         
         if minValue == maxValue {
-            return "Average in "
+            return "Average"
         } else {
-            return "(Range) Average in "
+            return " Average (Range)"
         }
     }
     
@@ -524,15 +524,15 @@ struct ChartWithTimeFrameMobilityPicker: View {
     private func dataInformation() -> String {
         switch title {
         case "Walking Double Support":
-            return "DATA INFORMATION: Percentage of time when both of the user's feet touch the ground while walking steadily over flat ground"
+            return "DATA INFORMATION: Percentage of time when both feet are in contact with the found while walking. Only measured when walking on steady ground."
         case "Walking Asymmetry":
-            return "DATA INFORMATION: Percentage of steps in which one foot moves at a different speed than the other when walking on flat ground"
+            return "DATA INFORMATION: Difference in time spent on each foot during walking. Expressed as a percentage. A low percentage signifies a symmetrical wakling pattern between the left and right foot"
         case "Walking Speed":
             return "DATA INFORMATION: Speed when walking steadily over flat ground"
         case "Walking Step Length":
-            return "DATA INFORMATION: Distance between your front foot and back foot when you're walking"
+            return "DATA INFORMATION: Distance between feet during walking"
         case "Walking Steadiness":
-            return "DATA INFORMATION: Steadiness of the gait calculated using walking speed, step length, double support time and wlaking asymmetry data"
+            return "DATA INFORMATION: Steadiness of walking calculated using walking speed, step length, double support time and wlaking asymmetry data"
         default:
             return "Data not available."
         }
@@ -558,15 +558,15 @@ struct ChartWithTimeFrameMobilityPicker: View {
     private func useCase() -> String {
         switch title {
         case "Walking Double Support":
-            return "USE CASE: Parkinson, Stroke recovery and Musculoskeletal diseases"
+            return "USE CASE: Parkinson's disease, stroke recovery, and musculoskeletal disorders"
         case "Walking Asymmetry":
-            return "USE CASE: Neurological conditions, Stroke recovery, Sklerosis and Knee injuries"
+            return "USE CASE: Neurological conditions, stroke recovery, sklerosis and knee injuries"
         case "Walking Speed":
-            return "USE CASE: Fraility, Parkinson, Sklerosis, Post surgical recovery and 6 minute walk test"
+            return "USE CASE: Fraility, parkinson, sklerosis and post surgical recovery"
         case "Walking Step Length":
-            return "USE CASE: Parkinson, Stroke recovery, Musculoskeletal issues and Age-related mobility decline"
+            return "USE CASE: Parkinson's disease, stroke recovery, musculoskeletal disorders, age-related decline in mobility"
         case "Walking Steadiness":
-            return "USE CASE: Balance disorders, Parkinson, Sklerosis and Stroke recovery"
+            return "USE CASE: Balance disorders, parkinson, sklerosis and stroke recovery"
         default:
             return "Data not available."
         }
@@ -816,7 +816,7 @@ struct BoxChartViewMobility: View {
                         .scaleEffect(2)
                         .padding()
                     
-                    Text("Fetching Data...")
+                    Text("Pulling Data...")
                         .font(.headline)
                         .foregroundColor(.secondary)
                 }
@@ -956,19 +956,12 @@ struct BoxChartViewMobility: View {
                             Spacer()
                             
                             VStack {
-                                if item.minValue == item.maxValue {
-                                    Text("Average")
-                                        .font(.caption2)
-                                } else {
-                                    Text("(Range) Average")
-                                        .font(.caption2)
-                                }
                                 if title == "Walking Asymmetry" && item.value != 0 {
                                     Text(item.value == 0 ? "--" : "\(String(format: "%.1f", item.value)) %")
                                 } else if item.minValue == item.maxValue {
-                                    Text(item.value == 0 ? "--" : "\(String(format: "%.1f", item.value))")
+                                    Text(item.value == 0 ? "--" : "\(String(format: "%.1f", item.value)) (\(String(format: "%.1f", item.minValue))-\(String(format: "%.1f", item.maxValue)))")
                                 } else {
-                                    Text(item.value == 0 ? "--" : "(\(String(format: "%.1f", item.minValue))-\(String(format: "%.1f", item.maxValue))) \(String(format: "%.1f", item.value))")
+                                    Text(item.value == 0 ? "--" : "\(String(format: "%.1f", item.value)) (\(String(format: "%.1f", item.minValue))-\(String(format: "%.1f", item.maxValue)))")
                                 }
                             }
                         }
@@ -1036,10 +1029,10 @@ struct BoxChartViewMobility: View {
 
         switch timeFrame {
         case .daily:
-            formatter.dateFormat = "HH"
+            formatter.dateFormat = "HH:mm"
             let startHour = formatter.string(from: date)
             let endHour = formatter.string(from: calendar.date(byAdding: .hour, value: 1, to: date) ?? date)
-            return "\(startHour)-\(endHour)"
+            return "\(startHour) - \(endHour)"
         
         case .weekly:
             formatter.dateFormat = "EEEE"

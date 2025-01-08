@@ -18,7 +18,7 @@
                BlueprintIdentifier = "5A554E562C8705080081747B"
                BuildableName = "LifeStats.app"
                BlueprintName = "rawDataiOSAppAcquisition"
-               ReferencedContainer = "container:LifeStats.xcodeproj">
+               ReferencedContainer = "container:IDM Health.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -38,7 +38,7 @@
                BlueprintIdentifier = "5A554E672C8705090081747B"
                BuildableName = "rawDataiOSAppAcquisitionTests.xctest"
                BlueprintName = "rawDataiOSAppAcquisitionTests"
-               ReferencedContainer = "container:LifeStats.xcodeproj">
+               ReferencedContainer = "container:IDM Health.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -49,7 +49,7 @@
                BlueprintIdentifier = "5A554E712C8705090081747B"
                BuildableName = "rawDataiOSAppAcquisitionUITests.xctest"
                BlueprintName = "rawDataiOSAppAcquisitionUITests"
-               ReferencedContainer = "container:LifeStats.xcodeproj">
+               ReferencedContainer = "container:IDM Health.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -71,7 +71,7 @@
             BlueprintIdentifier = "5A554E562C8705080081747B"
             BuildableName = "LifeStats.app"
             BlueprintName = "rawDataiOSAppAcquisition"
-            ReferencedContainer = "container:LifeStats.xcodeproj">
+            ReferencedContainer = "container:IDM Health.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -88,7 +88,7 @@
             BlueprintIdentifier = "5A554E562C8705080081747B"
             BuildableName = "LifeStats.app"
             BlueprintName = "rawDataiOSAppAcquisition"
-            ReferencedContainer = "container:LifeStats.xcodeproj">
+            ReferencedContainer = "container:IDM Health.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

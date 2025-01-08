@@ -45,7 +45,7 @@ struct vitalView: View {
                 }
                 .padding()
             }
-            Text("Set Start and End-Date to fetched available data:")
+            Text("Set Start and End-Date to pulled available data:")
                 .font(.subheadline)
             
             DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
@@ -68,11 +68,11 @@ struct vitalView: View {
                         vitalManager.saveDataAsCSV(serverURL: serverURL)
                     } else {
                         vitalManager.fetchVitalData(startDate: startDate, endDate: endDate)
-                        print("Data fetched, refreshing graph")
+                        print("Data pulled, refreshing graph")
                     }
                     isRecording.toggle()
                 }) {
-                    Text(isRecording ? "Save and Upload Data" : "Fetch Data")
+                    Text(isRecording ? "Save and Upload Data" : "Pull Data")
                         .padding()
                         .background(isRecording ? Color.secondary : Color.blue)
                         .foregroundColor(.white)
@@ -87,7 +87,7 @@ struct vitalView: View {
             }
         }
         .padding()
-        .navigationTitle("Vital Health Data")
+        .navigationTitle("Vital Data")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
@@ -100,7 +100,7 @@ struct vitalView: View {
                     VStack {
                         Text("Data Information")
                             .font(.largeTitle)
-                        Text("Start and End date can only fetch the history or collected data from iOS Health App and not collecting future or unrecorded data.")
+                        Text("Start and end date only collect already recorded data from the iOS Health App")
                             .font(.body)
                             .padding()
                             .padding()
@@ -125,13 +125,13 @@ struct vitalView: View {
                         Button(action: {
                             showingHeartRateChart = true
                         }) {
-                            Text("\(title) Data is Available")
+                            Text("Data is Available")
                                 .font(.footnote)
                                 .foregroundStyle(Color.blue)
                                 .multilineTextAlignment(.center)
                         }
                     } else {
-                        Text("\(title) Data is not Available")
+                        Text("Data is not Available")
                             .font(.footnote)
                             .foregroundStyle(Color.pink)
                             .multilineTextAlignment(.center)
@@ -218,10 +218,6 @@ struct VitalChartWithTimeFramePicker: View {
             }
             
             HStack {
-                Text(getTitleForMetric(TimeFrameVital: selectedTimeFrameVital, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
-                    .font(.footnote)
-                    .foregroundColor(.primary)
-                
                 Button(action: {
                     showDatePicker = true
                 }) {
@@ -306,6 +302,10 @@ struct VitalChartWithTimeFramePicker: View {
                         .padding(.vertical, 10)
                     }
                 }
+                
+                Text(getTitleForMetric(TimeFrameVital: selectedTimeFrameVital, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
+                    .font(.footnote)
+                    .foregroundColor(.primary)
                 
                 Text(": ")
                     .foregroundColor(.primary)
@@ -445,7 +445,7 @@ struct VitalChartWithTimeFramePicker: View {
             return "\(String(format: "%.1f", averageValue))"
         } else {
             let rangeText = "(\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)))"
-            return "\(rangeText) \(String(format: "%.1f", averageValue))"
+            return "\(String(format: "%.1f", averageValue))\n\(rangeText)"
         }
     }
     
@@ -490,9 +490,9 @@ struct VitalChartWithTimeFramePicker: View {
     private func getTitleForMetric(TimeFrameVital: TimeFrameVital, minValue: Double, maxValue: Double, averageValue: Double) -> String {
         
         if minValue == maxValue {
-            return "Average in "
+            return "Average"
         } else {
-            return "(Range) Average in "
+            return "Average\n(Range)"
         }
     }
     
@@ -526,7 +526,7 @@ struct VitalChartWithTimeFramePicker: View {
     private func useCase() -> String {
         switch title {
         case "Heart Rate":
-            return "USE CASE: Cardiovascular, Diabetes, COPD, Neurological and Psychiatric disorders and Obesity and Metabolic syndrome"
+            return "USE CASE: Cardiovascular, diabetes, COPD, neurological, psychiatric disorders, obesity and metabolic syndrome"
         default:
             return "Data not available."
         }
@@ -829,7 +829,7 @@ struct BoxChartViewVital: View {
                         .scaleEffect(2)
                         .padding()
                     
-                    Text("Fetching Data...")
+                    Text("Pulling Data...")
                         .font(.headline)
                         .foregroundColor(.secondary)
                 }
@@ -917,17 +917,9 @@ struct BoxChartViewVital: View {
                             
                             VStack {
                                 if item.minValue == item.maxValue {
-                                    Text("Average")
-                                        .font(.caption2)
-                                } else {
-                                    Text("(Range) Average")
-                                        .font(.caption2)
-                                }
-
-                                if item.minValue == item.maxValue {
                                     Text(item.averageValue == 0 ? "--" : "\(String(format: "%.1f", item.averageValue)) BPM")
                                 } else {
-                                    Text(item.averageValue == 0 ? "--" : "(\(String(format: "%.1f", item.minValue))-\(String(format: "%.1f", item.maxValue))) \(String(format: "%.1f", item.averageValue)) BPM")
+                                    Text(item.averageValue == 0 ? "--" : "\(String(format: "%.1f", item.averageValue)) (\(String(format: "%.1f", item.minValue))-\(String(format: "%.1f", item.maxValue))) BPM")
                                 }
                             }
                         }

@@ -98,7 +98,7 @@ struct cameraBasedView: View {
                     .transition(.move(edge: .bottom))
                 }
             }
-            .navigationTitle("Visual Data")
+            .navigationTitle("Photo and video")
             .padding(.top, -8)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -110,11 +110,11 @@ struct cameraBasedView: View {
                     }
                     .sheet(isPresented: $showingInfo) {
                         VStack {
-                            Text("Visual Data Information")
+                            Text("Photo and video Information")
                                 .font(.title)
                                 .padding(.top)
                             ScrollView {
-                                Text("VISUAL DATA collects video and photo data from the user's device.")
+                                Text("Photo and video collects visual data from the user's device")
                                     .padding()
                             }
                             .scrollIndicators(.hidden)

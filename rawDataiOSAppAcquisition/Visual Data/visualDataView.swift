@@ -20,7 +20,7 @@ struct visualDataView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
                         .foregroundStyle(Color.blue)
-                    Text("Raw Visual Data")
+                    Text("Photo and Video")
                         .foregroundStyle(Color.primary)
                         .font(.title)
                     Spacer()
@@ -34,7 +34,7 @@ struct visualDataView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
                         .foregroundStyle(Color.blue)
-                    Text("Markerless Motion Analysis")
+                    Text("Motion Analysis")
                         .foregroundStyle(Color.primary)
                         .font(.title)
                     Spacer()
@@ -43,7 +43,7 @@ struct visualDataView: View {
                         }
                         .tag("Markerless Motion Data")
             }
-            .navigationTitle("Raw Data")
+            .navigationTitle("Visual Data")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {

@@ -25,7 +25,7 @@ struct SixMinuteWalkTestView: View {
     var body: some View {
         VStack {
             if !isCountdownActive && stepSixMinuteManager.stepCount == 0 {
-                Text("Put the phone in the pants pocket after clicking start")
+                Text("Place the phone in the pants pocket after clicking start")
                     .font(.title3)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(Color.secondary)
@@ -138,42 +138,8 @@ struct SixMinuteWalkTestView: View {
                                             .gridCellAnchor(.trailing)
                                     }
                                 }
-                            
-                            GridRow {
-                                Text("Floors Ascended:")
-                                    .font(.title3)
-                                    .gridCellAnchor(.leading)
-                                if let floorsAscended = stepSixMinuteManager.floorAscended {
-                                    Text("\(floorsAscended)")
-                                        .font(.title3)
-                                        .foregroundColor(.blue)
-                                        .gridCellAnchor(.trailing)
-                                } else {
-                                    Text("Not available")
-                                        .font(.title3)
-                                        .foregroundColor(.secondary)
-                                        .gridCellAnchor(.trailing)
-                                }
-                            }
-                            
-                            GridRow {
-                                Text("Floors Descended:")
-                                    .font(.title3)
-                                    .gridCellAnchor(.leading)
-                                if let floorsDescended = stepSixMinuteManager.floorDescended {
-                                    Text("\(floorsDescended)")
-                                        .font(.title3)
-                                        .foregroundColor(.blue)
-                                        .gridCellAnchor(.trailing)
-                                } else {
-                                    Text("Not available")
-                                        .font(.title3)
-                                        .foregroundColor(.secondary)
-                                        .gridCellAnchor(.trailing)
-                                }
                             }
                         }
-                    }
                     
                     if !isRecording && stepSixMinuteManager.stepCount == 0{
                     VStack {

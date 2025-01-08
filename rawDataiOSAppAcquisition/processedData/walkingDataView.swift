@@ -54,7 +54,7 @@ struct processedDataView: View {
                 }
                         .tag("SixMinuteWalkTest")
             }
-            .navigationTitle("Walking Data")
+            .navigationTitle("Walking Tests")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {

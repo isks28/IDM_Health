@@ -58,7 +58,7 @@ struct activityView: View {
                 .padding([.leading, .bottom, .trailing])
             }
             .onAppear {
-                print("View appeared, forcing data fetch and refresh")
+                print("View appeared, forcing data pull and refresh")
                 healthKitManager.fetchActivityData(startDate: startDate, endDate: endDate)
                 refreshGraph = UUID()
                 
@@ -68,7 +68,7 @@ struct activityView: View {
                 refreshGraph = UUID()
             }
             
-            Text("Set Start and End-Date to fetched available data:")
+            Text("Set Start and End-Date to pull available data:")
                 .font(.subheadline)
             
             DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
@@ -92,11 +92,11 @@ struct activityView: View {
                         healthKitManager.saveDataAsCSV(serverURL: serverURL)
                     } else {
                         healthKitManager.fetchActivityData(startDate: startDate, endDate: endDate)
-                        print("Data fetched, refreshing graph")
+                        print("Data pulled, refreshing graph")
                     }
                     isRecording.toggle()
                 }) {
-                    Text(isRecording ? "Save and Upload Data" : "Fetch Data")
+                    Text(isRecording ? "Save and Upload Data" : "Pull Data")
                         .padding()
                         .background(isRecording ? Color.secondary : Color.blue)
                         .foregroundColor(.white)
@@ -111,7 +111,7 @@ struct activityView: View {
             }
         }
         .padding()
-        .navigationTitle("Activity Health Data")
+        .navigationTitle("Activity Data")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
@@ -124,7 +124,7 @@ struct activityView: View {
                     VStack {
                         Text("Data Information")
                             .font(.largeTitle)
-                        Text("Start and End date can only fetch the history or collected data from iOS Health App and not collecting future or unrecorded data.")
+                        Text("Start and end date only collect already recorded data from the iOS Health App")
                             .font(.body)
                             .padding()
                             .padding()
@@ -150,13 +150,13 @@ struct activityView: View {
                         Button(action: {
                             showingChart[chartKey] = true
                         }) {
-                            Text("\(title) Data is Available")
+                            Text("Data is Available")
                                 .font(.footnote)
                                 .foregroundStyle(Color.blue)
                                 .multilineTextAlignment(.center)
                         }
                     } else {
-                        Text("\(title) Data is not Available")
+                        Text("Data is not Available")
                             .font(.footnote)
                             .foregroundStyle(Color.pink)
                             .multilineTextAlignment(.center)
@@ -242,10 +242,6 @@ struct ChartWithTimeFramePicker: View {
             }
             
             HStack {
-                Text(getTitleForMetric(timeFrame: selectedTimeFrame))
-                    .font(.footnote)
-                    .foregroundColor(.primary)
-                
                 Button(action: {
                     showDatePicker = true
                 }) {
@@ -256,7 +252,7 @@ struct ChartWithTimeFramePicker: View {
                         .background(.white)
                         .cornerRadius(25)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 25)
+                            RoundedRectangle(cornerRadius: 5)
                                 .stroke(Color.blue, lineWidth: 2)
                         )
                 }
@@ -321,6 +317,10 @@ struct ChartWithTimeFramePicker: View {
                         .padding(.vertical, 10)
                     }
                 }
+                
+                Text(getTitleForMetric(timeFrame: selectedTimeFrame))
+                    .font(.footnote)
+                    .foregroundColor(.primary)
                 
                 Text(": ")
                     .foregroundColor(.primary)
@@ -413,7 +413,7 @@ struct ChartWithTimeFramePicker: View {
                 .font(.title3)
                 .padding(.bottom, 3)
                 .foregroundStyle(Color.secondary)
-            Text("https://dimesociety.org/library-of-digital-endpoints/")
+            Link("Digital Medicine Society Library of Digital Endpoints", destination: URL(string: "https://dimesociety.org/library-of-digital-endpoints/")!)
                 .font(.body)
                 .padding(.bottom, 3)
         }
@@ -526,99 +526,99 @@ struct ChartWithTimeFramePicker: View {
         case "Step Count":
             switch timeFrame {
             case .daily:
-                description = "Total in "
+                description = "Total"
             case .weekly:
-                description = "Average from "
+                description = "Average"
             case .sixMonths:
-                description = "Daily average from "
+                description = "Daily average"
             case .yearly:
-                description = "Daily average in "
+                description = "Daily average"
             default:
-                description = "Average in "
+                description = "Average"
             }
             
         case "Active Energy Burned in KiloCalorie":
             switch timeFrame {
             case .daily:
-                description = "Total in "
+                description = "Total"
             case .weekly:
-                description = "Average from "
+                description = "Average"
             case .sixMonths:
-                description = "Daily average from "
+                description = "Daily average"
             case .yearly:
-                description = "Daily average in "
+                description = "Daily average"
             default:
-                description = "Average in "
+                description = "Average"
             }
             
         case "Move Time (min)":
             switch timeFrame {
             case .daily:
-                description = "Total in "
+                description = "Total"
             case .weekly:
-                description = "Average from "
+                description = "Average"
             case .sixMonths:
-                description = "Daily average from "
+                description = "Daily average"
             case .yearly:
-                description = "Daily average in "
+                description = "Daily average"
             default:
-                description = "Average in "
+                description = "Average"
             }
             
         case "Stand Time (min)":
             switch timeFrame {
             case .daily:
-                description = "Total in "
+                description = "Total"
             case .weekly:
-                description = "Average from "
+                description = "Average"
             case .sixMonths:
-                description = "Daily average from "
+                description = "Daily average"
             case .yearly:
-                description = "Daily average in "
+                description = "Daily average"
             default:
-                description = "Average in "
+                description = "Average"
             }
             
         case "Distance Walking/Running (Km)":
             switch timeFrame {
             case .daily:
-                description = "Total in "
+                description = "Total"
             case .weekly:
-                description = "Average from "
+                description = "Average"
             case .sixMonths:
-                description = "Daily average from "
+                description = "Daily average"
             case .yearly:
-                description = "Daily average in "
+                description = "Daily average"
             default:
-                description = "Average in "
+                description = "Average"
             }
             
         case "Exercise Time (min)":
             switch timeFrame {
             case .daily:
-                description = "Total in "
+                description = "Total"
             case .weekly:
-                description = "Average from "
+                description = "Average"
             case .sixMonths:
-                description = "Daily average from "
+                description = "Daily average"
             case .yearly:
-                description = "Daily average in "
+                description = "Daily average"
             default:
-                description = "Average in "
+                description = "Average"
             }
             
         default:
             switch timeFrame {
             case .daily:
-                description = "Total in "
+                description = "Total"
             case .weekly:
-                description = "Average from "
+                description = "Average"
             case .sixMonths:
-                description = "Daily average from "
+                description = "Daily average"
             case .yearly:
-                description = "Daily average in "
+                description = "Daily average"
             default:
-                description = "Average in "
+                description = "Average"
             }
         }
         
@@ -649,15 +649,15 @@ struct ChartWithTimeFramePicker: View {
         case "Step Count":
             return "DATA INFORMATION: Number of steps taken"
         case "Active Energy Burned in KiloCalorie":
-            return "DATA INFORMATION: Energy burned through physical activity, excluding Energy burned at Rest (basal metabolic rate)"
+            return "DATA INFORMATION: Energy burned through physical activity, excluding energy burned at rest (basal metabolic rate)"
         case "Move Time (min)":
             return ""
         case "Stand Time (min)":
             return "DATA INFORMATION: Time spent standing"
         case "Distance Walking/Running (Km)":
-            return "DATA INFORMATION: Distance the user has moved by walking or running"
+            return "DATA INFORMATION: Distance covered walking or running"
         case "Exercise Time (min)":
-            return "DATA INFORMATION: Time the user has spent exercising"
+            return "DATA INFORMATION: Time spent exercising"
         default:
             return "More information about this section is not available."
         }
@@ -685,17 +685,17 @@ struct ChartWithTimeFramePicker: View {
     private func useCase() -> String {
         switch title {
         case "Step Count":
-            return "USE CASE: Cardiovascular Diseases, Diabetes, Parkinson Diseases, Musculoskeletal Issues such as Arthritis"
+            return "USE CASE: Cardiovascular disease, diabetes, Parkinson's disease, musculoskeletal disorders"
         case "Active Energy Burned in KiloCalorie":
-            return "USE CASE: Managing weight, Metabolic conditions, Diabetes and Cardiovascular disease"
+            return "USE CASE: Weight management, metabolic disorders, cardiovascular disease, and diabetes"
         case "Move Time (min)":
             return "USE CASE: Cardiovascular disease, Obesity and Diabetes"
         case "Stand Time (min)":
-            return "USE CASE: Prolonged sitting, Cardiovascular disease, Diabetes and obesity"
+            return "USE CASE: Sedentary time, cardiovascular disease, diabetes, obesity"
         case "Distance Walking/Running (Km)":
-            return "USE CASE: Cardiovascular disease, Rehabilitation after surgery and Diabetes"
+            return "USE CASE: Cardiovascular disease, post-surgical rehabilitation, diabetes"
         case "Exercise Time (min)":
-            return "USE CASE: Cardiovascular disease, Obesity, Diabetes and Mental health disorders"
+            return "USE CASE: Cardiovascular disease, diabetes, mental health"
         default:
             return "More information about this section is not available."
         }
@@ -975,7 +975,7 @@ struct BoxChartViewActivity: View {
                         .scaleEffect(2)
                         .padding()
                     
-                    Text("Fetching Data...")
+                    Text("Pulling Data...")
                         .font(.headline)
                         .foregroundColor(.secondary)
                 }

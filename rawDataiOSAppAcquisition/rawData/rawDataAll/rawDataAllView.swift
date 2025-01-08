@@ -278,7 +278,7 @@ var body: some View {
                 }
                 .sheet(isPresented: $showingInfo) {
                     VStack {
-                        Text("Device Motion Information")
+                        Text("Raw Data All Information")
                             .font(.title)
                             .multilineTextAlignment(.leading)
                             .padding(.top)

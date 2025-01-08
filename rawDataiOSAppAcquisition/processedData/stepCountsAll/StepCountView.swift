@@ -28,7 +28,7 @@ struct StepCountView: View {
         VStack {
             
             if stepManager.stepCount == 0 {
-                Text("Put the phone in the pocket after clicking start")
+                Text("Place the phone in the pocket after clicking start")
                     .font(.title3)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(Color.secondary)
@@ -81,7 +81,7 @@ struct StepCountView: View {
                 if stepManager.stepCount > 0 {
                     Grid {
                         VStack {
-                            Text("Steps:")
+                            Text("Number of Steps:")
                                 .font(.largeTitle)
                                 .foregroundStyle(Color.primary)
                                 .padding(.vertical, 5)
@@ -158,40 +158,6 @@ struct StepCountView: View {
                                 .gridCellAnchor(.leading)
                             if let currentCadence = stepManager.currentCadence {
                                 Text(String(format: "%.2f steps/second", currentCadence))
-                                    .font(.title3)
-                                    .foregroundColor(.blue)
-                                    .gridCellAnchor(.trailing)
-                            } else {
-                                Text("Not available")
-                                    .font(.title3)
-                                    .foregroundColor(.secondary)
-                                    .gridCellAnchor(.trailing)
-                            }
-                        }
-
-                        GridRow {
-                            Text("Floors Ascended:")
-                                .font(.title3)
-                                .gridCellAnchor(.leading)
-                            if let floorsAscended = stepManager.floorAscended {
-                                Text("\(floorsAscended)")
-                                    .font(.title3)
-                                    .foregroundColor(.blue)
-                                    .gridCellAnchor(.trailing)
-                            } else {
-                                Text("Not available")
-                                    .font(.title3)
-                                    .foregroundColor(.secondary)
-                                    .gridCellAnchor(.trailing)
-                            }
-                        }
-
-                        GridRow {
-                            Text("Floors Descended:")
-                                .font(.title3)
-                                .gridCellAnchor(.leading)
-                            if let floorsDescended = stepManager.floorDescended {
-                                Text("\(floorsDescended)")
                                     .font(.title3)
                                     .foregroundColor(.blue)
                                     .gridCellAnchor(.trailing)

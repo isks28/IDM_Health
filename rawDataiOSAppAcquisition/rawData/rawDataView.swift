@@ -62,7 +62,7 @@ struct rawDataView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 50)
                         .foregroundStyle(Color.blue)
-                    Text("Raw Data All")
+                    Text("IMU Data")
                         .foregroundStyle(Color.primary)
                         .font(.title)
                     Spacer()
@@ -86,7 +86,7 @@ struct rawDataView: View {
                         .tag("RawDataAll")
         
             }
-            .navigationTitle("Raw Data")
+            .navigationTitle("Sensor Data")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
