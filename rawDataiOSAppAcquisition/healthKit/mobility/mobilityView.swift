@@ -957,9 +957,9 @@ struct BoxChartViewMobility: View {
                             
                             VStack {
                                 if title == "Walking Asymmetry" && item.value != 0 {
-                                    Text(item.value == 0 ? "--" : "\(String(format: "%.1f", item.value)) %")
+                                    Text(item.value == 0 ? "0%" : "\(String(format: "%.1f", item.value)) %")
                                 } else if item.minValue == item.maxValue {
-                                    Text(item.value == 0 ? "--" : "\(String(format: "%.1f", item.value)) (\(String(format: "%.1f", item.minValue))-\(String(format: "%.1f", item.maxValue)))")
+                                    Text(item.value == 0 ? "0%" : "\(String(format: "%.1f", item.value)) (\(String(format: "%.1f", item.minValue))-\(String(format: "%.1f", item.maxValue)))")
                                 } else {
                                     Text(item.value == 0 ? "--" : "\(String(format: "%.1f", item.value)) (\(String(format: "%.1f", item.minValue))-\(String(format: "%.1f", item.maxValue)))")
                                 }
