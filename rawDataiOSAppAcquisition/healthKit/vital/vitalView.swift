@@ -30,7 +30,11 @@ struct vitalView: View {
     @State private var showingInfo = false
     @State private var refreshGraph = UUID()
     
-    @State private var showingHeartRateChart = false
+    @State private var showingChart: [String: Bool] = [
+        "HeartRate": false,
+        "HeartRateVariability": false,
+        "BloodOxygenSaturation": false
+    ]
     
     init() {
         _vitalManager = StateObject(wrappedValue: VitalManager(startDate: Date(), endDate: Date()))
@@ -42,6 +46,8 @@ struct vitalView: View {
             ScrollView(.vertical) {
                 VStack(spacing: 10) {
                     dataSection(title: "Heart Rate", dataAvailable: !vitalManager.heartRateData.isEmpty, chartKey: "HeartRate", data: vitalManager.heartRateData, unit: HKUnit.init(from: "count/min"), chartTitle: "Heart Rate")
+                    dataSection(title: "Heart Rate Variability", dataAvailable: !vitalManager.heartRateVariabilityData.isEmpty, chartKey: "HeartRateVariability", data: vitalManager.heartRateVariabilityData, unit: HKUnit.secondUnit(with: .milli), chartTitle: "Heart Rate Variability")
+                    dataSection(title: "Blood Oxygen Saturation", dataAvailable: !vitalManager.bloodOxygenSaturationData.isEmpty, chartKey: "BloodOxygenSaturation", data: vitalManager.bloodOxygenSaturationData, unit: HKUnit.percent(), chartTitle: "Blood Oxygen Saturation")
                 }
                 .padding()
             }
@@ -123,7 +129,7 @@ struct vitalView: View {
                 } else {
                     if dataAvailable {
                         Button(action: {
-                            showingHeartRateChart = true
+                            showingChart[chartKey] = true
                         }) {
                             Text("Data is Available")
                                 .font(.footnote)
@@ -137,12 +143,15 @@ struct vitalView: View {
                             .multilineTextAlignment(.center)
                     }
                     Button(action: {
-                        showingHeartRateChart = true
+                        showingChart[chartKey] = true
                     }) {
                         Image(systemName: "info.circle")
                             .foregroundStyle(Color.blue)
                     }
-                    .sheet(isPresented: $showingHeartRateChart) {
+                    .sheet(isPresented: Binding(
+                        get: { showingChart[chartKey] ?? false },
+                        set: { showingChart[chartKey] = $0 }
+                    )) {
                         VitalChartWithTimeFramePicker(title: chartTitle, data: data.map {
                             ChartDataVital(date: $0.endDate, minValue: $0.minValue, maxValue: $0.maxValue, averageValue: $0.averageValue)
                         },
@@ -352,9 +361,10 @@ struct VitalChartWithTimeFramePicker: View {
     }
 
     private func getAvailableTimeFrames(for title: String) -> [TimeFrameVital] {
-        if title == "Walking Steadiness" {
-            return TimeFrameVital.allCases.filter { $0 != .daily && $0 != .weekly }
-        } else {
+        switch title {
+        case "Heart Rate Variability", "Blood Oxygen Saturation":
+            return TimeFrameVital.allCases.filter { $0 != .hourly }
+        default:
             return TimeFrameVital.allCases
         }
     }
@@ -431,6 +441,10 @@ struct VitalChartWithTimeFramePicker: View {
         switch title {
         case "Heart Rate":
             return "BPM"
+        case "Heart Rate Variability":
+            return "ms"
+        case "Blood Oxygen Saturation":
+            return "%"
         default:
             return ""
         }
@@ -442,10 +456,10 @@ struct VitalChartWithTimeFramePicker: View {
         }
         
         if minValue == maxValue {
-            return "\(String(format: "%.1f", averageValue))"
+            return "\(String(format: "%.0f", averageValue))"
         } else {
-            let rangeText = "(\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)))"
-            return "\(String(format: "%.1f", averageValue))\n\(rangeText)"
+            let rangeText = "(\(String(format: "%.0f", minValue))-\(String(format: "%.0f", maxValue)))"
+            return "\(String(format: "%.0f", averageValue))\n\(rangeText)"
         }
     }
     
@@ -500,6 +514,10 @@ struct VitalChartWithTimeFramePicker: View {
         switch title {
         case "Heart Rate":
             return "Heart Rate"
+        case "Heart Rate Variability":
+            return "Heart Rate Variability"
+        case "Blood Oxygen Saturation":
+            return "Blood Oxygen Saturation"
         default:
             return "Data not available."
         }
@@ -509,6 +527,10 @@ struct VitalChartWithTimeFramePicker: View {
         switch title {
         case "Heart Rate":
             return "DATA INFORMATION: Heart Rate is a measure of the number of times the heart beats per minute."
+        case "Heart Rate Variability":
+            return "DATA INFORMATION: Heart Rate Variability is a measure of the the standard deviation of heartbeat intervals."
+        case "Blood Oxygen Saturation":
+            return "DATA INFORMATION: Heart Rate is a measure of the amount of oxygen circulating in blood stream."
         default:
             return "Data not available."
         }
@@ -518,6 +540,10 @@ struct VitalChartWithTimeFramePicker: View {
         switch title {
         case "Heart Rate":
             return "MEASURED USING: Apple Watch"
+        case "Heart Rate Variability":
+            return "MEASURED USING: Apple Watch"
+        case "Blood Oxygen Saturation":
+            return "MEASURED USING: Apple Watch series 6 or later"
         default:
             return "Data not available."
         }
@@ -527,6 +553,10 @@ struct VitalChartWithTimeFramePicker: View {
         switch title {
         case "Heart Rate":
             return "USE CASE: Cardiovascular, diabetes, COPD, neurological, psychiatric disorders, obesity and metabolic syndrome"
+        case "Heart Rate Variability":
+            return "USE CASE: "
+        case "Blood Oxygen Saturation":
+            return "USE CASE: Cardiovascular, respiratory disorders, sleep disorders, anemia, hypoxemia, and methemoglobinemia"
         default:
             return "Data not available."
         }
@@ -699,12 +729,15 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataVital], timeFrame: 
                 break
             }
             
-            let filteredData = data.filter { $0.date >= startOfMinute && $0.date <= endOfMinute }
+            // Filter valid data points for the minute
+            let filteredData = data.filter { $0.date >= startOfMinute && $0.date <= endOfMinute && $0.averageValue > 0 }
             
+            let totalValue = filteredData.reduce(0) { $0 + $1.averageValue }
+            let averageValue = filteredData.isEmpty ? 0 : totalValue / Double(filteredData.count)
+
             let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
             let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
-            let averageValue = (minValue + maxValue) / 2
-            
+
             minuteData.append(ChartDataVital(date: startOfMinute, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
         }
         
@@ -723,12 +756,15 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataVital], timeFrame: 
                 break
             }
             
-            let filteredData = data.filter { $0.date >= startOfHour && $0.date <= endOfHour }
+            // Filter valid data points for the hour
+            let filteredData = data.filter { $0.date >= startOfHour && $0.date <= endOfHour && $0.averageValue > 0 }
             
+            let totalValue = filteredData.reduce(0) { $0 + $1.averageValue }
+            let averageValue = filteredData.isEmpty ? 0 : totalValue / Double(filteredData.count)
+
             let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
             let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
-            let averageValue = (minValue + maxValue) / 2
-            
+
             hourlyData.append(ChartDataVital(date: startOfHour, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
         }
         
@@ -744,12 +780,15 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataVital], timeFrame: 
             return ChartDataVital(date: startOfDay, minValue: 0, maxValue: 0, averageValue: 0)
         }
         
-        let filteredData = data.filter { $0.date >= startOfDay && $0.date <= endOfDay }
+        // Filter valid data points for the day
+        let filteredData = data.filter { $0.date >= startOfDay && $0.date <= endOfDay && $0.averageValue > 0 }
         
+        let totalValue = filteredData.reduce(0) { $0 + $1.averageValue }
+        let averageValue = filteredData.isEmpty ? 0 : totalValue / Double(filteredData.count)
+
         let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
         let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
-        let averageValue = (minValue + maxValue) / 2
-        
+
         return ChartDataVital(date: startOfDay, minValue: minValue, maxValue: maxValue, averageValue: averageValue)
     }
 
@@ -765,12 +804,15 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataVital], timeFrame: 
                 break
             }
             
-            let filteredData = data.filter { $0.date >= currentWeekStart && $0.date <= currentWeekEnd }
+            // Filter valid data points for the week
+            let filteredData = data.filter { $0.date >= currentWeekStart && $0.date <= currentWeekEnd && $0.averageValue > 0 }
             
+            let totalValue = filteredData.reduce(0) { $0 + $1.averageValue }
+            let averageValue = filteredData.isEmpty ? 0 : totalValue / Double(filteredData.count)
+
             let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
             let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
-            let averageValue = (minValue + maxValue) / 2
-            
+
             weeklyData.append(ChartDataVital(date: currentWeekStart, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
         }
         
@@ -780,24 +822,26 @@ private func filterAndAggregateDataForPage(_ data: [ChartDataVital], timeFrame: 
     private func aggregateDataByMonth(for startDate: Date, data: [ChartDataVital], months: Int, endDate: Date) -> [ChartDataVital] {
         let calendar = Calendar.current
         var monthlyData: [ChartDataVital] = []
-        
+
         for monthOffset in 0..<months {
             let currentMonthStart = calendar.date(byAdding: .month, value: monthOffset, to: startDate)!
             let currentMonthEnd = calendar.date(byAdding: .month, value: 1, to: currentMonthStart)!.addingTimeInterval(-1)
-            
+
             if currentMonthStart > endDate {
                 break
             }
             
-            let filteredData = data.filter { $0.date >= currentMonthStart && $0.date <= currentMonthEnd }
-            
+            let filteredData = data.filter { $0.date >= currentMonthStart && $0.date <= currentMonthEnd && $0.averageValue > 0 }
+
+            let totalValue = filteredData.reduce(0) { $0 + $1.averageValue }
+            let averageValue = filteredData.isEmpty ? 0 : totalValue / Double(filteredData.count)
+
             let minValue = filteredData.map { $0.minValue }.min() ?? 0.0
             let maxValue = filteredData.map { $0.maxValue }.max() ?? 0.0
-            let averageValue = (minValue + maxValue) / 2
-            
+
             monthlyData.append(ChartDataVital(date: currentMonthStart, minValue: minValue, maxValue: maxValue, averageValue: averageValue))
         }
-        
+
         return monthlyData
     }
     
@@ -846,19 +890,35 @@ struct BoxChartViewVital: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
                 Chart {
-                    ForEach(data) { item in
-                        if timeFrame == .hourly {
+                    ForEach(data.filter { $0.averageValue != 0 || $0.minValue != 0 || $0.maxValue != 0 }) { item in
+                        switch (timeFrame, title) {
+                        case (.hourly, "Heart Rate"):
                             PointMark(
                                 x: .value("Time", item.date),
                                 y: .value("Heart Rate", item.averageValue)
                             )
                             .symbolSize(15)
+                            
                             LineMark(
                                 x: .value("Time", item.date),
                                 y: .value("Heart Rate", item.averageValue)
                             )
                             .symbolSize(1)
-                        } else {
+                            
+                        case (_, "Heart Rate Variability"):
+                            PointMark(
+                                x: .value("Time", item.date),
+                                y: .value("Heart Rate Variability", item.averageValue)
+                            )
+                            .symbolSize(15)
+                            
+                            LineMark(
+                                x: .value("Time", item.date),
+                                y: .value("Heart Rate Variability", item.averageValue)
+                            )
+                            .symbolSize(1)
+                            
+                        default:
                             BarMark(
                                 x: .value("Date", item.date),
                                 yStart: .value("Min", item.minValue),
@@ -870,6 +930,7 @@ struct BoxChartViewVital: View {
                 .id(UUID())
                 .foregroundStyle(Color.primary)
                 .chartXScale(domain: getXScaleDomain())
+                .chartYScale(domain: getYScaleDomain())
                 .chartXAxis {
                     switch timeFrame {
                     case .hourly:
@@ -901,9 +962,9 @@ struct BoxChartViewVital: View {
                             AxisGridLine()
                         }
                     case .yearly:
-                        AxisMarks(values: .automatic()) { value in
+                        AxisMarks(values: .automatic(desiredCount: 12)) { value in
                             AxisValueLabel(format: .dateTime.month(.narrow))
-                            .offset(x: 2.5)
+                                .offset(x: -(8))
                             AxisGridLine()
                         }
                     }
@@ -916,10 +977,30 @@ struct BoxChartViewVital: View {
                             Spacer()
                             
                             VStack {
-                                if item.minValue == item.maxValue {
-                                    Text(item.averageValue == 0 ? "--" : "\(String(format: "%.1f", item.averageValue)) BPM")
-                                } else {
-                                    Text(item.averageValue == 0 ? "--" : "\(String(format: "%.1f", item.averageValue)) (\(String(format: "%.1f", item.minValue))-\(String(format: "%.1f", item.maxValue))) BPM")
+                                switch title {
+                                case "Heart Rate":
+                                    if item.minValue == item.maxValue {
+                                        Text(item.averageValue == 0 ? "--" : "\(String(format: "%.0f", item.averageValue)) BPM")
+                                    } else {
+                                        Text(item.averageValue == 0 ? "--" : "\(String(format: "%.0f", item.averageValue)) (\(String(format: "%.0f", item.minValue))-\(String(format: "%.0f", item.maxValue))) BPM")
+                                    }
+                                    
+                                case "Heart Rate Variability":
+                                    if item.minValue == item.maxValue {
+                                        Text(item.averageValue == 0 ? "--" : "\(String(format: "%.0f", item.averageValue)) ms")
+                                    } else {
+                                        Text(item.averageValue == 0 ? "--" : "\(String(format: "%.0f", item.averageValue)) (\(String(format: "%.0f", item.minValue))-\(String(format: "%.0f", item.maxValue))) ms")
+                                    }
+                                    
+                                case "Blood Oxygen Saturation":
+                                    if item.minValue == item.maxValue {
+                                        Text(item.averageValue == 0 ? "--" : "\(String(format: "%.0f", item.averageValue)) %")
+                                    } else {
+                                        Text(item.averageValue == 0 ? "--" : "\(String(format: "%.0f", item.averageValue)) (\(String(format: "%.0f", item.minValue))-\(String(format: "%.0f", item.maxValue))) %")
+                                    }
+                                    
+                                default:
+                                    Text("--")
                                 }
                             }
                         }
@@ -943,11 +1024,21 @@ struct BoxChartViewVital: View {
             return "--"
         }
 
-        let unit: String = "BPM"
+        let unit: String
+        switch title {
+        case "Heart Rate":
+            unit = "BPM"
+        case "Heart Rate Variability":
+            unit = "ms"
+        case "Blood Oxxygen Saturation":
+            unit = "%"
+        default:
+            unit = ""
+        }
         if minValue == maxValue {
-            return "\(String(format: "%.1f", maxValue)) \(unit)"
+            return "\(String(format: "%.0f", maxValue)) \(unit)"
         } else {
-            return "\(String(format: "%.1f", minValue))-\(String(format: "%.1f", maxValue)) \(unit)"
+            return "\(String(format: "%.0f", minValue))-\(String(format: "%.0f", maxValue)) \(unit)"
         }
     }
     
@@ -1039,6 +1130,17 @@ struct BoxChartViewVital: View {
         default:
             return firstDate...lastDate
         }
+    }
+    
+    private func getYScaleDomain() -> ClosedRange<Double> {
+        let validMinValues = data.map { $0.minValue }.filter { $0 > 0 }
+        let validMaxValues = data.map { $0.maxValue }.filter { $0 > 0 }
+
+        let minY = validMinValues.min() ?? 0.0
+        let maxY = validMaxValues.max() ?? 1.0
+        
+        let padding = (maxY - minY) * 0.1
+        return (minY - padding)...(maxY + padding)
     }
 }
 

@@ -185,8 +185,8 @@ class HealthKitMobilityManager: ObservableObject {
         
         for sample in samples {
             let dateString = dateFormatter.string(from: sample.endDate)
-            let formatString = "%.\(decimalPlaces)f"  // Format the value based on the decimal places
-            let value = String(format: formatString, sample.averageValue.isNaN ? 0 : sample.averageValue)  // Handle NaN and format value
+            let formatString = "%.\(decimalPlaces)f"
+            let value = String(format: formatString, sample.averageValue.isNaN ? 0 : sample.averageValue)  
             csvString += "\(dateString),\(value)\n"
         }
         
