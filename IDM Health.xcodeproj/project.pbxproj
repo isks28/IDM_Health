@@ -300,8 +300,8 @@
 		863757E42CD38D90002F4BEA /* SixMinuteWalkTest */ = {
 			isa = PBXGroup;
 			children = (
-				863757E52CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift */,
 				863757E72CD38DBA002F4BEA /* SixMinuteWalkTestView.swift */,
+				863757E52CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift */,
 			);
 			path = SixMinuteWalkTest;
 			sourceTree = "<group>";
@@ -346,8 +346,8 @@
 		866B7C4A2CD0F68A000FC227 /* rawDataAll */ = {
 			isa = PBXGroup;
 			children = (
-				866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */,
 				866B7C4D2CD0F6EA000FC227 /* rawDataAllView.swift */,
+				866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */,
 			);
 			path = rawDataAll;
 			sourceTree = "<group>";

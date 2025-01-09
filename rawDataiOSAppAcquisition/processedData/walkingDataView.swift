@@ -65,14 +65,14 @@ struct processedDataView: View {
                     }
                     .sheet(isPresented: $showingInfo) {
                         VStack {
-                            Text("Walking data Information")
+                            Text("Information")
                                 .font(.largeTitle)
-                            Text("STEP COUNTS use core motion pedometer to record the user steps, distance,  Floor Counts, Pace and Cadence")
+                            Text("Step Counts uses pedometer from Core Motion to record the user's steps, distance walked, and cadence")
                                 .font(.body)
                                 .padding()
                                 .padding()
                                 .foregroundStyle(Color.primary)
-                            Text("SIX MINUTE WALK TEST is a dedicated test to collect users Six-Minute-Walk data with a touch of an integrated button")
+                            Text("Six-minute walk test is a dedicated test to collect Six-Minute-Walk data with a touch of a button. Collected data include: step count, distance, cadence.")
                                 .font(.body)
                                 .padding()
                                 .padding()

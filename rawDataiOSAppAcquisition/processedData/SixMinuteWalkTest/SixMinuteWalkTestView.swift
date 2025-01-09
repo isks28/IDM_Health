@@ -230,7 +230,7 @@ struct SixMinuteWalkTestView: View {
                 }
                 .sheet(isPresented: $showingInfo) {
                     VStack {
-                        Text("Step Counts Information")
+                        Text("Six-Minute-Walk tests information")
                             .font(.title)
                             .multilineTextAlignment(.leading)
                             .padding(.top)
@@ -247,7 +247,7 @@ struct SixMinuteWalkTestView: View {
                                 .padding(.vertical, 5)
                                 .padding(.horizontal, 5)
                                 .foregroundStyle(Color.primary)
-                            Text("Data collection will stop if the step counts view is closed, but it will continue running even if the phone is locked or other apps are in use.")
+                            Text("Data collection will stop if the six-minute-walk tests view is closed, but it will continue running even if the phone is locked or other apps are in use.")
                                 .font(.body)
                                 .multilineTextAlignment(.center)
                                 .padding(.vertical, 10)
@@ -263,6 +263,7 @@ struct SixMinuteWalkTestView: View {
                         .scrollIndicators(.hidden)
                         .padding(.horizontal)
                         .padding(.bottom, 5)
+                        AnimatedSwipeDownCloseView()
                     }
                     .padding()
                 }
