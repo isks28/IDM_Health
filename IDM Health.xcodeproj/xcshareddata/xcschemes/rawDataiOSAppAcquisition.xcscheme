@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "5A554E562C8705080081747B"
-               BuildableName = "LifeStats.app"
+               BuildableName = "IDM Health.app"
                BlueprintName = "rawDataiOSAppAcquisition"
                ReferencedContainer = "container:IDM Health.xcodeproj">
             </BuildableReference>
@@ -69,7 +69,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "5A554E562C8705080081747B"
-            BuildableName = "LifeStats.app"
+            BuildableName = "IDM Health.app"
             BlueprintName = "rawDataiOSAppAcquisition"
             ReferencedContainer = "container:IDM Health.xcodeproj">
          </BuildableReference>
@@ -86,7 +86,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "5A554E562C8705080081747B"
-            BuildableName = "LifeStats.app"
+            BuildableName = "IDM Health.app"
             BlueprintName = "rawDataiOSAppAcquisition"
             ReferencedContainer = "container:IDM Health.xcodeproj">
          </BuildableReference>
