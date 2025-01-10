@@ -913,6 +913,7 @@ struct BoxChartViewVital: View {
                                 x: .value("Time", item.date),
                                 y: .value("Heart Rate", item.averageValue)
                             )
+                            .interpolationMethod(.catmullRom)
                             .symbolSize(1)
                             
                         case (_, "Heart Rate Variability"):
@@ -926,6 +927,7 @@ struct BoxChartViewVital: View {
                                 x: .value("Time", item.date),
                                 y: .value("Heart Rate Variability", item.averageValue)
                             )
+                            .interpolationMethod(.catmullRom)
                             .symbolSize(1)
                             
                         case (_, "Resting Heart Rate"):
@@ -939,6 +941,7 @@ struct BoxChartViewVital: View {
                                 x: .value("Time", item.date),
                                 y: .value("Resting Heart Rate", item.averageValue)
                             )
+                            .interpolationMethod(.catmullRom)
                             .symbolSize(1)
                             
                         default:
