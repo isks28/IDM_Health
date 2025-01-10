@@ -23,7 +23,7 @@ class VitalManager: ObservableObject {
     @Published var heartRateData: [VitalStatistics] = []
     @Published var bloodOxygenSaturationData: [VitalStatistics] = []
     @Published var heartRateVariabilityData: [VitalStatistics] = []
-    @Published var respiratoryRateData: [VitalStatistics] = []
+    @Published var restingHeartRate: [VitalStatistics] = []
     
     @Published var savedFilePath: String?
     
@@ -46,7 +46,7 @@ class VitalManager: ObservableObject {
             .quantityType(forIdentifier: .heartRate)!,
             .quantityType(forIdentifier: .oxygenSaturation)!,
             .quantityType(forIdentifier: .heartRateVariabilitySDNN)!,
-            .quantityType(forIdentifier: .respiratoryRate)!
+            .quantityType(forIdentifier: .restingHeartRate)!
         ]
         
         healthStore.requestAuthorization(toShare: nil, read: typesToRead) { success, error in
@@ -61,7 +61,6 @@ class VitalManager: ObservableObject {
     func fetchVitalData(startDate: Date, endDate: Date) {
         dataCache.removeAll()
         
-        // Fetch data for each vital type
         fetchData(identifier: .heartRate, startDate: startDate, endDate: endDate) { [weak self] result in
             let statistics = self?.convertSamplesToStatistics(samples: result, unit: HKUnit.count().unitDivided(by: HKUnit.minute()))
             DispatchQueue.main.async {
@@ -91,10 +90,10 @@ class VitalManager: ObservableObject {
             }
         }
         
-        fetchData(identifier: .respiratoryRate, startDate: startDate, endDate: endDate) { [weak self] result in
+        fetchData(identifier: .restingHeartRate, startDate: startDate, endDate: endDate) { [weak self] result in
             let statistics = self?.convertSamplesToStatistics(samples: result, unit: HKUnit.count().unitDivided(by: HKUnit.minute()))
             DispatchQueue.main.async {
-                self?.respiratoryRateData = statistics ?? []
+                self?.restingHeartRate = statistics ?? []
             }
         }
     }
@@ -154,10 +153,10 @@ class VitalManager: ObservableObject {
     
     func saveDataAsCSV(serverURL: URL) {
         backgroundQueue.async {
-            self.saveCSV(for: self.heartRateData, fileName: "heart_rate_data.csv", unitLabel: "BPM", serverURL: serverURL, baseFolder: self.baseFolder, decimalPlaces: 0)
+            self.saveCSV(for: self.heartRateData, fileName: "heart_rate_data.csv", unitLabel: "Beats per minute", serverURL: serverURL, baseFolder: self.baseFolder, decimalPlaces: 0)
             self.saveCSV(for: self.bloodOxygenSaturationData, fileName: "oxygen_saturation_data.csv", unitLabel: "%", serverURL: serverURL, baseFolder: self.baseFolder, decimalPlaces: 2)
             self.saveCSV(for: self.heartRateVariabilityData, fileName: "heart_rate_variability_data.csv", unitLabel: "ms", serverURL: serverURL, baseFolder: self.baseFolder, decimalPlaces: 2)
-            self.saveCSV(for: self.respiratoryRateData, fileName: "respiratory_rate_data.csv", unitLabel: "Breaths/Min", serverURL: serverURL, baseFolder: self.baseFolder, decimalPlaces: 1)
+            self.saveCSV(for: self.restingHeartRate, fileName: "resting_heart_rate.csv", unitLabel: "Beats per minute", serverURL: serverURL, baseFolder: self.baseFolder, decimalPlaces: 1)
         }
     }
     

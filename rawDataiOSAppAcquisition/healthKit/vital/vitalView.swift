@@ -33,7 +33,8 @@ struct vitalView: View {
     @State private var showingChart: [String: Bool] = [
         "HeartRate": false,
         "HeartRateVariability": false,
-        "BloodOxygenSaturation": false
+        "BloodOxygenSaturation": false,
+        "RestingHeartRate": false
     ]
     
     init() {
@@ -47,6 +48,7 @@ struct vitalView: View {
                 VStack(spacing: 10) {
                     dataSection(title: "Heart Rate", dataAvailable: !vitalManager.heartRateData.isEmpty, chartKey: "HeartRate", data: vitalManager.heartRateData, unit: HKUnit.init(from: "count/min"), chartTitle: "Heart Rate")
                     dataSection(title: "Heart Rate Variability", dataAvailable: !vitalManager.heartRateVariabilityData.isEmpty, chartKey: "HeartRateVariability", data: vitalManager.heartRateVariabilityData, unit: HKUnit.secondUnit(with: .milli), chartTitle: "Heart Rate Variability")
+                    dataSection(title: "Resting Heart Rate", dataAvailable: !vitalManager.restingHeartRate.isEmpty, chartKey: "RestingHeartRate", data: vitalManager.restingHeartRate, unit: HKUnit.init(from: "count/min"), chartTitle: "Resting Heart Rate")
                     dataSection(title: "Blood Oxygen Saturation", dataAvailable: !vitalManager.bloodOxygenSaturationData.isEmpty, chartKey: "BloodOxygenSaturation", data: vitalManager.bloodOxygenSaturationData, unit: HKUnit.percent(), chartTitle: "Blood Oxygen Saturation")
                 }
                 .padding()
@@ -362,7 +364,7 @@ struct VitalChartWithTimeFramePicker: View {
 
     private func getAvailableTimeFrames(for title: String) -> [TimeFrameVital] {
         switch title {
-        case "Heart Rate Variability", "Blood Oxygen Saturation":
+        case "Heart Rate Variability", "Blood Oxygen Saturation", "Resting Heart Rate":
             return TimeFrameVital.allCases.filter { $0 != .hourly }
         default:
             return TimeFrameVital.allCases
@@ -445,6 +447,8 @@ struct VitalChartWithTimeFramePicker: View {
             return "ms"
         case "Blood Oxygen Saturation":
             return "%"
+        case "Resting Heart Rate":
+            return "BPM"
         default:
             return ""
         }
@@ -489,12 +493,10 @@ struct VitalChartWithTimeFramePicker: View {
         
     private func calculateMinMaxAndAverage(for timeFrame: TimeFrameVital, data: [ChartDataVital], startDate: Date, endDate: Date, currentPage: Int) -> (minValue: Double, maxValue: Double, averageValue: Double) {
         let nonZeroData = data.filter { $0.minValue > 0 }
-        
         let minValue = nonZeroData.map { $0.minValue }.min() ?? 0.0
         let maxValue = data.map { $0.maxValue }.max() ?? 0.0
 
         let validData = data.filter { $0.averageValue > 0 }
-
         let totalValue = validData.reduce(0) { $0 + $1.averageValue }
         let averageValue = validData.isEmpty ? 0 : totalValue / Double(validData.count)
 
@@ -518,6 +520,8 @@ struct VitalChartWithTimeFramePicker: View {
             return "Heart Rate Variability"
         case "Blood Oxygen Saturation":
             return "Blood Oxygen Saturation"
+        case "Resting Heart Rate":
+            return "Resting Heart Rate"
         default:
             return "Data not available."
         }
@@ -531,6 +535,8 @@ struct VitalChartWithTimeFramePicker: View {
             return "DATA INFORMATION: Heart Rate Variability is a measure of the the standard deviation of heartbeat intervals."
         case "Blood Oxygen Saturation":
             return "DATA INFORMATION: Heart Rate is a measure of the amount of oxygen circulating in blood stream."
+        case "Resting Heart Rate":
+            return "DATA INFORMATION: Resting heart rate is a measure of the heart beats per minute during resting."
         default:
             return "Data not available."
         }
@@ -544,6 +550,8 @@ struct VitalChartWithTimeFramePicker: View {
             return "MEASURED USING: Apple Watch"
         case "Blood Oxygen Saturation":
             return "MEASURED USING: Apple Watch series 6 or later"
+        case "Resting Heart Rate":
+            return "MEASURED USING: Apple Watch"
         default:
             return "Data not available."
         }
@@ -554,9 +562,11 @@ struct VitalChartWithTimeFramePicker: View {
         case "Heart Rate":
             return "USE CASE: Cardiovascular, diabetes, COPD, neurological, psychiatric disorders, obesity and metabolic syndrome"
         case "Heart Rate Variability":
-            return "USE CASE: "
+            return "USE CASE: Cardiovascular, diabetes, high blood pressure, heart arrythmia, asthma, anxiety, and depression" // https://www.webmd.com/heart/what-is-heart-rate-variability
         case "Blood Oxygen Saturation":
-            return "USE CASE: Cardiovascular, respiratory disorders, sleep disorders, anemia, hypoxemia, and methemoglobinemia"
+            return "USE CASE: Cardiovascular, respiratory disorders, sleep disorders, anemia, asthma, and pneumonia" // https://www.hopkinsmedicine.org/health/treatment-tests-and-therapies/pulse-oximetry
+        case "Resting Heart Rate":
+            return "USE CASE: Cardiovascular, metabolic, diabetes, neurological disorders, sleep disorders, mental health conditions" //Saxena A, Minton D, Lee DC, Sui X, Fayad R, Lavie CJ, Blair SN. Protective role of resting heart rate on all-cause and cardiovascular disease mortality. Mayo Clin Proc. 2013 Dec;88(12):1420-6. doi: 10.1016/j.mayocp.2013.09.011. PMID: 24290115; PMCID: PMC3908776.
         default:
             return "Data not available."
         }
@@ -918,6 +928,19 @@ struct BoxChartViewVital: View {
                             )
                             .symbolSize(1)
                             
+                        case (_, "Resting Heart Rate"):
+                            PointMark(
+                                x: .value("Time", item.date),
+                                y: .value("Resting Heart Rate", item.averageValue)
+                            )
+                            .symbolSize(15)
+                            
+                            LineMark(
+                                x: .value("Time", item.date),
+                                y: .value("Resting Heart Rate", item.averageValue)
+                            )
+                            .symbolSize(1)
+                            
                         default:
                             BarMark(
                                 x: .value("Date", item.date),
@@ -992,6 +1015,13 @@ struct BoxChartViewVital: View {
                                         Text(item.averageValue == 0 ? "--" : "\(String(format: "%.0f", item.averageValue)) (\(String(format: "%.0f", item.minValue))-\(String(format: "%.0f", item.maxValue))) ms")
                                     }
                                     
+                                case "Resting Heart Rate":
+                                    if item.minValue == item.maxValue {
+                                        Text(item.averageValue == 0 ? "--" : "\(String(format: "%.0f", item.averageValue)) ms")
+                                    } else {
+                                        Text(item.averageValue == 0 ? "--" : "\(String(format: "%.0f", item.averageValue)) (\(String(format: "%.0f", item.minValue))-\(String(format: "%.0f", item.maxValue))) BPM")
+                                    }
+                                    
                                 case "Blood Oxygen Saturation":
                                     if item.minValue == item.maxValue {
                                         Text(item.averageValue == 0 ? "--" : "\(String(format: "%.0f", item.averageValue)) %")
@@ -1027,6 +1057,8 @@ struct BoxChartViewVital: View {
         let unit: String
         switch title {
         case "Heart Rate":
+            unit = "BPM"
+        case "Resting Heart Rate":
             unit = "BPM"
         case "Heart Rate Variability":
             unit = "ms"
