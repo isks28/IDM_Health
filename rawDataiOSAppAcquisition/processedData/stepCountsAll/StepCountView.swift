@@ -39,44 +39,70 @@ struct StepCountView: View {
             
             VStack {
                 Spacer()
-                if !isRecording && stepManager.stepCount == 0{
-                VStack {
-                    Toggle(isOn: $canControlStepLength) {
-                        if stepManager.stepLengthInMeters == 0.7 {
-                            Text("Step Length:")
-                                .font(.caption2)
-                            Text("Default: 0.7 meters")
-                                .font(.caption2)
-                        } else {
-                            Text("Step Length:")
-                                .font(.caption2)
-                            Text(String(format: "Changed: %.2f meters", stepManager.stepLengthInMeters))
-                                .font(.caption2)
+                if !isRecording && stepManager.stepCount == 0 {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Toggle(isOn: $canControlStepLength) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                if !canControlStepLength {
+                                    Text("Enable Step Length Control")
+                                }
+                                
+                                HStack {
+                                    if canControlStepLength {
+                                        Text("Enter new step length:")
+                                            .font(.callout)
+                                        TextField("0", value: Binding(
+                                            get: { stepManager.stepLengthInMeters * 100 },
+                                            set: { newValue in
+                                                stepManager.stepLengthInMeters = newValue / 100
+                                            }
+                                        ), formatter: NumberFormatter())
+                                            .font(.callout)
+                                            .foregroundStyle(Color.blue)
+                                            .keyboardType(.decimalPad)
+                                            .frame(width: 80)
+                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                            .multilineTextAlignment(.center)
+                                            .toolbar {
+                                                ToolbarItem(placement: .keyboard) {
+                                                    HStack {
+                                                        Spacer()
+                                                        Button("Done") {
+                                                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        Text("cm")
+                                    } else {
+                                        if stepManager.stepLengthInMeters == 0.7 {
+                                            Text("Default: 70 cm")
+                                                .font(.caption2)
+                                                .foregroundColor(.gray)
+                                        } else {
+                                            Text(String(format: "Changed: %.2f meters (%.0f cm)", stepManager.stepLengthInMeters, stepManager.stepLengthInMeters * 100))
+                                                .font(.caption2)
+                                                .foregroundColor(.gray)
+                                        }
+                                    }
+                                }
+                            }
                         }
-                    }
-                    .onChange(of: canControlStepLength) { _, newValue in
-                        if newValue {
-                            authenticateUser { success in
-                                if !success {
-                                    canControlStepLength = false
-                                    showingAuthenticationError = true
-                                } else {
-                                    showingAuthenticationError = false
+                        .onChange(of: canControlStepLength) { _, newValue in
+                            if newValue {
+                                authenticateUser { success in
+                                    if !success {
+                                        canControlStepLength = false
+                                        showingAuthenticationError = true
+                                    } else {
+                                        showingAuthenticationError = false
+                                    }
                                 }
                             }
                         }
                     }
+                    .padding()
                 }
-                .padding()
-                
-                if canControlStepLength {
-                    VStack {
-                        Text("Step Length: \(String(format: "%.2f meters", stepManager.stepLengthInMeters))")
-                        Slider(value: $stepManager.stepLengthInMeters, in: 0.5...1.2, step: 0.01)
-                            .padding([.leading, .trailing], 20)
-                    }
-                }
-            }
                 
                 if stepManager.stepCount > 0 {
                     Grid {

@@ -1,0 +1,69 @@
+if !isRecording && stepManager.stepCount == 0 {
+    VStack(alignment: .leading, spacing: 8) {
+        Toggle(isOn: $canControlStepLength) {
+            VStack(alignment: .leading, spacing: 4) {
+                if !canControlStepLength {
+                    Text("Enable Step Length Control")
+                }
+                
+                HStack {
+                    if canControlStepLength {
+                        Text("Enter new step length:")
+                            .font(.callout)
+                        TextField("0.00", value: $stepManager.stepLengthInMeters, formatter: NumberFormatter())
+                            .font(.callout)
+                            .foregroundStyle(Color.blue)
+                            .keyboardType(.decimalPad)
+                            .frame(width: 60)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .multilineTextAlignment(.center)
+                            .onAppear {
+                                if stepManager.stepLengthInMeters == 0.7 {
+                                    stepManager.stepLengthInMeters = 0.0
+                                }
+                            }
+                            .onChange(of: stepManager.stepLengthInMeters) { _, newValue in
+                                // Clamp value to the range 0.5–1.2 meters
+                                stepManager.stepLengthInMeters = max(0.5, min(1.2, newValue))
+                            }
+                            .toolbar {
+                                ToolbarItem(placement: .keyboard) {
+                                    HStack {
+                                        Spacer()
+                                        Button("Done") {
+                                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                                        }
+                                    }
+                                }
+                            }
+                        Text("meters")
+                    } else {
+                        if stepManager.stepLengthInMeters == 0.7 {
+                            Text("Default: 0.7 meters")
+                                .font(.caption2)
+                                .foregroundColor(.gray)
+                        } else {
+                            Text(String(format: "Changed: %.2f meters", stepManager.stepLengthInMeters))
+                                .font(.caption2)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                }
+            }
+        }
+        .onChange(of: canControlStepLength) { _, newValue in
+            if newValue {
+                authenticateUser { success in
+                    if !success {
+                        canControlStepLength = false
+                        showingAuthenticationError = true
+                    } else {
+                        showingAuthenticationError = false
+                    }
+                }
+            }
+        }
+    }
+    .padding()
+    .padding(.bottom, 20.0)
+}
