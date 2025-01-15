@@ -183,7 +183,7 @@ struct StepCountView: View {
                                 .font(.title3)
                                 .gridCellAnchor(.leading)
                             if let currentCadence = stepManager.currentCadence {
-                                Text(String(format: "%.2f steps/second", currentCadence))
+                                Text(String(format: "%.2f steps/minute", currentCadence))
                                     .font(.title3)
                                     .foregroundColor(.blue)
                                     .gridCellAnchor(.trailing)

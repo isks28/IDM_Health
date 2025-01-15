@@ -215,7 +215,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                     self?.currentPace = currentPace
                 }
                 if let currentCadence = pedometerData.currentCadence?.doubleValue {
-                    self?.currentCadence = currentCadence
+                    self?.currentCadence = currentCadence / 60
                 }
                 if let floorsAscended = pedometerData.floorsAscended?.intValue {
                     self?.floorAscended = floorsAscended
@@ -290,7 +290,7 @@ class StepCountManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let formattedDate = dateFormatter.string(from: currentDate)
         
         let csvStepLengthHeader = "StepLength (cm): \(String(format: "%.0f", stepLengthInMeters * 100))\n"
-        let csvHeader = "DataType,TimeStamp,StepCount,Distance (m),AverageActivePace (m/s),CurrentPace (m/s),CurrentCadence (steps/s),FloorsAscended,FloorsDescended\n"
+        let csvHeader = "DataType,TimeStamp,StepCount,Distance (m),AverageActivePace (m/s),CurrentPace (m/s),CurrentCadence (steps/min),FloorsAscended,FloorsDescended\n"
         let csvData = "WalkingData,\(formattedDate),\(stepCount),\(distanceGPS),\(distancePedometer),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0),\(floorAscended ?? 0),\(floorDescended ?? 0)"
         
         let csvString = csvStepLengthHeader + csvHeader + csvData
