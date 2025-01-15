@@ -250,10 +250,11 @@ class SixMinuteWalkTestManager: NSObject, ObservableObject, CLLocationManagerDel
         dateFormatter.timeZone = TimeZone.current
         let formattedDate = dateFormatter.string(from: Date())
 
+        let csvStepLengthHeader = "Step length: \(String(format: "%.0f", stepLengthInMeters * 100))\n"
         let csvHeader = "DataType,TimeStamp,StepCount,Distance GPS (m),Distance Pedometer (m),AverageActivePace (m/s),CurrentPace (m/s),CurrentCadence (steps/s),FloorsAscended,FloorsDescended\n"
         let csvData = "WalkingData,\(formattedDate),\(stepCount),\(distanceGPS),\(distancePedometer),\(averageActivePace ?? 0),\(currentPace ?? 0),\(currentCadence ?? 0),\(floorAscended ?? 0),\(floorDescended ?? 0)"
         
-        let csvString = csvHeader + csvData
+        let csvString = csvStepLengthHeader + csvHeader + csvData
 
         let fileName = "SixMinuteWalkTest_\(formattedDate).csv"
         let fileURL = folderURL.appendingPathComponent(fileName)

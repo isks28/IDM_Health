@@ -141,19 +141,53 @@ struct SixMinuteWalkTestView: View {
                             }
                         }
                     
-                    if !isRecording && stepSixMinuteManager.stepCount == 0{
-                    VStack {
+                if !isRecording && stepSixMinuteManager.stepCount == 0 {
+                    VStack(alignment: .leading, spacing: 8) {
                         Toggle(isOn: $canControlStepLength) {
-                            if stepSixMinuteManager.stepLengthInMeters == 0.7 {
-                                Text("Step Length:")
-                                    .font(.caption2)
-                                Text("Default: 0.7 meters")
-                                    .font(.caption2)
-                            } else {
-                                Text("Step Length:")
-                                    .font(.caption2)
-                                Text(String(format: "Changed: %.2f meters", stepSixMinuteManager.stepLengthInMeters))
-                                    .font(.caption2)
+                            VStack(alignment: .leading, spacing: 4) {
+                                if !canControlStepLength {
+                                    Text("Enable Step Length Control")
+                                }
+                                
+                                HStack {
+                                    if canControlStepLength {
+                                        Text("Enter new step length:")
+                                            .font(.callout)
+                                        TextField("0", value: Binding(
+                                            get: { stepSixMinuteManager.stepLengthInMeters * 100 }, // Display in cm
+                                            set: { newValue in
+                                                stepSixMinuteManager.stepLengthInMeters = newValue / 100 // Convert back to meters
+                                            }
+                                        ), formatter: NumberFormatter())
+                                            .font(.callout)
+                                            .foregroundStyle(Color.blue)
+                                            .keyboardType(.decimalPad)
+                                            .frame(width: 80)
+                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                            .multilineTextAlignment(.center)
+                                            .toolbar {
+                                                ToolbarItem(placement: .keyboard) {
+                                                    HStack {
+                                                        Spacer()
+                                                        Button("Done") {
+                                                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        Text("cm")
+                                    } else {
+                                        if stepSixMinuteManager.stepLengthInMeters == 0.7 {
+                                            Text("Default: 70 cm")
+                                                .font(.caption2)
+                                                .foregroundColor(.gray)
+                                        } else {
+                                            Text(String(format: "Changed: %.2f meters (%.0f cm)", stepSixMinuteManager.stepLengthInMeters, stepSixMinuteManager.stepLengthInMeters * 100))
+                                                .font(.caption2)
+                                                .foregroundColor(.gray)
+                                        }
+                                    }
+                                }
                             }
                         }
                         .onChange(of: canControlStepLength) { _, newValue in
@@ -170,14 +204,6 @@ struct SixMinuteWalkTestView: View {
                         }
                     }
                     .padding()
-                    
-                    if canControlStepLength {
-                        VStack {
-                            Text("Step Length: \(String(format: "%.2f meters", stepSixMinuteManager.stepLengthInMeters))")
-                            Slider(value: $stepSixMinuteManager.stepLengthInMeters, in: 0.5...1.2, step: 0.01)
-                                .padding([.leading, .trailing], 20)
-                        }
-                    }
                 }
             }
         }
