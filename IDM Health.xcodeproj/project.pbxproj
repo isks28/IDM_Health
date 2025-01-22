@@ -45,6 +45,9 @@
 		866B7C4C2CD0F6C8000FC227 /* rawDataAllManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */; };
 		866B7C4E2CD0F6EA000FC227 /* rawDataAllView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866B7C4D2CD0F6EA000FC227 /* rawDataAllView.swift */; };
 		86B0DE662CBE973C00003F50 /* ServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0DE652CBE973C00003F50 /* ServerConfig.swift */; };
+		86C9215E2D395637002AD774 /* PhotosAndVideoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C9215D2D395637002AD774 /* PhotosAndVideoManager.swift */; };
+		86C921602D395653002AD774 /* PhotosAndVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C9215F2D395653002AD774 /* PhotosAndVideoView.swift */; };
+		86C921622D395674002AD774 /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C921612D395674002AD774 /* CameraPreview.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -108,6 +111,9 @@
 		866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllManager.swift; sourceTree = "<group>"; };
 		866B7C4D2CD0F6EA000FC227 /* rawDataAllView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllView.swift; sourceTree = "<group>"; };
 		86B0DE652CBE973C00003F50 /* ServerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerConfig.swift; sourceTree = "<group>"; };
+		86C9215D2D395637002AD774 /* PhotosAndVideoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosAndVideoManager.swift; sourceTree = "<group>"; };
+		86C9215F2D395653002AD774 /* PhotosAndVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosAndVideoView.swift; sourceTree = "<group>"; };
+		86C921612D395674002AD774 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -329,6 +335,7 @@
 			isa = PBXGroup;
 			children = (
 				8649C9B22D05E6DD00E15C02 /* visualDataView.swift */,
+				86C921442D393859002AD774 /* photosAndVideoView */,
 				5A554E8D2C8705C10081747B /* cameraBased */,
 				8649C9B42D05E7DA00E15C02 /* Markerless Motion Analysis */,
 			);
@@ -350,6 +357,16 @@
 				866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */,
 			);
 			path = rawDataAll;
+			sourceTree = "<group>";
+		};
+		86C921442D393859002AD774 /* photosAndVideoView */ = {
+			isa = PBXGroup;
+			children = (
+				86C9215D2D395637002AD774 /* PhotosAndVideoManager.swift */,
+				86C9215F2D395653002AD774 /* PhotosAndVideoView.swift */,
+				86C921612D395674002AD774 /* CameraPreview.swift */,
+			);
+			path = photosAndVideoView;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -496,14 +513,17 @@
 				5A554E912C8705ED0081747B /* activityView.swift in Sources */,
 				5AB490012CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift in Sources */,
 				5A554E992C87061E0081747B /* rawDataView.swift in Sources */,
+				86C921602D395653002AD774 /* PhotosAndVideoView.swift in Sources */,
 				863757E62CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift in Sources */,
 				5A554E5D2C8705080081747B /* ContentView.swift in Sources */,
 				5A554E952C8706080081747B /* mobilityView.swift in Sources */,
 				5A554EA72C8706810081747B /* deviceMotionView.swift in Sources */,
 				86B0DE662CBE973C00003F50 /* ServerConfig.swift in Sources */,
 				5A554E9D2C87063D0081747B /* accelerometerDataManager.swift in Sources */,
+				86C921622D395674002AD774 /* CameraPreview.swift in Sources */,
 				86419FEC2CB988BF0071151C /* walkingDataView.swift in Sources */,
 				5A554EA92C87068D0081747B /* deviceMotionManager.swift in Sources */,
+				86C9215E2D395637002AD774 /* PhotosAndVideoManager.swift in Sources */,
 				5A554EAB2C87069D0081747B /* cameraBasedView.swift in Sources */,
 				5A554EAF2C8706BE0081747B /* cameraBasedManager.swift in Sources */,
 				8649C9B32D05E6DD00E15C02 /* visualDataView.swift in Sources */,

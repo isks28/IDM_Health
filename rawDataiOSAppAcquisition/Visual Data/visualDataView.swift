@@ -29,6 +29,20 @@ struct visualDataView: View {
                         }
                         .tag("Raw Visual Data")
                 HStack {
+                    Image(systemName: "camera.shutter.button.fill")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 50, height: 40)
+                        .foregroundStyle(Color.blue)
+                    Text("Photo and Video test new")
+                        .foregroundStyle(Color.primary)
+                        .font(.title2)
+                    Spacer()
+                    Image(systemName: "chevron.right.2")
+                        .foregroundStyle(Color.primary)
+                        }
+                        .tag("Photo and Video Data")
+                HStack {
                     Image(systemName: "person.and.background.dotted")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
@@ -72,7 +86,9 @@ struct visualDataView: View {
                 cameraBasedView()
             } else if selectedView == "Markerless Motion Data" {
                 markerlessMotionAnalysis()
-            }  else {
+            } else if selectedView == "Photo and Video Data" {
+                PhotosAndVideoView()
+            } else {
                 Text("Select a view")
                     .font(.largeTitle)
             }

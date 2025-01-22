@@ -45,6 +45,7 @@ struct SixMinuteWalkTestView: View {
                     .font(.title2)
                     .padding(.bottom)
                     .foregroundStyle(Color.primary)
+                Spacer()
                 
                 VStack {
                     Spacer()
@@ -77,6 +78,7 @@ struct SixMinuteWalkTestView: View {
                                     .foregroundColor(.blue)
                                     .gridCellAnchor(.trailing)
                             }
+                            .padding(.vertical, 1.5)
                             
                             GridRow {
                                 Text("Distance Pedometer:")
@@ -87,6 +89,7 @@ struct SixMinuteWalkTestView: View {
                                     .foregroundColor(.blue)
                                     .gridCellAnchor(.trailing)
                             }
+                            .padding(.vertical, 1.5)
                             
                             GridRow {
                                 Text("Average Active Pace:")
@@ -104,6 +107,7 @@ struct SixMinuteWalkTestView: View {
                                         .gridCellAnchor(.trailing)
                                 }
                             }
+                            .padding(.vertical, 1.5)
                             
                             GridRow {
                                 Text("Current Pace:")
@@ -121,6 +125,7 @@ struct SixMinuteWalkTestView: View {
                                         .gridCellAnchor(.trailing)
                                 }
                             }
+                            .padding(.vertical, 1.5)
                             
                             GridRow {
                                     Text("Current Cadence:")
@@ -138,6 +143,8 @@ struct SixMinuteWalkTestView: View {
                                             .gridCellAnchor(.trailing)
                                     }
                                 }
+                            .padding(.vertical, 1.5)
+                            Spacer()
                             }
                         }
                     

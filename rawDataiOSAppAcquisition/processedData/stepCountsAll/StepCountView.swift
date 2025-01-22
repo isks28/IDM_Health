@@ -133,6 +133,7 @@ struct StepCountView: View {
                                 .foregroundColor(.blue)
                                 .gridCellAnchor(.trailing)
                         }
+                        .padding(.vertical, 1.5)
                         
                         GridRow {
                             Text("Distance Pedometer:")
@@ -143,6 +144,7 @@ struct StepCountView: View {
                                 .foregroundColor(.blue)
                                 .gridCellAnchor(.trailing)
                         }
+                        .padding(.vertical, 1.5)
 
                         GridRow {
                             Text("Average Active Pace:")
@@ -160,6 +162,7 @@ struct StepCountView: View {
                                     .gridCellAnchor(.trailing)
                             }
                         }
+                        .padding(.vertical, 1.5)
 
                         GridRow {
                             Text("Current Pace:")
@@ -177,6 +180,7 @@ struct StepCountView: View {
                                     .gridCellAnchor(.trailing)
                             }
                         }
+                        .padding(.vertical, 1.5)
 
                         GridRow {
                             Text("Current Cadence:")
@@ -194,6 +198,8 @@ struct StepCountView: View {
                                     .gridCellAnchor(.trailing)
                             }
                         }
+                        .padding(.vertical, 1.5)
+                        Spacer()
                     }
                 } else {
                     Text("Select the Time-Method:")
