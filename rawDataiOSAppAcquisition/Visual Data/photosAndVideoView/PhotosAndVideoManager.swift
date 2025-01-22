@@ -2,8 +2,6 @@
 //  PhotosAndVideoManager.swift
 //  rawDataiOSAppAcquisition
 //
-//  Created by Irnu Suryohadi Kusumo on 16.01.25.
-//
 
 import AVFoundation
 import SwiftUI
@@ -12,45 +10,59 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
     private var captureSession: AVCaptureSession!
     private var videoOutput: AVCaptureMovieFileOutput!
     private var photoOutput: AVCapturePhotoOutput!
-    private var previewLayer: AVCaptureVideoPreviewLayer!
     
     @Published var isRecording = false
     @Published var capturedPhoto: UIImage? = nil
+    @Published var capturedVideoURL: URL? = nil
+    
+    private var previewLayer: AVCaptureVideoPreviewLayer?
     
     override init() {
         super.init()
         configureSession()
     }
     
+    func getPreviewLayer() -> AVCaptureVideoPreviewLayer {
+        if previewLayer == nil {
+            previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+            previewLayer?.videoGravity = .resizeAspect
+        }
+        return previewLayer!
+    }
+    
     private func configureSession() {
         captureSession = AVCaptureSession()
         captureSession.beginConfiguration()
         
-        // Add video input
-        guard let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
-              let videoInput = try? AVCaptureDeviceInput(device: videoDevice) else {
-            fatalError("Unable to configure video input.")
-        }
-        if captureSession.canAddInput(videoInput) {
-            captureSession.addInput(videoInput)
-        }
-        
-        // Add audio input
-        if let audioDevice = AVCaptureDevice.default(for: .audio),
-           let audioInput = try? AVCaptureDeviceInput(device: audioDevice) {
-            if captureSession.canAddInput(audioInput) {
-                captureSession.addInput(audioInput)
+        do {
+            // Video Input
+            if let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) {
+                let videoInput = try AVCaptureDeviceInput(device: videoDevice)
+                if captureSession.canAddInput(videoInput) {
+                    captureSession.addInput(videoInput)
+                }
             }
+
+            // Audio Input
+            if let audioDevice = AVCaptureDevice.default(for: .audio) {
+                let audioInput = try AVCaptureDeviceInput(device: audioDevice)
+                if captureSession.canAddInput(audioInput) {
+                    captureSession.addInput(audioInput)
+                }
+            }
+        } catch {
+            print("Error configuring input devices: \(error.localizedDescription)")
+            return
         }
         
-        // Add photo output
+        // Photo Output
         photoOutput = AVCapturePhotoOutput()
         if captureSession.canAddOutput(photoOutput) {
             photoOutput.isHighResolutionCaptureEnabled = true
             captureSession.addOutput(photoOutput)
         }
         
-        // Add video output
+        // Video Output
         videoOutput = AVCaptureMovieFileOutput()
         if captureSession.canAddOutput(videoOutput) {
             captureSession.addOutput(videoOutput)
@@ -60,12 +72,20 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
     }
     
     func startSession() {
+        guard captureSession != nil else {
+            print("Capture session not configured.")
+            return
+        }
         if !captureSession.isRunning {
             captureSession.startRunning()
         }
     }
-    
+
     func stopSession() {
+        guard captureSession != nil else {
+            print("Capture session not configured.")
+            return
+        }
         if captureSession.isRunning {
             captureSession.stopRunning()
         }
@@ -90,44 +110,25 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
         photoOutput.capturePhoto(with: photoSettings, delegate: self)
     }
     
-    func getPreviewLayer() -> AVCaptureVideoPreviewLayer {
-        if previewLayer == nil {
-            previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-            previewLayer.videoGravity = .resizeAspectFill
-        }
-        
-        // Adjust frame to 4:3 aspect ratio
-        let screenWidth = UIScreen.main.bounds.width
-        let previewHeight = screenWidth * 16 / 9
-        previewLayer.frame = CGRect(x: 0, y: (UIScreen.main.bounds.height - previewHeight) / 2, width: screenWidth, height: previewHeight)
-        
-        return previewLayer
-    }
-    
-    private func savePhoto(_ image: UIImage) {
+    func savePhoto(_ image: UIImage) {
+        // Save photo logic
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let photoURL = documentsDirectory.appendingPathComponent("\(UUID().uuidString).jpg")
-        
         if let imageData = image.jpegData(compressionQuality: 1.0) {
             try? imageData.write(to: photoURL)
             print("Photo saved to: \(photoURL)")
         }
     }
     
-    private func saveVideo(_ url: URL) {
+    func saveVideo(_ url: URL) {
+        // Save video logic
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let destinationURL = documentsDirectory.appendingPathComponent(url.lastPathComponent)
-        
-        do {
-            try FileManager.default.moveItem(at: url, to: destinationURL)
-            print("Video saved to: \(destinationURL)")
-        } catch {
-            print("Error saving video: \(error.localizedDescription)")
-        }
+        try? FileManager.default.moveItem(at: url, to: destinationURL)
+        print("Video saved to: \(destinationURL)")
     }
 }
 
-// MARK: - AVCapturePhotoCaptureDelegate
 extension PhotosAndVideoManager: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         guard let imageData = photo.fileDataRepresentation(),
@@ -135,21 +136,14 @@ extension PhotosAndVideoManager: AVCapturePhotoCaptureDelegate {
         
         DispatchQueue.main.async {
             self.capturedPhoto = image
-            self.savePhoto(image)
         }
     }
 }
 
-// MARK: - AVCaptureFileOutputRecordingDelegate
 extension PhotosAndVideoManager: AVCaptureFileOutputRecordingDelegate {
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
-        if let error = error {
-            print("Video recording error: \(error.localizedDescription)")
-            return
-        }
-        
         DispatchQueue.main.async {
-            self.saveVideo(outputFileURL)
+            self.capturedVideoURL = outputFileURL
         }
     }
 }

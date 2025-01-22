@@ -34,6 +34,7 @@
 		5A554EAD2C8706AA0081747B /* cameraBasedController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAC2C8706AA0081747B /* cameraBasedController.swift */; };
 		5A554EAF2C8706BE0081747B /* cameraBasedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */; };
 		5AB490012CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AB490002CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift */; };
+		5ADF90432D41235200F728AC /* VideoPlacerReview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ADF90422D41235200F728AC /* VideoPlacerReview.swift */; };
 		863757E62CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863757E52CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift */; };
 		863757E82CD38DBA002F4BEA /* SixMinuteWalkTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863757E72CD38DBA002F4BEA /* SixMinuteWalkTestView.swift */; };
 		86419FE62CB97E2B0071151C /* StepCountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE52CB97E2B0071151C /* StepCountManager.swift */; };
@@ -100,6 +101,7 @@
 		5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedManager.swift; sourceTree = "<group>"; };
 		5A554EB02C8708AA0081747B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5AB490002CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = animatedMotionSwipeDownClose.swift; sourceTree = "<group>"; };
+		5ADF90422D41235200F728AC /* VideoPlacerReview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlacerReview.swift; sourceTree = "<group>"; };
 		863757E52CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixMinuteWalkTestManager.swift; sourceTree = "<group>"; };
 		863757E72CD38DBA002F4BEA /* SixMinuteWalkTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixMinuteWalkTestView.swift; sourceTree = "<group>"; };
 		86419FE52CB97E2B0071151C /* StepCountManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountManager.swift; sourceTree = "<group>"; };
@@ -365,6 +367,7 @@
 				86C9215D2D395637002AD774 /* PhotosAndVideoManager.swift */,
 				86C9215F2D395653002AD774 /* PhotosAndVideoView.swift */,
 				86C921612D395674002AD774 /* CameraPreview.swift */,
+				5ADF90422D41235200F728AC /* VideoPlacerReview.swift */,
 			);
 			path = photosAndVideoView;
 			sourceTree = "<group>";
@@ -505,6 +508,7 @@
 				5A554EA12C87065A0081747B /* gyroscopeDataManager.swift in Sources */,
 				5A554EAD2C8706AA0081747B /* cameraBasedController.swift in Sources */,
 				5A554E9B2C8706310081747B /* accelerometerDataView.swift in Sources */,
+				5ADF90432D41235200F728AC /* VideoPlacerReview.swift in Sources */,
 				5A45C71A2C9C0FE600F6E14E /* vitalManager.swift in Sources */,
 				5A554E8F2C8705DB0081747B /* healthKitView.swift in Sources */,
 				863757E82CD38DBA002F4BEA /* SixMinuteWalkTestView.swift in Sources */,
@@ -730,7 +734,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"rawDataiOSAppAcquisition/Preview Content\"";
-				DEVELOPMENT_TEAM = XBTGW8FK4X;
+				DEVELOPMENT_TEAM = P6RD9VN837;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -765,7 +769,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = UKGM.rawDataiOSAppAcquisition;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.IDMHealthTestflight";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
@@ -787,7 +791,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"rawDataiOSAppAcquisition/Preview Content\"";
-				DEVELOPMENT_TEAM = XBTGW8FK4X;
+				DEVELOPMENT_TEAM = P6RD9VN837;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -822,7 +826,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = UKGM.rawDataiOSAppAcquisition;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.IDMHealthTestflight";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
