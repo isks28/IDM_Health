@@ -75,7 +75,7 @@ struct PhotosAndVideoView: View {
                     
                     HStack {
                         Button(action: {
-                            isReviewingPhoto = false
+                            isReviewingVideo = false
                             manager.startSession()
                         }) {
                             Text("Retake")
@@ -95,7 +95,7 @@ struct PhotosAndVideoView: View {
                         
                         Button(action: {
                             manager.saveVideo(videoURL)
-                            isReviewingPhoto = false
+                            isReviewingVideo = false
                             manager.startSession()
                         }) {
                             Text("Save and upload")
