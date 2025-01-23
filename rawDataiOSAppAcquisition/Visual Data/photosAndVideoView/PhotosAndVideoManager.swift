@@ -35,15 +35,28 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
         captureSession.beginConfiguration()
         
         do {
-            // Video Input
             if let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) {
                 let videoInput = try AVCaptureDeviceInput(device: videoDevice)
                 if captureSession.canAddInput(videoInput) {
                     captureSession.addInput(videoInput)
                 }
+                
+                try videoDevice.lockForConfiguration()
+                if let format = videoDevice.formats.first(where: {
+                    let description = $0.formatDescription
+                    let dimensions = CMVideoFormatDescriptionGetDimensions(description)
+                    return dimensions.width == 1280 && dimensions.height == 720 && $0.videoSupportedFrameRateRanges.contains(where: { $0.maxFrameRate >= 60 })
+                }) {
+                    videoDevice.activeFormat = format
+                    videoDevice.activeVideoMinFrameDuration = CMTimeMake(value: 1, timescale: 60)
+                    videoDevice.activeVideoMaxFrameDuration = CMTimeMake(value: 1, timescale: 60)
+                    print("Configured 1280x720 @ 60 FPS")
+                } else {
+                    print("1280x720 @ 60 FPS format not supported")
+                }
+                videoDevice.unlockForConfiguration()
             }
 
-            // Audio Input
             if let audioDevice = AVCaptureDevice.default(for: .audio) {
                 let audioInput = try AVCaptureDeviceInput(device: audioDevice)
                 if captureSession.canAddInput(audioInput) {
@@ -55,17 +68,20 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
             return
         }
         
-        // Photo Output
         photoOutput = AVCapturePhotoOutput()
         if captureSession.canAddOutput(photoOutput) {
-            photoOutput.maxPhotoDimensions
             captureSession.addOutput(photoOutput)
         }
         
-        // Video Output
         videoOutput = AVCaptureMovieFileOutput()
         if captureSession.canAddOutput(videoOutput) {
             captureSession.addOutput(videoOutput)
+        }
+        
+        if captureSession.canSetSessionPreset(.hd1280x720) {
+            captureSession.sessionPreset = .hd1280x720
+        } else {
+            print("720p resolution not supported.")
         }
         
         captureSession.commitConfiguration()
