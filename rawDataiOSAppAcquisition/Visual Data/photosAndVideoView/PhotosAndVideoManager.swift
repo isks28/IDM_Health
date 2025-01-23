@@ -58,7 +58,7 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
         // Photo Output
         photoOutput = AVCapturePhotoOutput()
         if captureSession.canAddOutput(photoOutput) {
-            photoOutput.isHighResolutionCaptureEnabled = true
+            photoOutput.maxPhotoDimensions
             captureSession.addOutput(photoOutput)
         }
         
@@ -73,21 +73,27 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
     
     func startSession() {
         guard captureSession != nil else {
-            print("Capture session not configured.")
+            print("Capture session is not configured.")
             return
         }
-        if !captureSession.isRunning {
-            captureSession.startRunning()
+        DispatchQueue.global(qos: .userInitiated).async {
+            if !self.captureSession.isRunning {
+                self.captureSession.startRunning()
+                print("Capture session started.")
+            }
         }
     }
 
     func stopSession() {
         guard captureSession != nil else {
-            print("Capture session not configured.")
+            print("Capture session is not configured.")
             return
         }
-        if captureSession.isRunning {
-            captureSession.stopRunning()
+        DispatchQueue.global(qos: .userInitiated).async {
+            if self.captureSession.isRunning {
+                self.captureSession.stopRunning()
+                print("Capture session stopped.")
+            }
         }
     }
     
