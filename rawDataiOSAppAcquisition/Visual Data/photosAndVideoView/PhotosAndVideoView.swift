@@ -120,35 +120,47 @@ struct PhotosAndVideoView: View {
                 VStack {
                     Spacer()
                     
-                    HStack {
-                        Button(action: {
-                            manager.capturePhoto()
-                        }) {
-                            ZStack {
-                                Image(systemName: "camera.circle.fill")
-                                    .font(.system(size: 60))
-                                    .foregroundColor(.blue)
+                    HStack{
+                        HStack {
+                            Button(action: {
+                                manager.capturePhoto()
+                            }) {
+                                ZStack {
+                                    Image(systemName: "camera.circle.fill")
+                                        .font(.system(size: 60))
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                if manager.isRecording {
+                                    manager.stopRecording()
+                                } else {
+                                    manager.startRecording()
+                                }
+                            }) {
+                                ZStack {
+                                    Image(systemName: manager.isRecording ? "stop.circle.fill" : "video.circle.fill")
+                                        .font(.system(size: 60))
+                                        .foregroundColor(manager.isRecording ? .pink : .blue)
+                                }
                             }
                         }
-                        
-                        Spacer()
-                        
+                        .padding(.horizontal, 50)
                         Button(action: {
-                            if manager.isRecording {
-                                manager.stopRecording()
-                            } else {
-                                manager.startRecording()
-                            }
+                            manager.switchCamera()
                         }) {
                             ZStack {
-                                Image(systemName: manager.isRecording ? "stop.circle.fill" : "video.circle.fill")
-                                    .font(.system(size: 60))
-                                    .foregroundColor(manager.isRecording ? .pink : .blue)
+                                Image(systemName: "arrow.triangle.2.circlepath.camera.fill")
+                                    .font(.system(size: 25))
+                                    .foregroundColor(.white)
                             }
                         }
                     }
-                    .padding(.horizontal, 100)
-                    .padding(.bottom, 10)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
                 }
             }
         }

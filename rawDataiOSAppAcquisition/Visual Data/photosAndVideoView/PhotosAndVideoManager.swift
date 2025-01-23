@@ -16,6 +16,7 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
     @Published var capturedVideoURL: URL? = nil
     
     private var previewLayer: AVCaptureVideoPreviewLayer?
+    private var currentCameraOrientation: AVCaptureDevice.Position = .back
     
     override init() {
         super.init()
@@ -31,61 +32,68 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
     }
     
     private func configureSession() {
-        captureSession = AVCaptureSession()
-        captureSession.beginConfiguration()
-        
-        do {
-            if let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) {
-                let videoInput = try AVCaptureDeviceInput(device: videoDevice)
-                if captureSession.canAddInput(videoInput) {
-                    captureSession.addInput(videoInput)
+            captureSession = AVCaptureSession()
+            captureSession.beginConfiguration()
+            
+            do {
+                // Get the video device for the current camera position
+                if let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: currentCameraOrientation) {
+                    let videoInput = try AVCaptureDeviceInput(device: videoDevice)
+                    
+                    // Remove existing inputs before adding new ones
+                    for input in captureSession.inputs {
+                        captureSession.removeInput(input)
+                    }
+                    
+                    if captureSession.canAddInput(videoInput) {
+                        captureSession.addInput(videoInput)
+                    }
+                    
+                    try videoDevice.lockForConfiguration()
+                    if let format = videoDevice.formats.first(where: {
+                        let description = $0.formatDescription
+                        let dimensions = CMVideoFormatDescriptionGetDimensions(description)
+                        return dimensions.width == 1280 && dimensions.height == 720 && $0.videoSupportedFrameRateRanges.contains(where: { $0.maxFrameRate >= 60 })
+                    }) {
+                        videoDevice.activeFormat = format
+                        videoDevice.activeVideoMinFrameDuration = CMTimeMake(value: 1, timescale: 60)
+                        videoDevice.activeVideoMaxFrameDuration = CMTimeMake(value: 1, timescale: 60)
+                        print("Configured 1280x720 @ 60 FPS")
+                    } else {
+                        print("1280x720 @ 60 FPS format not supported")
+                    }
+                    videoDevice.unlockForConfiguration()
                 }
-                
-                try videoDevice.lockForConfiguration()
-                if let format = videoDevice.formats.first(where: {
-                    let description = $0.formatDescription
-                    let dimensions = CMVideoFormatDescriptionGetDimensions(description)
-                    return dimensions.width == 1280 && dimensions.height == 720 && $0.videoSupportedFrameRateRanges.contains(where: { $0.maxFrameRate >= 60 })
-                }) {
-                    videoDevice.activeFormat = format
-                    videoDevice.activeVideoMinFrameDuration = CMTimeMake(value: 1, timescale: 60)
-                    videoDevice.activeVideoMaxFrameDuration = CMTimeMake(value: 1, timescale: 60)
-                    print("Configured 1280x720 @ 60 FPS")
-                } else {
-                    print("1280x720 @ 60 FPS format not supported")
-                }
-                videoDevice.unlockForConfiguration()
-            }
 
-            if let audioDevice = AVCaptureDevice.default(for: .audio) {
-                let audioInput = try AVCaptureDeviceInput(device: audioDevice)
-                if captureSession.canAddInput(audioInput) {
-                    captureSession.addInput(audioInput)
+                if let audioDevice = AVCaptureDevice.default(for: .audio) {
+                    let audioInput = try AVCaptureDeviceInput(device: audioDevice)
+                    if captureSession.canAddInput(audioInput) {
+                        captureSession.addInput(audioInput)
+                    }
                 }
+            } catch {
+                print("Error configuring input devices: \(error.localizedDescription)")
+                return
             }
-        } catch {
-            print("Error configuring input devices: \(error.localizedDescription)")
-            return
+            
+            photoOutput = AVCapturePhotoOutput()
+            if captureSession.canAddOutput(photoOutput) {
+                captureSession.addOutput(photoOutput)
+            }
+            
+            videoOutput = AVCaptureMovieFileOutput()
+            if captureSession.canAddOutput(videoOutput) {
+                captureSession.addOutput(videoOutput)
+            }
+            
+            if captureSession.canSetSessionPreset(.hd1280x720) {
+                captureSession.sessionPreset = .hd1280x720
+            } else {
+                print("720p resolution not supported.")
+            }
+            
+            captureSession.commitConfiguration()
         }
-        
-        photoOutput = AVCapturePhotoOutput()
-        if captureSession.canAddOutput(photoOutput) {
-            captureSession.addOutput(photoOutput)
-        }
-        
-        videoOutput = AVCaptureMovieFileOutput()
-        if captureSession.canAddOutput(videoOutput) {
-            captureSession.addOutput(videoOutput)
-        }
-        
-        if captureSession.canSetSessionPreset(.hd1280x720) {
-            captureSession.sessionPreset = .hd1280x720
-        } else {
-            print("720p resolution not supported.")
-        }
-        
-        captureSession.commitConfiguration()
-    }
     
     func startSession() {
         guard captureSession != nil else {
@@ -110,6 +118,42 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
                 self.captureSession.stopRunning()
                 print("Capture session stopped.")
             }
+        }
+    }
+    
+    func switchCamera() {
+        // Determine the new camera position
+        let newPosition: AVCaptureDevice.Position = (currentCameraOrientation == .back) ? .front : .back
+        
+        // Get the new video device
+        guard let newVideoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition) else {
+            print("Unable to access camera at position: \(newPosition)")
+            return
+        }
+        
+        do {
+            let newVideoInput = try AVCaptureDeviceInput(device: newVideoDevice)
+            
+            // Begin configuration
+            captureSession.beginConfiguration()
+            
+            // Remove existing video input
+            if let currentVideoInput = captureSession.inputs.first(where: { ($0 as? AVCaptureDeviceInput)?.device.hasMediaType(.video) == true }) {
+                captureSession.removeInput(currentVideoInput)
+            }
+            
+            // Add the new video input
+            if captureSession.canAddInput(newVideoInput) {
+                captureSession.addInput(newVideoInput)
+                currentCameraOrientation = newPosition // Update the current camera position
+            } else {
+                print("Failed to add new video input")
+            }
+            
+            // Commit configuration
+            captureSession.commitConfiguration()
+        } catch {
+            print("Error switching cameras: \(error.localizedDescription)")
         }
     }
     
