@@ -15,21 +15,7 @@ struct visualDataView: View {
         NavigationSplitView {
             List(selection: $selectedView) {
                 HStack {
-                    Image(systemName: "camera.circle.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 40)
-                        .foregroundStyle(Color.blue)
-                    Text("Photo and Video")
-                        .foregroundStyle(Color.primary)
-                        .font(.title2)
-                    Spacer()
-                    Image(systemName: "chevron.right.2")
-                        .foregroundStyle(Color.primary)
-                        }
-                        .tag("Raw Visual Data")
-                HStack {
-                    Image(systemName: "camera.shutter.button.fill")
+                    Image(systemName: "person.crop.square.badge.camera")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 50, height: 40)
@@ -82,13 +68,12 @@ struct visualDataView: View {
                 }
             }
         } detail: {
-            if selectedView == "Raw Visual Data" {
-                cameraBasedView()
-            } else if selectedView == "Markerless Motion Data" {
-                markerlessMotionAnalysis()
-            } else if selectedView == "Photo and Video Data" {
+            switch selectedView {
+            case "Photo and Video Data":
                 PhotosAndVideoView()
-            } else {
+            case "Markerless Motion Data":
+                markerlessMotionAnalysis()
+            default:
                 Text("Select a view")
                     .font(.largeTitle)
             }

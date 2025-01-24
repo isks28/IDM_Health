@@ -30,9 +30,6 @@
 		5A554EA52C8706730081747B /* magnetometerDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA42C8706730081747B /* magnetometerDataManager.swift */; };
 		5A554EA72C8706810081747B /* deviceMotionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA62C8706810081747B /* deviceMotionView.swift */; };
 		5A554EA92C87068D0081747B /* deviceMotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA82C87068D0081747B /* deviceMotionManager.swift */; };
-		5A554EAB2C87069D0081747B /* cameraBasedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAA2C87069D0081747B /* cameraBasedView.swift */; };
-		5A554EAD2C8706AA0081747B /* cameraBasedController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAC2C8706AA0081747B /* cameraBasedController.swift */; };
-		5A554EAF2C8706BE0081747B /* cameraBasedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */; };
 		5AB490012CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AB490002CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift */; };
 		5ADF90432D41235200F728AC /* VideoPlacerReview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ADF90422D41235200F728AC /* VideoPlacerReview.swift */; };
 		863757E62CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863757E52CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift */; };
@@ -40,7 +37,6 @@
 		86419FE62CB97E2B0071151C /* StepCountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE52CB97E2B0071151C /* StepCountManager.swift */; };
 		86419FE82CB97E800071151C /* StepCountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE72CB97E800071151C /* StepCountView.swift */; };
 		86419FEC2CB988BF0071151C /* walkingDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FEB2CB988BF0071151C /* walkingDataView.swift */; };
-		86419FEE2CBA8CE20071151C /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FED2CBA8CE20071151C /* PreviewView.swift */; };
 		8649C9B32D05E6DD00E15C02 /* visualDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8649C9B22D05E6DD00E15C02 /* visualDataView.swift */; };
 		8649C9B62D05E7FA00E15C02 /* markerlessMotionAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8649C9B52D05E7FA00E15C02 /* markerlessMotionAnalysis.swift */; };
 		866B7C4C2CD0F6C8000FC227 /* rawDataAllManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */; };
@@ -96,9 +92,6 @@
 		5A554EA42C8706730081747B /* magnetometerDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = magnetometerDataManager.swift; sourceTree = "<group>"; };
 		5A554EA62C8706810081747B /* deviceMotionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = deviceMotionView.swift; sourceTree = "<group>"; };
 		5A554EA82C87068D0081747B /* deviceMotionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = deviceMotionManager.swift; sourceTree = "<group>"; };
-		5A554EAA2C87069D0081747B /* cameraBasedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedView.swift; sourceTree = "<group>"; };
-		5A554EAC2C8706AA0081747B /* cameraBasedController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedController.swift; sourceTree = "<group>"; };
-		5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cameraBasedManager.swift; sourceTree = "<group>"; };
 		5A554EB02C8708AA0081747B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5AB490002CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = animatedMotionSwipeDownClose.swift; sourceTree = "<group>"; };
 		5ADF90422D41235200F728AC /* VideoPlacerReview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlacerReview.swift; sourceTree = "<group>"; };
@@ -107,7 +100,6 @@
 		86419FE52CB97E2B0071151C /* StepCountManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountManager.swift; sourceTree = "<group>"; };
 		86419FE72CB97E800071151C /* StepCountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountView.swift; sourceTree = "<group>"; };
 		86419FEB2CB988BF0071151C /* walkingDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = walkingDataView.swift; sourceTree = "<group>"; };
-		86419FED2CBA8CE20071151C /* PreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		8649C9B22D05E6DD00E15C02 /* visualDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = visualDataView.swift; sourceTree = "<group>"; };
 		8649C9B52D05E7FA00E15C02 /* markerlessMotionAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = markerlessMotionAnalysis.swift; sourceTree = "<group>"; };
 		866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllManager.swift; sourceTree = "<group>"; };
@@ -294,17 +286,6 @@
 			path = deviceMotion;
 			sourceTree = "<group>";
 		};
-		5A554E8D2C8705C10081747B /* cameraBased */ = {
-			isa = PBXGroup;
-			children = (
-				5A554EAA2C87069D0081747B /* cameraBasedView.swift */,
-				86419FED2CBA8CE20071151C /* PreviewView.swift */,
-				5A554EAC2C8706AA0081747B /* cameraBasedController.swift */,
-				5A554EAE2C8706BE0081747B /* cameraBasedManager.swift */,
-			);
-			path = cameraBased;
-			sourceTree = "<group>";
-		};
 		863757E42CD38D90002F4BEA /* SixMinuteWalkTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -338,7 +319,6 @@
 			children = (
 				8649C9B22D05E6DD00E15C02 /* visualDataView.swift */,
 				86C921442D393859002AD774 /* photosAndVideoView */,
-				5A554E8D2C8705C10081747B /* cameraBased */,
 				8649C9B42D05E7DA00E15C02 /* Markerless Motion Analysis */,
 			);
 			path = "Visual Data";
@@ -506,7 +486,6 @@
 				5A45C7182C9C0FDB00F6E14E /* vitalView.swift in Sources */,
 				866B7C4C2CD0F6C8000FC227 /* rawDataAllManager.swift in Sources */,
 				5A554EA12C87065A0081747B /* gyroscopeDataManager.swift in Sources */,
-				5A554EAD2C8706AA0081747B /* cameraBasedController.swift in Sources */,
 				5A554E9B2C8706310081747B /* accelerometerDataView.swift in Sources */,
 				5ADF90432D41235200F728AC /* VideoPlacerReview.swift in Sources */,
 				5A45C71A2C9C0FE600F6E14E /* vitalManager.swift in Sources */,
@@ -528,12 +507,9 @@
 				86419FEC2CB988BF0071151C /* walkingDataView.swift in Sources */,
 				5A554EA92C87068D0081747B /* deviceMotionManager.swift in Sources */,
 				86C9215E2D395637002AD774 /* PhotosAndVideoManager.swift in Sources */,
-				5A554EAB2C87069D0081747B /* cameraBasedView.swift in Sources */,
-				5A554EAF2C8706BE0081747B /* cameraBasedManager.swift in Sources */,
 				8649C9B32D05E6DD00E15C02 /* visualDataView.swift in Sources */,
 				5A554EA52C8706730081747B /* magnetometerDataManager.swift in Sources */,
 				8649C9B62D05E7FA00E15C02 /* markerlessMotionAnalysis.swift in Sources */,
-				86419FEE2CBA8CE20071151C /* PreviewView.swift in Sources */,
 				5A554E932C8705F70081747B /* activityManager.swift in Sources */,
 				5A554E5B2C8705080081747B /* rawDataiOSAppAcquisitionApp.swift in Sources */,
 				5A554E9F2C8706470081747B /* gyroscopeDataView.swift in Sources */,
