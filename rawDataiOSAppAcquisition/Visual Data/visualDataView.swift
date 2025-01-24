@@ -20,7 +20,7 @@ struct visualDataView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 50, height: 40)
                         .foregroundStyle(Color.blue)
-                    Text("Photo and Video test new")
+                    Text("Photo and Video")
                         .foregroundStyle(Color.primary)
                         .font(.title2)
                     Spacer()
