@@ -8,6 +8,7 @@ import SwiftUI
 
 class PhotosAndVideoManager: NSObject, ObservableObject {
     private var captureSession: AVCaptureSession!
+    private let sessionQueue = DispatchQueue(label: "sessionQueue")
     private var videoOutput: AVCaptureMovieFileOutput!
     private var photoOutput: AVCapturePhotoOutput!
     
@@ -96,27 +97,17 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
         }
     
     func startSession() {
-        guard captureSession != nil else {
-            print("Capture session is not configured.")
-            return
-        }
-        DispatchQueue.global(qos: .userInitiated).async {
+        sessionQueue.async {
             if !self.captureSession.isRunning {
                 self.captureSession.startRunning()
-                print("Capture session started.")
             }
         }
     }
 
     func stopSession() {
-        guard captureSession != nil else {
-            print("Capture session is not configured.")
-            return
-        }
-        DispatchQueue.global(qos: .userInitiated).async {
+        sessionQueue.async {
             if self.captureSession.isRunning {
                 self.captureSession.stopRunning()
-                print("Capture session stopped.")
             }
         }
     }
