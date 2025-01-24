@@ -37,11 +37,9 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
             captureSession.beginConfiguration()
             
             do {
-                // Get the video device for the current camera position
                 if let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: currentCameraOrientation) {
                     let videoInput = try AVCaptureDeviceInput(device: videoDevice)
                     
-                    // Remove existing inputs before adding new ones
                     for input in captureSession.inputs {
                         captureSession.removeInput(input)
                     }
@@ -113,10 +111,8 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
     }
     
     func switchCamera() {
-        // Determine the new camera position
         let newPosition: AVCaptureDevice.Position = (currentCameraOrientation == .back) ? .front : .back
         
-        // Get the new video device
         guard let newVideoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition) else {
             print("Unable to access camera at position: \(newPosition)")
             return
@@ -125,23 +121,19 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
         do {
             let newVideoInput = try AVCaptureDeviceInput(device: newVideoDevice)
             
-            // Begin configuration
             captureSession.beginConfiguration()
             
-            // Remove existing video input
             if let currentVideoInput = captureSession.inputs.first(where: { ($0 as? AVCaptureDeviceInput)?.device.hasMediaType(.video) == true }) {
                 captureSession.removeInput(currentVideoInput)
             }
             
-            // Add the new video input
             if captureSession.canAddInput(newVideoInput) {
                 captureSession.addInput(newVideoInput)
-                currentCameraOrientation = newPosition // Update the current camera position
+                currentCameraOrientation = newPosition
             } else {
                 print("Failed to add new video input")
             }
             
-            // Commit configuration
             captureSession.commitConfiguration()
         } catch {
             print("Error switching cameras: \(error.localizedDescription)")
@@ -168,21 +160,65 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
     }
     
     func savePhoto(_ image: UIImage) {
-        // Save photo logic
-        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let photoURL = documentsDirectory.appendingPathComponent("\(UUID().uuidString).jpg")
+        let cameraPosition = currentCameraOrientation == .front ? "Front Camera" : "Back Camera"
+        
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            print("Documents directory not found.")
+            return
+        }
+        
+        let photoDirectory = documentsDirectory
+            .appendingPathComponent("Visual Data")
+            .appendingPathComponent("Photo")
+            .appendingPathComponent(cameraPosition)
+        
+        do {
+            try FileManager.default.createDirectory(at: photoDirectory, withIntermediateDirectories: true, attributes: nil)
+        } catch {
+            print("Failed to create directory: \(error.localizedDescription)")
+            return
+        }
+        
+        let photoURL = photoDirectory.appendingPathComponent("\(UUID().uuidString).jpg")
+        
         if let imageData = image.jpegData(compressionQuality: 1.0) {
-            try? imageData.write(to: photoURL)
-            print("Photo saved to: \(photoURL)")
+            do {
+                try imageData.write(to: photoURL, options: [.atomic, .completeFileProtection])
+                print("Photo saved to: \(photoURL.path)")
+            } catch {
+                print("Failed to save photo: \(error.localizedDescription)")
+            }
         }
     }
     
     func saveVideo(_ url: URL) {
-        // Save video logic
-        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let destinationURL = documentsDirectory.appendingPathComponent(url.lastPathComponent)
-        try? FileManager.default.moveItem(at: url, to: destinationURL)
-        print("Video saved to: \(destinationURL)")
+        let cameraPosition = currentCameraOrientation == .front ? "Front Camera" : "Back Camera"
+        
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            print("Documents directory not found.")
+            return
+        }
+        
+        let videoDirectory = documentsDirectory
+            .appendingPathComponent("Visual Data")
+            .appendingPathComponent("Video")
+            .appendingPathComponent(cameraPosition)
+        
+        do {
+            try FileManager.default.createDirectory(at: videoDirectory, withIntermediateDirectories: true, attributes: nil)
+        } catch {
+            print("Failed to create directory: \(error.localizedDescription)")
+            return
+        }
+        
+        let destinationURL = videoDirectory.appendingPathComponent(url.lastPathComponent)
+        
+        do {
+            try FileManager.default.moveItem(at: url, to: destinationURL)
+            print("Video saved to: \(destinationURL.path)")
+        } catch {
+            print("Failed to save video: \(error.localizedDescription)")
+        }
     }
 }
 
