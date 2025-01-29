@@ -221,7 +221,9 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
         }
     }
     func toggleFlash(on: Bool) {
-        guard let device = AVCaptureDevice.default(for: .video), device.hasTorch else { return }
+        guard let device = AVCaptureDevice.default(for: .video),
+              device.hasTorch,
+              currentCameraOrientation == .back else { return }
 
         do {
             try device.lockForConfiguration()
