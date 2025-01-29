@@ -16,7 +16,7 @@ struct PhotosAndVideoView: View {
     @State private var showingInfo = false
     @State private var countdown = 0
     @State private var isFlashing = false
-    @State private var isExpanded = false // Controls expansion
+    @State private var isExpanded = false
     @State private var isPressed = false
     let timerOptions = ["Off", "3s", "5s", "10s"]
     
@@ -137,11 +137,11 @@ struct PhotosAndVideoView: View {
                 
                 VStack {
                     HStack {
-                        Spacer() // Pushes to the top-right corner
+                        Spacer()
 
                         Button(action: {
                             withAnimation(.spring()) {
-                                isExpanded.toggle() // Expand/collapse left
+                                isExpanded.toggle()
                             }
                         }) {
                             HStack(spacing: isExpanded ? 15 : 5) {
@@ -153,7 +153,7 @@ struct PhotosAndVideoView: View {
                                         Button(action: {
                                             timerSelection = index
                                             withAnimation(.spring()) {
-                                                isExpanded = false  // Collapse after selection
+                                                isExpanded = false
                                             }
                                         }) {
                                             Text(timerOptions[index])
@@ -172,11 +172,11 @@ struct PhotosAndVideoView: View {
                             }
                             .padding(12)
                             .background(Color.white.opacity(0.9))
-                            .cornerRadius(30) // Makes it an oval when expanded
+                            .cornerRadius(30)
                             .frame(height: 50)
                             .shadow(radius: 3)
                         }
-                        .padding(.trailing, 16) // Keeps it near the top-right
+                        .padding(.trailing, 16)
                     }
                     .padding(.top, 20)
                     Spacer()
@@ -280,7 +280,7 @@ struct PhotosAndVideoView: View {
     }
     func startCountdown() {
         if countdown > 0 {
-            manager.toggleFlash(on: true)  // Turn flash on
+            manager.toggleFlash(on: true)
             isFlashing.toggle()
 
             withAnimation(.easeInOut(duration: 0.5)) {
@@ -288,7 +288,7 @@ struct PhotosAndVideoView: View {
             }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                manager.toggleFlash(on: false)  // Turn flash off after 0.2s
+                manager.toggleFlash(on: false)
             }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -301,7 +301,7 @@ struct PhotosAndVideoView: View {
     }
     func startVideoCountdown() {
         if countdown > 0 {
-            manager.toggleFlash(on: true)  // Flash on
+            manager.toggleFlash(on: true)
             isFlashing.toggle()
 
             withAnimation(.easeInOut(duration: 0.5)) {
@@ -309,7 +309,7 @@ struct PhotosAndVideoView: View {
             }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                manager.toggleFlash(on: false)  // Flash off
+                manager.toggleFlash(on: false)
             }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -317,7 +317,7 @@ struct PhotosAndVideoView: View {
                 startVideoCountdown()
             }
         } else {
-            manager.startRecording()  // Start video recording when countdown is over
+            manager.startRecording()
         }
     }
 }
