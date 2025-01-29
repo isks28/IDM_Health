@@ -16,6 +16,8 @@ struct PhotosAndVideoView: View {
     @State private var showingInfo = false
     @State private var countdown = 0
     @State private var isFlashing = false
+    @State private var isExpanded = false // Controls expansion
+    @State private var isPressed = false
     let timerOptions = ["Off", "3s", "5s", "10s"]
     
     var body: some View {
@@ -122,39 +124,59 @@ struct PhotosAndVideoView: View {
                 
                 if countdown > 0 {
                     ZStack {
-                        Color.black.opacity(0.4)
+                        Color.black.opacity(0.1)
                             .edgesIgnoringSafeArea(.all)
 
                         Text("\(countdown)")
-                            .font(.system(size: 120, weight: .bold))
+                            .font(.system(size: 250, weight: .bold))
                             .foregroundColor(.white)
-                            .shadow(radius: 10)
+                            .shadow(radius: 25)
                             .transition(.scale)
                     }
                 }
                 
                 VStack {
                     HStack {
-                        Spacer()
-                        Menu {
-                            ForEach(0..<timerOptions.count, id: \ .self) { index in
-                                Button(action: {
-                                    timerSelection = index
-                                }) {
-                                    Text(timerOptions[index])
+                        Spacer() // Pushes to the top-right corner
+
+                        Button(action: {
+                            withAnimation(.spring()) {
+                                isExpanded.toggle() // Expand/collapse left
+                            }
+                        }) {
+                            HStack(spacing: isExpanded ? 15 : 5) {
+                                Image(systemName: "timer")
+                                    .foregroundColor(.blue)
+
+                                if isExpanded {
+                                    ForEach(0..<timerOptions.count, id: \.self) { index in
+                                        Button(action: {
+                                            timerSelection = index
+                                            withAnimation(.spring()) {
+                                                isExpanded = false  // Collapse after selection
+                                            }
+                                        }) {
+                                            Text(timerOptions[index])
+                                                .font(.system(size: 16, weight: .medium))
+                                                .foregroundColor(timerSelection == index ? .white : .blue)
+                                                .padding(.horizontal, 10)
+                                                .padding(.vertical, 6)
+                                                .background(timerSelection == index ? Color.blue : Color.clear)
+                                                .cornerRadius(8)
+                                        }
+                                    }
+                                } else {
+                                    Text(timerOptions[timerSelection])
+                                        .foregroundColor(.blue)
                                 }
                             }
-                        } label: {
-                            HStack {
-                                Image(systemName: "timer")
-                                Text(timerOptions[timerSelection])
-                            }
-                            .padding(8)
-                            .background(Color.black.opacity(0.6))
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
+                            .padding(12)
+                            .background(Color.white.opacity(0.9))
+                            .cornerRadius(30) // Makes it an oval when expanded
+                            .frame(height: 50)
+                            .shadow(radius: 3)
                         }
-                        .padding(.trailing, 16)
+                        .padding(.trailing, 16) // Keeps it near the top-right
                     }
                     .padding(.top, 20)
                     Spacer()
@@ -172,6 +194,7 @@ struct PhotosAndVideoView: View {
                                 ZStack {
                                     Image(systemName: "camera.circle.fill")
                                         .font(.system(size: 60))
+                                        .background(Circle().fill(Color.white.opacity(0.95)))
                                         .foregroundColor(.blue)
                                 }
                             }
@@ -191,6 +214,7 @@ struct PhotosAndVideoView: View {
                                 ZStack {
                                     Image(systemName: manager.isRecording ? "stop.circle.fill" : "video.circle.fill")
                                         .font(.system(size: 60))
+                                        .background(Circle().fill(Color.white.opacity(0.95)))
                                         .foregroundColor(manager.isRecording ? .pink : .blue)
                                 }
                             }
