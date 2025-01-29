@@ -220,6 +220,17 @@ class PhotosAndVideoManager: NSObject, ObservableObject {
             print("Failed to save video: \(error.localizedDescription)")
         }
     }
+    func toggleFlash(on: Bool) {
+        guard let device = AVCaptureDevice.default(for: .video), device.hasTorch else { return }
+
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = on ? .on : .off
+            device.unlockForConfiguration()
+        } catch {
+            print("Torch could not be used: \(error.localizedDescription)")
+        }
+    }
 }
 
 extension PhotosAndVideoManager: AVCapturePhotoCaptureDelegate {

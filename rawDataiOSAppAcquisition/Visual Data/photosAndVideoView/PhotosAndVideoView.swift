@@ -11,9 +11,16 @@ struct PhotosAndVideoView: View {
     @State private var isReviewingPhoto = false
     @State private var isReviewingVideo = false
     @State private var capturedVideoURL: URL? = nil
-
+    @State private var timerSelection: Int = 0
+    @State private var showTimerOptions = false
+    @State private var showingInfo = false
+    @State private var countdown = 0
+    @State private var isFlashing = false
+    let timerOptions = ["Off", "3s", "5s", "10s"]
+    
     var body: some View {
         ZStack {
+            
             if isReviewingPhoto, let image = manager.capturedPhoto {
                 VStack {
                     Spacer()
@@ -27,7 +34,7 @@ struct PhotosAndVideoView: View {
                         .padding()
                     
                     Spacer()
-
+                    
                     HStack {
                         Button(action: {
                             isReviewingPhoto = false
@@ -45,9 +52,7 @@ struct PhotosAndVideoView: View {
                                         .stroke(Color.red.opacity(0.5), lineWidth: 2)
                                 )
                         }
-
                         Spacer()
-
                         Button(action: {
                             manager.savePhoto(image)
                             isReviewingPhoto = false
@@ -90,9 +95,7 @@ struct PhotosAndVideoView: View {
                                         .stroke(Color.red.opacity(0.5), lineWidth: 2)
                                 )
                         }
-                        
                         Spacer()
-                        
                         Button(action: {
                             manager.saveVideo(videoURL)
                             isReviewingVideo = false
@@ -117,13 +120,54 @@ struct PhotosAndVideoView: View {
                 CameraPreview(manager: manager)
                     .edgesIgnoringSafeArea(.top)
                 
+                if countdown > 0 {
+                    ZStack {
+                        Color.black.opacity(0.4)
+                            .edgesIgnoringSafeArea(.all)
+
+                        Text("\(countdown)")
+                            .font(.system(size: 120, weight: .bold))
+                            .foregroundColor(.white)
+                            .shadow(radius: 10)
+                            .transition(.scale)
+                    }
+                }
+                
                 VStack {
+                    HStack {
+                        Spacer()
+                        Menu {
+                            ForEach(0..<timerOptions.count, id: \ .self) { index in
+                                Button(action: {
+                                    timerSelection = index
+                                }) {
+                                    Text(timerOptions[index])
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: "timer")
+                                Text(timerOptions[timerSelection])
+                            }
+                            .padding(8)
+                            .background(Color.black.opacity(0.6))
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                        }
+                        .padding(.trailing, 16)
+                    }
+                    .padding(.top, 20)
                     Spacer()
                     
                     HStack{
                         HStack {
                             Button(action: {
-                                manager.capturePhoto()
+                                if timerSelection > 0 {
+                                    countdown = Int(timerOptions[timerSelection].dropLast())!
+                                    startCountdown()
+                                } else {
+                                    manager.capturePhoto()
+                                }
                             }) {
                                 ZStack {
                                     Image(systemName: "camera.circle.fill")
@@ -131,14 +175,17 @@ struct PhotosAndVideoView: View {
                                         .foregroundColor(.blue)
                                 }
                             }
-                            
                             Spacer()
-                            
                             Button(action: {
                                 if manager.isRecording {
                                     manager.stopRecording()
                                 } else {
-                                    manager.startRecording()
+                                    if timerSelection > 0 {
+                                        countdown = Int(timerOptions[timerSelection].dropLast())!
+                                        startVideoCountdown()
+                                    } else {
+                                        manager.startRecording()
+                                    }
                                 }
                             }) {
                                 ZStack {
@@ -182,6 +229,71 @@ struct PhotosAndVideoView: View {
                 capturedVideoURL = newVideoURL
                 isReviewingVideo = true
             }
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingInfo.toggle()
+                }) {
+                    Image(systemName: "info.circle")
+                }
+                .sheet(isPresented: $showingInfo) {
+                    VStack {
+                        Text("Photo and video information")
+                            .font(.largeTitle)
+                            .padding()
+                        Text("Photo and video function take a raw photo or video for further use of either synchronous or asynchronous monitoring")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                        Spacer()
+                        AnimatedSwipeDownCloseView()
+                    }
+                    .padding()
+                }
+            }
+        }
+    }
+    func startCountdown() {
+        if countdown > 0 {
+            manager.toggleFlash(on: true)  // Turn flash on
+            isFlashing.toggle()
+
+            withAnimation(.easeInOut(duration: 0.5)) {
+                isFlashing.toggle()
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                manager.toggleFlash(on: false)  // Turn flash off after 0.2s
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                countdown -= 1
+                startCountdown()
+            }
+        } else {
+            manager.capturePhoto()
+        }
+    }
+    func startVideoCountdown() {
+        if countdown > 0 {
+            manager.toggleFlash(on: true)  // Flash on
+            isFlashing.toggle()
+
+            withAnimation(.easeInOut(duration: 0.5)) {
+                isFlashing.toggle()
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                manager.toggleFlash(on: false)  // Flash off
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                countdown -= 1
+                startVideoCountdown()
+            }
+        } else {
+            manager.startRecording()  // Start video recording when countdown is over
         }
     }
 }
