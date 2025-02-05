@@ -8,52 +8,47 @@
 import SwiftUI
 
 struct visualDataView: View {
-    @State private var selectedView: String? = nil
+    @State private var path: [String] = []
     @State private var showingInfo = false
-    
+
     var body: some View {
-        NavigationSplitView {
-            List(selection: $selectedView) {
-                HStack {
-                    Image(systemName: "person.crop.square.badge.camera")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 40)
-                        .foregroundStyle(Color.blue)
-                    Text("Photo and Video")
-                        .foregroundStyle(Color.primary)
-                        .font(.title2)
-                    Spacer()
-                    Image(systemName: "chevron.right.2")
-                        .foregroundStyle(Color.primary)
-                        }
-                        .tag("Photo and Video Data")
-                HStack {
-                    Image(systemName: "person.and.background.dotted")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 40)
-                        .foregroundStyle(Color.blue)
-                    Text("Motion Analysis")
-                        .foregroundStyle(Color.primary)
-                        .font(.title2)
-                    Spacer()
-                    Image(systemName: "chevron.right.2")
-                        .foregroundStyle(Color.primary)
-                        }
-                        .tag("Markerless Motion Data")
+        NavigationStack(path: $path) {
+            List {
+                NavigationLink(value: "Photo and Video Data") {
+                    HStack {
+                        Image(systemName: "person.crop.square.badge.camera")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("Photo and Video")
+                            .font(.title2)
+                        Spacer()
+                    }
+                }
+
+                NavigationLink(value: "Markerless Motion Data") {
+                    HStack {
+                        Image(systemName: "person.and.background.dotted")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("Tensorflow Motion Analysis")
+                            .font(.title2)
+                        Spacer()
+                    }
+                }
             }
             .navigationTitle("Visual Data")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showingInfo.toggle()
-                    }) {
+                    Button(action: { showingInfo.toggle() }) {
                         Image(systemName: "info.circle")
                     }
                     .sheet(isPresented: $showingInfo) {
                         VStack {
-                            Text("Visual data information")
+                            Text("Visual Data Information")
                                 .font(.largeTitle)
                                 .padding()
                             Text("Visual data collects either unprocessed or processed photo or video.")
@@ -67,15 +62,15 @@ struct visualDataView: View {
                     }
                 }
             }
-        } detail: {
-            switch selectedView {
-            case "Photo and Video Data":
-                PhotosAndVideoView()
-            case "Markerless Motion Data":
-                markerlessMotionAnalysis()
-            default:
-                Text("Select a view")
-                    .font(.largeTitle)
+            .navigationDestination(for: String.self) { selectedView in
+                switch selectedView {
+                case "Photo and Video Data":
+                    PhotosAndVideoView()
+                case "Markerless Motion Data":
+                    TensorflowMotionAnalysisView()
+                default:
+                    Text("Unknown View: \(selectedView)")
+                }
             }
         }
     }

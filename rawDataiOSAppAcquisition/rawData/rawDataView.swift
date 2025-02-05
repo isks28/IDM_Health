@@ -8,98 +8,89 @@
 import SwiftUI
 
 struct rawDataView: View {
-    @State private var selectedView: String? = nil
+    @State private var path: [String] = []
     @State private var showingInfo = false
-    
+
     var body: some View {
-        NavigationSplitView {
-            List(selection: $selectedView) {
-                HStack {
-                    Image(systemName: "pedal.accelerator.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 40)
-                        .foregroundStyle(Color.blue)
-                    Text("Accelerometer")
-                        .foregroundStyle(Color.primary)
-                        .font(.title2)
-                    Spacer()
-                    Image(systemName: "chevron.right.2")
-                        .foregroundStyle(Color.primary)
-                        }
-                        .tag("Accelerometer Data")
-                HStack {
-                    Image(systemName: "gyroscope")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 40)
-                        .foregroundStyle(Color.blue)
-                    Text("Gyroscope")
-                        .foregroundStyle(Color.primary)
-                        .font(.title2)
-                    Spacer()
-                    Image(systemName: "chevron.right.2")
-                        .foregroundStyle(Color.primary)
-                        }
-                        .tag("Gyroscope Data")
-                HStack {
-                    Image(systemName: "plusminus.circle.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 40)
-                        .foregroundStyle(Color.blue)
-                    Text("Magnetometer")
-                        .foregroundStyle(Color.primary)
-                        .font(.title2)
-                    Spacer()
-                    Image(systemName: "chevron.right.2")
-                        .foregroundStyle(Color.primary)
-                        }
-                        .tag("Magnetometer Data")
-                HStack{
-                    Image(systemName: "move.3d")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 40)
-                        .foregroundStyle(Color.blue)
-                    Text("IMU Data")
-                        .foregroundStyle(Color.primary)
-                        .font(.title2)
-                    Spacer()
-                    Image(systemName: "chevron.right.2")
-                        .foregroundStyle(Color.primary)
+        NavigationStack(path: $path) {
+            List {
+                NavigationLink(value: "Accelerometer Data") {
+                    HStack {
+                        Image(systemName: "pedal.accelerator.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("Accelerometer")
+                            .font(.title2)
+                        Spacer()
+                    }
                 }
-                        .tag("RawData")
-                HStack{
-                    Image(systemName: "iphone.motion")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 40)
-                        .foregroundStyle(Color.blue)
-                    Text("Device Motion")
-                        .foregroundStyle(Color.primary)
-                        .font(.title2)
-                    Spacer()
-                    Image(systemName: "chevron.right.2")
-                        .foregroundStyle(Color.primary)
+
+                NavigationLink(value: "Gyroscope Data") {
+                    HStack {
+                        Image(systemName: "gyroscope")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("Gyroscope")
+                            .font(.title2)
+                        Spacer()
+                    }
                 }
-                        .tag("RawDataAll")
-        
+
+                NavigationLink(value: "Magnetometer Data") {
+                    HStack {
+                        Image(systemName: "plusminus.circle.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("Magnetometer")
+                            .font(.title2)
+                        Spacer()
+                    }
+                }
+
+                NavigationLink(value: "RawData") {
+                    HStack {
+                        Image(systemName: "move.3d")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("IMU Data")
+                            .font(.title2)
+                        Spacer()
+                    }
+                }
+
+                NavigationLink(value: "RawDataAll") {
+                    HStack {
+                        Image(systemName: "iphone.motion")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("Device Motion")
+                            .font(.title2)
+                        Spacer()
+                    }
+                }
             }
             .navigationTitle("Sensor Data")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showingInfo.toggle()
-                    }) {
+                    Button(action: { showingInfo.toggle() }) {
                         Image(systemName: "info.circle")
                     }
                     .sheet(isPresented: $showingInfo) {
                         VStack {
-                            Text("IMU data Information")
+                            Text("IMU Data Information")
                                 .font(.largeTitle)
                                 .padding()
-                            Text("IMU data measures the unfiltered, raw data of accelerometer, gyroscope and magnetometer simultaneously.")
+                            Text("IMU data measures the unfiltered, raw data of accelerometer, gyroscope, and magnetometer simultaneously.")
                                 .font(.body)
                                 .multilineTextAlignment(.center)
                                 .padding()
@@ -126,20 +117,26 @@ struct rawDataView: View {
                     }
                 }
             }
-        } detail: {
-            if selectedView == "Accelerometer Data" {
-                accelerometerDataView()
-            } else if selectedView == "Gyroscope Data" {
-                gyroscopeDataView()
-            } else if selectedView == "Magnetometer Data" {
-                magnetometerDataView()
-            } else if selectedView == "RawData" {
-                rawDataAccGyroMagView()
-            } else if selectedView == "RawDataAll" {
-                rawDataAllView()
-            }  else {
-                Text("Select a view")
-                    .font(.largeTitle)
+            .navigationDestination(for: String.self) { selectedView in
+                switch selectedView {
+                case "Accelerometer Data":
+                    accelerometerDataView()
+                        .navigationTitle("Accelerometer Data")
+                case "Gyroscope Data":
+                    gyroscopeDataView()
+                        .navigationTitle("Gyroscope Data")
+                case "Magnetometer Data":
+                    magnetometerDataView()
+                        .navigationTitle("Magnetometer Data")
+                case "RawData":
+                    rawDataAccGyroMagView()
+                        .navigationTitle("IMU Data")
+                case "RawDataAll":
+                    rawDataAllView()
+                        .navigationTitle("Device Motion")
+                default:
+                    Text("Unknown View")
+                }
             }
         }
     }

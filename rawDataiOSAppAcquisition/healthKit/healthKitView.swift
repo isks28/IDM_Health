@@ -8,63 +8,55 @@
 import SwiftUI
 
 struct healthKitView: View {
-    @State private var selectedView: String? = nil
+    @State private var path: [String] = []
     @State private var showingInfo = false
-    
+
     var body: some View {
-        NavigationSplitView {
-            List(selection: $selectedView) {
-                HStack {
-                    Image(systemName: "figure.walk")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 40)
-                        .foregroundStyle(Color.blue)
-                    Text("Activity Data")
-                        .foregroundStyle(Color.primary)
-                        .font(.title2)
-                    Spacer()
-                    Image(systemName: "chevron.right.2")
-                        .foregroundStyle(Color.primary)
+        NavigationStack(path: $path) {
+            List {
+                NavigationLink(value: "Activity") {
+                    HStack {
+                        Image(systemName: "figure.walk")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("Activity Data")
+                            .font(.title2)
+                        Spacer()
+                    }
                 }
-                .tag("Activity")
-                
-                HStack {
-                    Image(systemName: "shoeprints.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 40)
-                        .foregroundStyle(Color.blue)
-                    Text("Mobility Data")
-                        .foregroundStyle(Color.primary)
-                        .font(.title2)
-                    Spacer()
-                    Image(systemName: "chevron.right.2")
-                        .foregroundStyle(Color.primary)
+
+                NavigationLink(value: "Mobility") {
+                    HStack {
+                        Image(systemName: "shoeprints.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("Mobility Data")
+                            .font(.title2)
+                        Spacer()
+                    }
                 }
-                .tag("Mobility")
-                
-                HStack {
-                    Image(systemName: "heart.circle.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 40)
-                        .foregroundStyle(Color.blue)
-                    Text("Health Data")
-                        .foregroundStyle(Color.primary)
-                        .font(.title2)
-                    Spacer()
-                    Image(systemName: "chevron.right.2")
-                        .foregroundStyle(Color.primary)
+
+                NavigationLink(value: "Vital") {
+                    HStack {
+                        Image(systemName: "heart.circle.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("Health Data")
+                            .font(.title2)
+                        Spacer()
+                    }
                 }
-                .tag("Vital")
             }
             .navigationTitle("HealthKit Data")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showingInfo.toggle()
-                    }) {
+                    Button(action: { showingInfo.toggle() }) {
                         Image(systemName: "info.circle")
                     }
                     .sheet(isPresented: $showingInfo) {
@@ -83,16 +75,20 @@ struct healthKitView: View {
                     }
                 }
             }
-        } detail: {
-            if selectedView == "Activity" {
-                activityView()
-            } else if selectedView == "Mobility" {
-                mobilityView()
-            } else if selectedView == "Vital" {
-                vitalView()
-            } else {
-                Text("Select a view")
-                    .font(.largeTitle)
+            .navigationDestination(for: String.self) { selectedView in
+                switch selectedView {
+                case "Activity":
+                    activityView()
+                        .navigationTitle("Activity Data")
+                case "Mobility":
+                    mobilityView()
+                        .navigationTitle("Mobility Data")
+                case "Vital":
+                    vitalView()
+                        .navigationTitle("Health Data")
+                default:
+                    Text("Unknown View")
+                }
             }
         }
     }
@@ -101,3 +97,4 @@ struct healthKitView: View {
 #Preview {
     healthKitView()
 }
+

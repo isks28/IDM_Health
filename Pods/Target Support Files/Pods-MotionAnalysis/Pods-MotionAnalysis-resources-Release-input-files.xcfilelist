@@ -1,0 +1,5 @@
+${PODS_ROOT}/Target Support Files/Pods-MotionAnalysis/Pods-MotionAnalysis-resources.sh
+${PODS_CONFIGURATION_BUILD_DIR}/LiteRTC/TensorFlowLiteC.bundle
+${PODS_CONFIGURATION_BUILD_DIR}/LiteRTC/TensorFlowLiteCCoreML.bundle
+${PODS_CONFIGURATION_BUILD_DIR}/LiteRTC/TensorFlowLiteCMetal.bundle
+${PODS_CONFIGURATION_BUILD_DIR}/LiteRTSwift/TensorFlowLite.bundle
