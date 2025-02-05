@@ -1,0 +1,11 @@
+//
+//  Testing.xcconfig
+//  IDM Health
+//
+//  Created by Irnu Suryohadi Kusumo on 05.02.25.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+
+BASE_URL = https:api.testing.version1.com
