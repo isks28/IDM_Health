@@ -1,0 +1,37 @@
+PODS:
+  - LiteRTC (0.0.1-nightly.20250205):
+    - LiteRTC/Core (= 0.0.1-nightly.20250205)
+  - LiteRTC/Core (0.0.1-nightly.20250205)
+  - LiteRTC/CoreML (0.0.1-nightly.20250205):
+    - LiteRTC/Core
+  - LiteRTC/Metal (0.0.1-nightly.20250205):
+    - LiteRTC/Core
+  - LiteRTSwift/Core (0.0.1-nightly.20250205):
+    - LiteRTC (= 0.0.1-nightly.20250205)
+    - LiteRTSwift/Privacy (= 0.0.1-nightly.20250205)
+  - LiteRTSwift/CoreML (0.0.1-nightly.20250205):
+    - LiteRTC/CoreML (= 0.0.1-nightly.20250205)
+    - LiteRTSwift/Core (= 0.0.1-nightly.20250205)
+    - LiteRTSwift/Privacy (= 0.0.1-nightly.20250205)
+  - LiteRTSwift/Metal (0.0.1-nightly.20250205):
+    - LiteRTC/Metal (= 0.0.1-nightly.20250205)
+    - LiteRTSwift/Core (= 0.0.1-nightly.20250205)
+    - LiteRTSwift/Privacy (= 0.0.1-nightly.20250205)
+  - LiteRTSwift/Privacy (0.0.1-nightly.20250205)
+
+DEPENDENCIES:
+  - LiteRTSwift/CoreML (~> 0.0.1-nightly)
+  - LiteRTSwift/Metal (~> 0.0.1-nightly)
+
+SPEC REPOS:
+  trunk:
+    - LiteRTC
+    - LiteRTSwift
+
+SPEC CHECKSUMS:
+  LiteRTC: 19dcb48d52a6705ba93a319df0088b0e7e7b0f83
+  LiteRTSwift: 11bb09351f87effd8b01b0e370a2b69584e5ed0a
+
+PODFILE CHECKSUM: 0cad7595d174b72eddc18126a3960c14f5b28a44
+
+COCOAPODS: 1.16.2
