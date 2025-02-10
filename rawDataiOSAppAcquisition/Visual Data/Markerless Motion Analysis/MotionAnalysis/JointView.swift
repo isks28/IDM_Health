@@ -1,32 +1,25 @@
 import SwiftUI
 
 struct JointView: View {
-    
-    
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 20) {
-                Text("SELECT A JOINT")
-                    .font(.system(size: 35, weight: .bold))
-                
-                    
-                
-                let joints = ["SHOULDER", "ELBOW", "KNEE", "HIP", "ANKLE"]
-                
-                ForEach(joints, id: \.self) { joint in
-                    NavigationLinkButton(joint: joint)
-                }
+        VStack(spacing: 20) {
+            Text("SELECT A JOINT")
+                .font(.system(size: 35, weight: .bold))
+
+            let joints = ["SHOULDER", "ELBOW", "KNEE", "HIP", "ANKLE"]
+
+            ForEach(joints, id: \.self) { joint in
+                NavigationLinkButton(joint: joint)
             }
-            .padding()
-            .whiteBackground()
         }
+        .padding()
+        .whiteBackground()
     }
 }
 
-
 struct NavigationLinkButton: View {
     let joint: String
-    
+
     var body: some View {
         NavigationLink(destination: destinationView(for: joint)) {
             Text(joint)
@@ -37,14 +30,13 @@ struct NavigationLinkButton: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
         }
     }
-    
+
     @ViewBuilder
     private func destinationView(for joint: String) -> some View {
         switch joint {
         case "SHOULDER":
             ShoulderView()
                 .whiteBackground()
-            
         case "ELBOW":
             ElbowView()
                 .whiteBackground()
@@ -66,4 +58,3 @@ struct NavigationLinkButton: View {
 #Preview {
     JointView()
 }
-

@@ -4,6 +4,8 @@
 <dict>
 	<key>BASE_URL</key>
 	<string>$(BASE_URL)</string>
+    <key>UIMainStoryboardFile</key>
+        <string>Main</string>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.IDMHealth.IMUBackGroundTask</string>

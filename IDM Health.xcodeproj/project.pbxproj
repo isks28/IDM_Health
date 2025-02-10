@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 76;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -32,6 +32,9 @@
 		5A554EA92C87068D0081747B /* deviceMotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA82C87068D0081747B /* deviceMotionManager.swift */; };
 		5AB490012CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AB490002CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift */; };
 		5ADF90432D41235200F728AC /* VideoPlacerReview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ADF90422D41235200F728AC /* VideoPlacerReview.swift */; };
+		8629D5562D5A696D007B553C /* MotionAnalysis.app in Resources */ = {isa = PBXBuildFile; fileRef = 8629D5302D5A696D007B553C /* MotionAnalysis.app */; };
+		8629D5E92D5A6E2B007B553C /* Pods_rawDataiOSAppAcquisition.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22DD96BC055AB27EF85B652A /* Pods_rawDataiOSAppAcquisition.framework */; };
+		8629D5EA2D5A6E2B007B553C /* Pods_rawDataiOSAppAcquisition.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22DD96BC055AB27EF85B652A /* Pods_rawDataiOSAppAcquisition.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		863757E62CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863757E52CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift */; };
 		863757E82CD38DBA002F4BEA /* SixMinuteWalkTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863757E72CD38DBA002F4BEA /* SixMinuteWalkTestView.swift */; };
 		86419FE62CB97E2B0071151C /* StepCountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE52CB97E2B0071151C /* StepCountManager.swift */; };
@@ -40,11 +43,6 @@
 		8649C9B32D05E6DD00E15C02 /* visualDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8649C9B22D05E6DD00E15C02 /* visualDataView.swift */; };
 		866B7C4C2CD0F6C8000FC227 /* rawDataAllManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */; };
 		866B7C4E2CD0F6EA000FC227 /* rawDataAllView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866B7C4D2CD0F6EA000FC227 /* rawDataAllView.swift */; };
-		8696376A2D52624E00A1DC2A /* TensorflowMotionAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 869637692D52624E00A1DC2A /* TensorflowMotionAnalysisView.swift */; };
-		8696376D2D5263A300A1DC2A /* TMAShoulderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8696376C2D5263A300A1DC2A /* TMAShoulderView.swift */; };
-		869637BA2D527A8200A1DC2A /* LeftShoulderAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 869637B92D527A8200A1DC2A /* LeftShoulderAnalysisView.swift */; };
-		869637BC2D527A8F00A1DC2A /* RightShoulderAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 869637BB2D527A8F00A1DC2A /* RightShoulderAnalysisView.swift */; };
-		869637C22D53932900A1DC2A /* Testing.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 869637C12D53932900A1DC2A /* Testing.xcconfig */; };
 		86B0DE662CBE973C00003F50 /* ServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0DE652CBE973C00003F50 /* ServerConfig.swift */; };
 		86C9215E2D395637002AD774 /* PhotosAndVideoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C9215D2D395637002AD774 /* PhotosAndVideoManager.swift */; };
 		86C921602D395653002AD774 /* PhotosAndVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C9215F2D395653002AD774 /* PhotosAndVideoView.swift */; };
@@ -68,7 +66,24 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		8629D5EB2D5A6E2B007B553C /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				8629D5EA2D5A6E2B007B553C /* Pods_rawDataiOSAppAcquisition.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		1D83AAFB94BC2508CF786820 /* Pods-rawDataiOSAppAcquisition.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-rawDataiOSAppAcquisition.debug.xcconfig"; path = "Target Support Files/Pods-rawDataiOSAppAcquisition/Pods-rawDataiOSAppAcquisition.debug.xcconfig"; sourceTree = "<group>"; };
+		22DD96BC055AB27EF85B652A /* Pods_rawDataiOSAppAcquisition.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_rawDataiOSAppAcquisition.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		292D38BED70CEC6098AC9ACB /* Pods-rawDataiOSAppAcquisition.testing.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-rawDataiOSAppAcquisition.testing.xcconfig"; path = "Target Support Files/Pods-rawDataiOSAppAcquisition/Pods-rawDataiOSAppAcquisition.testing.xcconfig"; sourceTree = "<group>"; };
 		5A45C7172C9C0FDB00F6E14E /* vitalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vitalView.swift; sourceTree = "<group>"; };
 		5A45C7192C9C0FE600F6E14E /* vitalManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vitalManager.swift; sourceTree = "<group>"; };
 		5A554E572C8705080081747B /* IDM Health.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "IDM Health.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -99,6 +114,12 @@
 		5A554EB02C8708AA0081747B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5AB490002CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = animatedMotionSwipeDownClose.swift; sourceTree = "<group>"; };
 		5ADF90422D41235200F728AC /* VideoPlacerReview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlacerReview.swift; sourceTree = "<group>"; };
+		7D5F91C30E670372EEF5187C /* Pods-rawDataiOSAppAcquisition.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-rawDataiOSAppAcquisition.release.xcconfig"; path = "Target Support Files/Pods-rawDataiOSAppAcquisition/Pods-rawDataiOSAppAcquisition.release.xcconfig"; sourceTree = "<group>"; };
+		8629D5302D5A696D007B553C /* MotionAnalysis.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; name = MotionAnalysis.app; path = "../../../../../../../../Documents/UKGM/2025/rawDataiOSAppAcquisition/rawDataiOSAppAcquisition/Visual Data/Markerless Motion Analysis/MotionAnalysis.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8629D5322D5A696D007B553C /* Pods-MotionAnalysis.debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Pods-MotionAnalysis.debug.xcconfig"; path = "Target Support Files/Pods-MotionAnalysis/Pods-MotionAnalysis.debug.xcconfig"; sourceTree = "<group>"; };
+		8629D5332D5A696D007B553C /* Pods-MotionAnalysis.release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Pods-MotionAnalysis.release.xcconfig"; path = "Target Support Files/Pods-MotionAnalysis/Pods-MotionAnalysis.release.xcconfig"; sourceTree = "<group>"; };
+		8629D5352D5A696D007B553C /* Pods_MotionAnalysis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Pods_MotionAnalysis.framework; path = "../../../../../../../../Documents/UKGM/2025/rawDataiOSAppAcquisition/rawDataiOSAppAcquisition/Visual Data/Markerless Motion Analysis/Pods_MotionAnalysis.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8629D5EC2D5A6E32007B553C /* Pods_rawDataiOSAppAcquisition.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Pods_rawDataiOSAppAcquisition.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		863757E52CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixMinuteWalkTestManager.swift; sourceTree = "<group>"; };
 		863757E72CD38DBA002F4BEA /* SixMinuteWalkTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixMinuteWalkTestView.swift; sourceTree = "<group>"; };
 		86419FE52CB97E2B0071151C /* StepCountManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountManager.swift; sourceTree = "<group>"; };
@@ -107,10 +128,6 @@
 		8649C9B22D05E6DD00E15C02 /* visualDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = visualDataView.swift; sourceTree = "<group>"; };
 		866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllManager.swift; sourceTree = "<group>"; };
 		866B7C4D2CD0F6EA000FC227 /* rawDataAllView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllView.swift; sourceTree = "<group>"; };
-		869637692D52624E00A1DC2A /* TensorflowMotionAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TensorflowMotionAnalysisView.swift; sourceTree = "<group>"; };
-		8696376C2D5263A300A1DC2A /* TMAShoulderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMAShoulderView.swift; sourceTree = "<group>"; };
-		869637B92D527A8200A1DC2A /* LeftShoulderAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeftShoulderAnalysisView.swift; sourceTree = "<group>"; };
-		869637BB2D527A8F00A1DC2A /* RightShoulderAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RightShoulderAnalysisView.swift; sourceTree = "<group>"; };
 		869637C12D53932900A1DC2A /* Testing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Testing.xcconfig; sourceTree = "<group>"; };
 		86B0DE652CBE973C00003F50 /* ServerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerConfig.swift; sourceTree = "<group>"; };
 		86C9215D2D395637002AD774 /* PhotosAndVideoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosAndVideoManager.swift; sourceTree = "<group>"; };
@@ -118,11 +135,36 @@
 		86C921612D395674002AD774 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		8629D6412D5AAAEB007B553C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"/Localized/PoseEstimation/UI/Storyboards/Launch Screen.storyboard",
+				/Localized/PoseEstimation/UI/Storyboards/Main.storyboard,
+			);
+			target = 5A554E672C8705090081747B /* rawDataiOSAppAcquisitionTests */;
+		};
+		8629D6422D5AAAEB007B553C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"/Localized/PoseEstimation/UI/Storyboards/Launch Screen.storyboard",
+				/Localized/PoseEstimation/UI/Storyboards/Main.storyboard,
+			);
+			target = 5A554E712C8705090081747B /* rawDataiOSAppAcquisitionUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		8629D52F2D5A696D007B553C /* MotionAnalysis */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (8629D6412D5AAAEB007B553C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 8629D6422D5AAAEB007B553C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = MotionAnalysis; sourceTree = "<group>"; };
+		8629D5E12D5A6BE7007B553C /* StyleExtenstions */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = StyleExtenstions; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		5A554E542C8705080081747B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8629D5E92D5A6E2B007B553C /* Pods_rawDataiOSAppAcquisition.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -159,6 +201,8 @@
 				5A554E6B2C8705090081747B /* rawDataiOSAppAcquisitionTests */,
 				5A554E752C8705090081747B /* rawDataiOSAppAcquisitionUITests */,
 				5A554E582C8705080081747B /* Products */,
+				6B7C955E76EBC07533468F48 /* Pods */,
+				62282CAD0EFECA9589CAF27F /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -295,6 +339,50 @@
 			path = deviceMotion;
 			sourceTree = "<group>";
 		};
+		62282CAD0EFECA9589CAF27F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8629D5EC2D5A6E32007B553C /* Pods_rawDataiOSAppAcquisition.framework */,
+				22DD96BC055AB27EF85B652A /* Pods_rawDataiOSAppAcquisition.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		6B7C955E76EBC07533468F48 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				1D83AAFB94BC2508CF786820 /* Pods-rawDataiOSAppAcquisition.debug.xcconfig */,
+				7D5F91C30E670372EEF5187C /* Pods-rawDataiOSAppAcquisition.release.xcconfig */,
+				292D38BED70CEC6098AC9ACB /* Pods-rawDataiOSAppAcquisition.testing.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		8629D5312D5A696D007B553C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8629D5302D5A696D007B553C /* MotionAnalysis.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8629D5342D5A696D007B553C /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				8629D5322D5A696D007B553C /* Pods-MotionAnalysis.debug.xcconfig */,
+				8629D5332D5A696D007B553C /* Pods-MotionAnalysis.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		8629D5362D5A696D007B553C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8629D5352D5A696D007B553C /* Pods_MotionAnalysis.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		863757E42CD38D90002F4BEA /* SixMinuteWalkTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -336,8 +424,11 @@
 		8649C9B42D05E7DA00E15C02 /* Markerless Motion Analysis */ = {
 			isa = PBXGroup;
 			children = (
-				869637692D52624E00A1DC2A /* TensorflowMotionAnalysisView.swift */,
-				8696376B2D52638C00A1DC2A /* Shoulder */,
+				8629D5E12D5A6BE7007B553C /* StyleExtenstions */,
+				8629D52F2D5A696D007B553C /* MotionAnalysis */,
+				8629D5312D5A696D007B553C /* Products */,
+				8629D5342D5A696D007B553C /* Pods */,
+				8629D5362D5A696D007B553C /* Frameworks */,
 			);
 			path = "Markerless Motion Analysis";
 			sourceTree = "<group>";
@@ -349,32 +440,6 @@
 				866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */,
 			);
 			path = rawDataAll;
-			sourceTree = "<group>";
-		};
-		8696376B2D52638C00A1DC2A /* Shoulder */ = {
-			isa = PBXGroup;
-			children = (
-				8696376C2D5263A300A1DC2A /* TMAShoulderView.swift */,
-				869637B72D527A5900A1DC2A /* LeftShoulder */,
-				869637B82D527A6800A1DC2A /* RightShoulder */,
-			);
-			path = Shoulder;
-			sourceTree = "<group>";
-		};
-		869637B72D527A5900A1DC2A /* LeftShoulder */ = {
-			isa = PBXGroup;
-			children = (
-				869637B92D527A8200A1DC2A /* LeftShoulderAnalysisView.swift */,
-			);
-			path = LeftShoulder;
-			sourceTree = "<group>";
-		};
-		869637B82D527A6800A1DC2A /* RightShoulder */ = {
-			isa = PBXGroup;
-			children = (
-				869637BB2D527A8F00A1DC2A /* RightShoulderAnalysisView.swift */,
-			);
-			path = RightShoulder;
 			sourceTree = "<group>";
 		};
 		86C921442D393859002AD774 /* photosAndVideoView */ = {
@@ -395,13 +460,20 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5A554E7C2C8705090081747B /* Build configuration list for PBXNativeTarget "rawDataiOSAppAcquisition" */;
 			buildPhases = (
+				A4DDABB50D45032177B40C6C /* [CP] Check Pods Manifest.lock */,
 				5A554E532C8705080081747B /* Sources */,
 				5A554E542C8705080081747B /* Frameworks */,
 				5A554E552C8705080081747B /* Resources */,
+				FD916FE4B0E4192E066DF8E0 /* [CP] Copy Pods Resources */,
+				8629D5EB2D5A6E2B007B553C /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				8629D52F2D5A696D007B553C /* MotionAnalysis */,
+				8629D5E12D5A6BE7007B553C /* StyleExtenstions */,
 			);
 			name = rawDataiOSAppAcquisition;
 			productName = rawDataiOSAppAcquisition;
@@ -452,7 +524,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1540;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 1620;
 				TargetAttributes = {
 					5A554E562C8705080081747B = {
 						CreatedOnToolsVersion = 15.4;
@@ -468,7 +540,6 @@
 				};
 			};
 			buildConfigurationList = 5A554E522C8705080081747B /* Build configuration list for PBXProject "IDM Health" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -476,6 +547,7 @@
 				Base,
 			);
 			mainGroup = 5A554E4E2C8705080081747B;
+			preferredProjectObjectVersion = 56;
 			productRefGroup = 5A554E582C8705080081747B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -494,7 +566,7 @@
 			files = (
 				5A554E632C8705090081747B /* Preview Assets.xcassets in Resources */,
 				5A554E5F2C8705090081747B /* Assets.xcassets in Resources */,
-				869637C22D53932900A1DC2A /* Testing.xcconfig in Resources */,
+				8629D5562D5A696D007B553C /* MotionAnalysis.app in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -514,6 +586,48 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		A4DDABB50D45032177B40C6C /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-rawDataiOSAppAcquisition-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		FD916FE4B0E4192E066DF8E0 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-rawDataiOSAppAcquisition/Pods-rawDataiOSAppAcquisition-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-rawDataiOSAppAcquisition/Pods-rawDataiOSAppAcquisition-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-rawDataiOSAppAcquisition/Pods-rawDataiOSAppAcquisition-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		5A554E532C8705080081747B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -528,7 +642,6 @@
 				5A45C71A2C9C0FE600F6E14E /* vitalManager.swift in Sources */,
 				5A554E8F2C8705DB0081747B /* healthKitView.swift in Sources */,
 				863757E82CD38DBA002F4BEA /* SixMinuteWalkTestView.swift in Sources */,
-				8696376A2D52624E00A1DC2A /* TensorflowMotionAnalysisView.swift in Sources */,
 				86419FE82CB97E800071151C /* StepCountView.swift in Sources */,
 				86419FE62CB97E2B0071151C /* StepCountManager.swift in Sources */,
 				5A554E912C8705ED0081747B /* activityView.swift in Sources */,
@@ -539,11 +652,9 @@
 				5A554E5D2C8705080081747B /* ContentView.swift in Sources */,
 				5A554E952C8706080081747B /* mobilityView.swift in Sources */,
 				5A554EA72C8706810081747B /* deviceMotionView.swift in Sources */,
-				869637BA2D527A8200A1DC2A /* LeftShoulderAnalysisView.swift in Sources */,
 				86B0DE662CBE973C00003F50 /* ServerConfig.swift in Sources */,
 				5A554E9D2C87063D0081747B /* accelerometerDataManager.swift in Sources */,
 				86C921622D395674002AD774 /* CameraPreview.swift in Sources */,
-				8696376D2D5263A300A1DC2A /* TMAShoulderView.swift in Sources */,
 				86419FEC2CB988BF0071151C /* walkingDataView.swift in Sources */,
 				5A554EA92C87068D0081747B /* deviceMotionManager.swift in Sources */,
 				86C9215E2D395637002AD774 /* PhotosAndVideoManager.swift in Sources */,
@@ -552,7 +663,6 @@
 				5A554E932C8705F70081747B /* activityManager.swift in Sources */,
 				5A554E5B2C8705080081747B /* rawDataiOSAppAcquisitionApp.swift in Sources */,
 				5A554E9F2C8706470081747B /* gyroscopeDataView.swift in Sources */,
-				869637BC2D527A8F00A1DC2A /* RightShoulderAnalysisView.swift in Sources */,
 				866B7C4E2CD0F6EA000FC227 /* rawDataAllView.swift in Sources */,
 				5A554EA32C8706690081747B /* magnetometerDataView.swift in Sources */,
 			);
@@ -741,6 +851,7 @@
 		};
 		5A554E7D2C8705090081747B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1D83AAFB94BC2508CF786820 /* Pods-rawDataiOSAppAcquisition.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -775,6 +886,7 @@
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -798,6 +910,7 @@
 		};
 		5A554E7E2C8705090081747B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7D5F91C30E670372EEF5187C /* Pods-rawDataiOSAppAcquisition.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -832,6 +945,7 @@
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -1016,6 +1130,7 @@
 		};
 		869637BE2D53927C00A1DC2A /* Testing */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 292D38BED70CEC6098AC9ACB /* Pods-rawDataiOSAppAcquisition.testing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1050,6 +1165,7 @@
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
