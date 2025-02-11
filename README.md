@@ -1,3 +1,9 @@
+# IDM Health
+
+An iOS application to collect, record and upload a data based on Apple Health App, Inertial measurements unit and camera.
+
+this also include the tensorflow motion analysis from Prashast Singh, which described below.
+
 # iOS Application for Tracking Joint Movement
 
 An iOS application to track joint movements and measure the range of motion for specific joints. This app is useful for patients and healthcare professionals to monitor and guide joint mobility exercises.
