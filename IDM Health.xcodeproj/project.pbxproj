@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 76;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -32,7 +32,6 @@
 		5A554EA92C87068D0081747B /* deviceMotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA82C87068D0081747B /* deviceMotionManager.swift */; };
 		5AB490012CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AB490002CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift */; };
 		5ADF90432D41235200F728AC /* VideoPlacerReview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ADF90422D41235200F728AC /* VideoPlacerReview.swift */; };
-		8629D5562D5A696D007B553C /* MotionAnalysis.app in Resources */ = {isa = PBXBuildFile; fileRef = 8629D5302D5A696D007B553C /* MotionAnalysis.app */; };
 		8629D5E92D5A6E2B007B553C /* Pods_rawDataiOSAppAcquisition.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22DD96BC055AB27EF85B652A /* Pods_rawDataiOSAppAcquisition.framework */; };
 		8629D5EA2D5A6E2B007B553C /* Pods_rawDataiOSAppAcquisition.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22DD96BC055AB27EF85B652A /* Pods_rawDataiOSAppAcquisition.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		863757E62CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863757E52CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift */; };
@@ -44,6 +43,7 @@
 		866B7C4C2CD0F6C8000FC227 /* rawDataAllManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866B7C4B2CD0F6C8000FC227 /* rawDataAllManager.swift */; };
 		866B7C4E2CD0F6EA000FC227 /* rawDataAllView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866B7C4D2CD0F6EA000FC227 /* rawDataAllView.swift */; };
 		86B0DE662CBE973C00003F50 /* ServerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B0DE652CBE973C00003F50 /* ServerConfig.swift */; };
+		86B3FE572D5B4FAC0024FB8E /* TensorflowMotionAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B3FE562D5B4FAC0024FB8E /* TensorflowMotionAnalysisView.swift */; };
 		86C9215E2D395637002AD774 /* PhotosAndVideoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C9215D2D395637002AD774 /* PhotosAndVideoManager.swift */; };
 		86C921602D395653002AD774 /* PhotosAndVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C9215F2D395653002AD774 /* PhotosAndVideoView.swift */; };
 		86C921622D395674002AD774 /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C921612D395674002AD774 /* CameraPreview.swift */; };
@@ -115,10 +115,6 @@
 		5AB490002CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = animatedMotionSwipeDownClose.swift; sourceTree = "<group>"; };
 		5ADF90422D41235200F728AC /* VideoPlacerReview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlacerReview.swift; sourceTree = "<group>"; };
 		7D5F91C30E670372EEF5187C /* Pods-rawDataiOSAppAcquisition.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-rawDataiOSAppAcquisition.release.xcconfig"; path = "Target Support Files/Pods-rawDataiOSAppAcquisition/Pods-rawDataiOSAppAcquisition.release.xcconfig"; sourceTree = "<group>"; };
-		8629D5302D5A696D007B553C /* MotionAnalysis.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; name = MotionAnalysis.app; path = "../../../../../../../../Documents/UKGM/2025/rawDataiOSAppAcquisition/rawDataiOSAppAcquisition/Visual Data/Markerless Motion Analysis/MotionAnalysis.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		8629D5322D5A696D007B553C /* Pods-MotionAnalysis.debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Pods-MotionAnalysis.debug.xcconfig"; path = "Target Support Files/Pods-MotionAnalysis/Pods-MotionAnalysis.debug.xcconfig"; sourceTree = "<group>"; };
-		8629D5332D5A696D007B553C /* Pods-MotionAnalysis.release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Pods-MotionAnalysis.release.xcconfig"; path = "Target Support Files/Pods-MotionAnalysis/Pods-MotionAnalysis.release.xcconfig"; sourceTree = "<group>"; };
-		8629D5352D5A696D007B553C /* Pods_MotionAnalysis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Pods_MotionAnalysis.framework; path = "../../../../../../../../Documents/UKGM/2025/rawDataiOSAppAcquisition/rawDataiOSAppAcquisition/Visual Data/Markerless Motion Analysis/Pods_MotionAnalysis.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8629D5EC2D5A6E32007B553C /* Pods_rawDataiOSAppAcquisition.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Pods_rawDataiOSAppAcquisition.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		863757E52CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixMinuteWalkTestManager.swift; sourceTree = "<group>"; };
 		863757E72CD38DBA002F4BEA /* SixMinuteWalkTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixMinuteWalkTestView.swift; sourceTree = "<group>"; };
@@ -130,34 +126,11 @@
 		866B7C4D2CD0F6EA000FC227 /* rawDataAllView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rawDataAllView.swift; sourceTree = "<group>"; };
 		869637C12D53932900A1DC2A /* Testing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Testing.xcconfig; sourceTree = "<group>"; };
 		86B0DE652CBE973C00003F50 /* ServerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerConfig.swift; sourceTree = "<group>"; };
+		86B3FE562D5B4FAC0024FB8E /* TensorflowMotionAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TensorflowMotionAnalysisView.swift; sourceTree = "<group>"; };
 		86C9215D2D395637002AD774 /* PhotosAndVideoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosAndVideoManager.swift; sourceTree = "<group>"; };
 		86C9215F2D395653002AD774 /* PhotosAndVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosAndVideoView.swift; sourceTree = "<group>"; };
 		86C921612D395674002AD774 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		8629D6412D5AAAEB007B553C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"/Localized/PoseEstimation/UI/Storyboards/Launch Screen.storyboard",
-				/Localized/PoseEstimation/UI/Storyboards/Main.storyboard,
-			);
-			target = 5A554E672C8705090081747B /* rawDataiOSAppAcquisitionTests */;
-		};
-		8629D6422D5AAAEB007B553C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"/Localized/PoseEstimation/UI/Storyboards/Launch Screen.storyboard",
-				/Localized/PoseEstimation/UI/Storyboards/Main.storyboard,
-			);
-			target = 5A554E712C8705090081747B /* rawDataiOSAppAcquisitionUITests */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		8629D52F2D5A696D007B553C /* MotionAnalysis */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (8629D6412D5AAAEB007B553C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 8629D6422D5AAAEB007B553C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = MotionAnalysis; sourceTree = "<group>"; };
-		8629D5E12D5A6BE7007B553C /* StyleExtenstions */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = StyleExtenstions; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		5A554E542C8705080081747B /* Frameworks */ = {
@@ -358,31 +331,6 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
-		8629D5312D5A696D007B553C /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				8629D5302D5A696D007B553C /* MotionAnalysis.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		8629D5342D5A696D007B553C /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				8629D5322D5A696D007B553C /* Pods-MotionAnalysis.debug.xcconfig */,
-				8629D5332D5A696D007B553C /* Pods-MotionAnalysis.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		8629D5362D5A696D007B553C /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				8629D5352D5A696D007B553C /* Pods_MotionAnalysis.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		863757E42CD38D90002F4BEA /* SixMinuteWalkTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -424,11 +372,7 @@
 		8649C9B42D05E7DA00E15C02 /* Markerless Motion Analysis */ = {
 			isa = PBXGroup;
 			children = (
-				8629D5E12D5A6BE7007B553C /* StyleExtenstions */,
-				8629D52F2D5A696D007B553C /* MotionAnalysis */,
-				8629D5312D5A696D007B553C /* Products */,
-				8629D5342D5A696D007B553C /* Pods */,
-				8629D5362D5A696D007B553C /* Frameworks */,
+				86B3FE562D5B4FAC0024FB8E /* TensorflowMotionAnalysisView.swift */,
 			);
 			path = "Markerless Motion Analysis";
 			sourceTree = "<group>";
@@ -470,10 +414,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				8629D52F2D5A696D007B553C /* MotionAnalysis */,
-				8629D5E12D5A6BE7007B553C /* StyleExtenstions */,
 			);
 			name = rawDataiOSAppAcquisition;
 			productName = rawDataiOSAppAcquisition;
@@ -540,6 +480,7 @@
 				};
 			};
 			buildConfigurationList = 5A554E522C8705080081747B /* Build configuration list for PBXProject "IDM Health" */;
+			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -547,7 +488,6 @@
 				Base,
 			);
 			mainGroup = 5A554E4E2C8705080081747B;
-			preferredProjectObjectVersion = 56;
 			productRefGroup = 5A554E582C8705080081747B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -566,7 +506,6 @@
 			files = (
 				5A554E632C8705090081747B /* Preview Assets.xcassets in Resources */,
 				5A554E5F2C8705090081747B /* Assets.xcassets in Resources */,
-				8629D5562D5A696D007B553C /* MotionAnalysis.app in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -648,6 +587,7 @@
 				5AB490012CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift in Sources */,
 				5A554E992C87061E0081747B /* rawDataView.swift in Sources */,
 				86C921602D395653002AD774 /* PhotosAndVideoView.swift in Sources */,
+				86B3FE572D5B4FAC0024FB8E /* TensorflowMotionAnalysisView.swift in Sources */,
 				863757E62CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift in Sources */,
 				5A554E5D2C8705080081747B /* ContentView.swift in Sources */,
 				5A554E952C8706080081747B /* mobilityView.swift in Sources */,

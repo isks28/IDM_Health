@@ -67,7 +67,7 @@ struct visualDataView: View {
                 case "Photo and Video Data":
                     PhotosAndVideoView()
                 case "Markerless Motion Data":
-                    JointView()
+                    TensorflowMotionAnalysisView()
                 default:
                     Text("Unknown View: \(selectedView)")
                 }
