@@ -36,6 +36,8 @@
 		8629D5EA2D5A6E2B007B553C /* Pods_rawDataiOSAppAcquisition.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22DD96BC055AB27EF85B652A /* Pods_rawDataiOSAppAcquisition.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		86369BC62D5B65050090B4D0 /* fingerDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86369BC42D5B65050090B4D0 /* fingerDataManager.swift */; };
 		86369BC72D5B65050090B4D0 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86369BC32D5B65050090B4D0 /* CameraView.swift */; };
+		86369D5C2D5BED750090B4D0 /* BodyPointsEstimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86369D5B2D5BED750090B4D0 /* BodyPointsEstimationView.swift */; };
+		86369D5E2D5BED820090B4D0 /* BodyPointsEstimationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86369D5D2D5BED820090B4D0 /* BodyPointsEstimationManager.swift */; };
 		863757E62CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863757E52CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift */; };
 		863757E82CD38DBA002F4BEA /* SixMinuteWalkTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863757E72CD38DBA002F4BEA /* SixMinuteWalkTestView.swift */; };
 		86419FE62CB97E2B0071151C /* StepCountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86419FE52CB97E2B0071151C /* StepCountManager.swift */; };
@@ -124,6 +126,8 @@
 		86369BC12D5B65050090B4D0 /* FingerJointAngleEstimationTest.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FingerJointAngleEstimationTest.entitlements; sourceTree = "<group>"; };
 		86369BC32D5B65050090B4D0 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		86369BC42D5B65050090B4D0 /* fingerDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fingerDataManager.swift; sourceTree = "<group>"; };
+		86369D5B2D5BED750090B4D0 /* BodyPointsEstimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyPointsEstimationView.swift; sourceTree = "<group>"; };
+		86369D5D2D5BED820090B4D0 /* BodyPointsEstimationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyPointsEstimationManager.swift; sourceTree = "<group>"; };
 		863757E52CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixMinuteWalkTestManager.swift; sourceTree = "<group>"; };
 		863757E72CD38DBA002F4BEA /* SixMinuteWalkTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixMinuteWalkTestView.swift; sourceTree = "<group>"; };
 		86419FE52CB97E2B0071151C /* StepCountManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepCountManager.swift; sourceTree = "<group>"; };
@@ -397,6 +401,15 @@
 			path = FingerJointEstimation;
 			sourceTree = "<group>";
 		};
+		86369D5A2D5BED520090B4D0 /* BodyPointsEstimation */ = {
+			isa = PBXGroup;
+			children = (
+				86369D5B2D5BED750090B4D0 /* BodyPointsEstimationView.swift */,
+				86369D5D2D5BED820090B4D0 /* BodyPointsEstimationManager.swift */,
+			);
+			path = BodyPointsEstimation;
+			sourceTree = "<group>";
+		};
 		863757E42CD38D90002F4BEA /* SixMinuteWalkTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -430,6 +443,7 @@
 			children = (
 				8649C9B22D05E6DD00E15C02 /* visualDataView.swift */,
 				86C921442D393859002AD774 /* photosAndVideoView */,
+				86369D5A2D5BED520090B4D0 /* BodyPointsEstimation */,
 				86369BC02D5B64D30090B4D0 /* FingerJointEstimation */,
 				8649C9B42D05E7DA00E15C02 /* Markerless Motion Analysis */,
 			);
@@ -651,6 +665,7 @@
 				5A45C7182C9C0FDB00F6E14E /* vitalView.swift in Sources */,
 				866B7C4C2CD0F6C8000FC227 /* rawDataAllManager.swift in Sources */,
 				5A554EA12C87065A0081747B /* gyroscopeDataManager.swift in Sources */,
+				86369D5C2D5BED750090B4D0 /* BodyPointsEstimationView.swift in Sources */,
 				5A554E9B2C8706310081747B /* accelerometerDataView.swift in Sources */,
 				86369BC62D5B65050090B4D0 /* fingerDataManager.swift in Sources */,
 				86369BC72D5B65050090B4D0 /* CameraView.swift in Sources */,
@@ -679,6 +694,7 @@
 				5A554E932C8705F70081747B /* activityManager.swift in Sources */,
 				5A554E5B2C8705080081747B /* rawDataiOSAppAcquisitionApp.swift in Sources */,
 				5A554E9F2C8706470081747B /* gyroscopeDataView.swift in Sources */,
+				86369D5E2D5BED820090B4D0 /* BodyPointsEstimationManager.swift in Sources */,
 				866B7C4E2CD0F6EA000FC227 /* rawDataAllView.swift in Sources */,
 				5A554EA32C8706690081747B /* magnetometerDataView.swift in Sources */,
 			);

@@ -109,7 +109,7 @@ struct CameraView: View {
                             .font(.largeTitle)
                             .multilineTextAlignment(.center)
                             .padding()
-                        Text("Using apple own Vision frameworks, this view try to show a demo of how the vision frameworks works on estimating the joints of a fingers using computer vision technology.")
+                        Text("Using Apple's Vision framework, this view demonstrates figner joints estimation, showing joints and connections in real-time using computer vision technology.")
                             .font(.body)
                             .multilineTextAlignment(.center)
                             .padding()

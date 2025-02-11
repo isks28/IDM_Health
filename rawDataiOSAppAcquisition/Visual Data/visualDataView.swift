@@ -27,6 +27,19 @@ struct visualDataView: View {
                     }
                 }
                 
+                NavigationLink(value: "Vision Body Motion Analysis") {
+                    HStack {
+                        Image(systemName: "figure")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("Vision Body Motion Analysis")
+                            .font(.title2)
+                        Spacer()
+                    }
+                }
+                
                 NavigationLink(value: "Vision Finger Motion Analysis") {
                     HStack {
                         Image(systemName: "hand.raised.square")
@@ -79,6 +92,8 @@ struct visualDataView: View {
                 switch selectedView {
                 case "Photo and Video Data":
                     PhotosAndVideoView()
+                case "Vision Body Motion Analysis":
+                    BodyPointsEstimationView()
                 case "Vision Finger Motion Analysis":
                     CameraView()
                 case "Markerless Motion Data":
