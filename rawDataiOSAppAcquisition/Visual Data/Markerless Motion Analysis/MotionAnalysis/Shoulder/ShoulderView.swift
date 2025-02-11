@@ -12,45 +12,63 @@ struct ShoulderView: View {
         NavigationView {
             VStack(spacing: 20) {
                 Text("LEFT SHOULDER MOVEMENTS")
-                    .font(.system(size: 30, weight: .bold))
+                    .font(.title)
+                    .bold()
                 
                 NavigationLink(destination: StoryboardViewWrapper(shoulderSide: .left, recordDirection: .side)) {
                     Text("FLEXION EXTENSION")
-                        .font(.system(size: 25, weight: .bold))
-                        .frame(width: 300, height: 100)
-                        .background(Color.black)
-                        .foregroundColor(.white)
+                        .font(.title2)
+                        .frame(width: 350, height: 80)
+                        .background(Color.white)
+                        .foregroundColor(.black)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue, lineWidth: 5)
+                    )
                 }
                 
                 NavigationLink(destination: StoryboardViewWrapper(shoulderSide: .left, recordDirection: .front)) {
                     Text("ABDUCTION ADDUCTION")
-                        .font(.system(size: 25, weight: .bold))
-                        .frame(width: 300, height: 100)
-                        .background(Color.black)
-                        .foregroundColor(.white)
+                        .font(.title2)
+                        .frame(width: 350, height: 80)
+                        .background(Color.white)
+                        .foregroundColor(.black)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue, lineWidth: 5)
+                    )
                 }
                 
                 Text("RIGHT SHOULDER MOVEMENTS")
-                    .font(.system(size: 30, weight: .bold))
+                    .font(.title)
+                    .bold()
                 
                 NavigationLink(destination: StoryboardViewWrapper(shoulderSide: .right, recordDirection: .side)) {
                     Text("FLEXION EXTENSION")
-                        .font(.system(size: 25, weight: .bold))
-                        .frame(width: 300, height: 100)
-                        .background(Color.black)
-                        .foregroundColor(.white)
+                        .font(.title2)
+                        .frame(width: 350, height: 80)
+                        .background(Color.white)
+                        .foregroundColor(.black)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue, lineWidth: 5)
+                    )
                 }
                 
                 NavigationLink(destination: StoryboardViewWrapper(shoulderSide: .right, recordDirection: .front)) {
                     Text("ABDUCTION ADDUCTION")
-                        .font(.system(size: 25, weight: .bold))
-                        .frame(width: 300, height: 100)
-                        .background(Color.black)
-                        .foregroundColor(.white)
+                        .font(.title2)
+                        .frame(width: 350, height: 80)
+                        .background(Color.white)
+                        .foregroundColor(.black)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue, lineWidth: 5)
+                    )
                 }
             }
             .padding()

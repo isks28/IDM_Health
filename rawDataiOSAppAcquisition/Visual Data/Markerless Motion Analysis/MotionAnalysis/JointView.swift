@@ -2,9 +2,10 @@ import SwiftUI
 
 struct JointView: View {
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 25) {
             Text("SELECT A JOINT")
-                .font(.system(size: 35, weight: .bold))
+                .font(.title)
+                .bold()
 
             let joints = ["SHOULDER", "ELBOW", "KNEE", "HIP", "ANKLE"]
 
@@ -23,11 +24,15 @@ struct NavigationLinkButton: View {
     var body: some View {
         NavigationLink(destination: destinationView(for: joint)) {
             Text(joint)
-                .font(.system(size: 25, weight: .bold))
-                .frame(width: 300, height: 100)
-                .background(Color.black)
-                .foregroundColor(.white)
+                .font(.title2)
+                .frame(width: 350, height: 80)
+                .background(Color.white)
+                .foregroundColor(.black)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.blue, lineWidth: 5)
+            )
         }
     }
 
