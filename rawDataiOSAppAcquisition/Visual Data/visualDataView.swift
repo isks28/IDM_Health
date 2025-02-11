@@ -26,6 +26,19 @@ struct visualDataView: View {
                         Spacer()
                     }
                 }
+                
+                NavigationLink(value: "Vision Finger Motion Analysis") {
+                    HStack {
+                        Image(systemName: "hand.raised.square")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("Vision Finger Motion Analysis")
+                            .font(.title2)
+                        Spacer()
+                    }
+                }
 
                 NavigationLink(value: "Markerless Motion Data") {
                     HStack {
@@ -66,6 +79,8 @@ struct visualDataView: View {
                 switch selectedView {
                 case "Photo and Video Data":
                     PhotosAndVideoView()
+                case "Vision Finger Motion Analysis":
+                    CameraView()
                 case "Markerless Motion Data":
                     JointView()
                 default:
