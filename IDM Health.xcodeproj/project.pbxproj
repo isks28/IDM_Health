@@ -32,7 +32,6 @@
 		5A554EA92C87068D0081747B /* deviceMotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA82C87068D0081747B /* deviceMotionManager.swift */; };
 		5AB490012CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AB490002CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift */; };
 		5ADF90432D41235200F728AC /* VideoPlacerReview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ADF90422D41235200F728AC /* VideoPlacerReview.swift */; };
-		8629D5562D5A696D007B553C /* MotionAnalysis.app in Resources */ = {isa = PBXBuildFile; fileRef = 8629D5302D5A696D007B553C /* MotionAnalysis.app */; };
 		8629D5E92D5A6E2B007B553C /* Pods_rawDataiOSAppAcquisition.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22DD96BC055AB27EF85B652A /* Pods_rawDataiOSAppAcquisition.framework */; };
 		8629D5EA2D5A6E2B007B553C /* Pods_rawDataiOSAppAcquisition.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22DD96BC055AB27EF85B652A /* Pods_rawDataiOSAppAcquisition.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		863757E62CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863757E52CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift */; };
@@ -566,7 +565,6 @@
 			files = (
 				5A554E632C8705090081747B /* Preview Assets.xcassets in Resources */,
 				5A554E5F2C8705090081747B /* Assets.xcassets in Resources */,
-				8629D5562D5A696D007B553C /* MotionAnalysis.app in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -858,7 +856,7 @@
 				CODE_SIGN_ENTITLEMENTS = rawDataiOSAppAcquisition/rawDataiOSAppAcquisition.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"rawDataiOSAppAcquisition/Preview Content\"";
 				DEVELOPMENT_TEAM = P6RD9VN837;
@@ -896,7 +894,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.UKGM.IDMHealth";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -917,7 +915,7 @@
 				CODE_SIGN_ENTITLEMENTS = rawDataiOSAppAcquisition/rawDataiOSAppAcquisition.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"rawDataiOSAppAcquisition/Preview Content\"";
 				DEVELOPMENT_TEAM = P6RD9VN837;
@@ -955,7 +953,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.UKGM.IDMHealth";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1137,7 +1135,7 @@
 				CODE_SIGN_ENTITLEMENTS = rawDataiOSAppAcquisition/rawDataiOSAppAcquisition.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"rawDataiOSAppAcquisition/Preview Content\"";
 				DEVELOPMENT_TEAM = P6RD9VN837;
@@ -1175,7 +1173,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.UKGM.IDMHealth";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";
