@@ -19,7 +19,7 @@ class OverlayView: UIImageView {
         private let sideWarningLabel: UILabel = {
             let label = UILabel()
             label.text = "⚠︎ SHOW YOUR SIDE PROFILE"
-            label.textColor = .red
+            label.textColor = .white
             label.font = UIFont.boldSystemFont(ofSize: 24)
             label.textAlignment = .center
             label.isHidden = true // Initially hidden
@@ -69,7 +69,7 @@ class OverlayView: UIImageView {
     }
 
 
-    func draw(at image: UIImage, person: Person, shoulderSide: ShoulderSide, recordDirection: RecordDirection) {
+    func draw(at image: UIImage, person: Person, recordDirection: RecordDirection, bodySide: BodySide, joint: Joint) {
             if context == nil {
                 UIGraphicsBeginImageContext(image.size)
                 guard let context = UIGraphicsGetCurrentContext() else {
@@ -79,20 +79,52 @@ class OverlayView: UIImageView {
             }
             image.draw(at: .zero)
             context.setLineWidth(Config.dot.radius)
-
-            // Draw only the selected shoulder
-            if shoulderSide == .left {
-                drawLeftShoulder(person: person)
-            } else {
-                drawRightShoulder(person: person)
-            }
-
+        // check record side
         if recordDirection == .side {
             checkShoulderDistance(person: person)
         }
         if recordDirection == .front {
             checkShoulderHipRatio(person: person)
         }
+        
+
+            // Check skoulder and Draw only the selected shoulder
+        if(joint == .shoulder){
+            if bodySide == .left {
+                drawLeftShoulder(person: person)
+            } else {
+                drawRightShoulder(person: person)
+            }
+        }
+        
+        // check elbow and draw
+        if(joint == .elbow){
+            if bodySide == .left{
+                drawLeftElbow(person: person)
+                
+            } else {
+                
+                drawRightElbow(person: person)
+                
+            }
+        }
+        
+        // check hip and draw
+        if(joint == .hip){
+            drawHip(person: person)
+        }
+        
+        // check knee and draw
+        
+        if(joint == .knee){
+            if bodySide == .left {
+                drawLeftKnee(person: person)
+            } else {
+                drawRightKnee(person: person)
+            }
+        }
+
+        
             
             context.setStrokeColor(UIColor.white.cgColor)
             context.strokePath()
@@ -136,6 +168,105 @@ class OverlayView: UIImageView {
         }
         
         
+    }
+    
+    // draw hip function
+    private func drawHip(person: Person){
+        if let leftKnee = getKeyPointPosition(of: .leftKnee, in: person),
+           let rightKnee = getKeyPointPosition(of: .rightKnee, in: person),
+           let leftHip = getKeyPointPosition(of: .leftHip, in: person),
+           let rightHip = getKeyPointPosition(of: .rightHip, in: person){
+           let midTorso = CGPoint(
+                        x: (leftHip.x + rightHip.x) / 2,
+                        y: (leftHip.y + rightHip.y) / 2
+                    )
+           let hipAngle = Int(calculateAngle(pointA: leftHip, pointB: midTorso, pointC: rightHip))
+            
+            let hipAngleText = String(format: "%d", 180 - hipAngle)
+            
+            let hipAnglePosition = CGPoint(x: midTorso.x + 20 , y: midTorso.y - 10)
+            
+            hipAngleText.draw(at: hipAnglePosition, withAttributes: Config.angleTextAttributes)
+            
+            drawLine(from: leftKnee, to: midTorso)
+            
+            drawLine(from: rightKnee, to: midTorso)
+        }
+    }
+    
+    // draw left knee
+    
+    private func drawLeftKnee(person: Person){
+        if let rightHip = getKeyPointPosition(of: .leftHip, in: person),
+           let rightKnee = getKeyPointPosition(of: .rightKnee, in: person),
+           let rightAnkle = getKeyPointPosition(of: .rightAnkle, in: person){
+            let rightKneeAngle = Int(calculateAngle(pointA: rightHip, pointB: rightKnee, pointC: rightAnkle))
+            
+            let rightAngleText = String(format: "%d", 180 - rightKneeAngle)
+            let rightAngleTextPosition = CGPoint(x: rightKnee.x, y: rightKnee.y - 10)
+            
+            rightAngleText.draw(at: rightAngleTextPosition, withAttributes: Config.angleTextAttributes)
+            
+            drawLine(from: rightHip, to: rightKnee)
+            drawLine(from: rightKnee, to: rightAnkle)
+        }
+    }
+    
+    
+    private func drawRightKnee(person: Person){
+        if let leftHip = getKeyPointPosition(of: .leftHip, in: person),
+           let leftKnee = getKeyPointPosition(of: .leftKnee, in: person),
+           let leftAnkle = getKeyPointPosition(of: .leftAnkle, in: person) {
+            
+            let leftKneeAngle = Int(calculateAngle(pointA: leftHip, pointB: leftKnee, pointC: leftAnkle))
+            
+            let leftAngleText = String(format: "%d", 180 - leftKneeAngle)
+            let leftAngleTextPosition = CGPoint(x: leftKnee.x, y: leftKnee.y - 10)
+            
+            leftAngleText.draw(at: leftAngleTextPosition, withAttributes: Config.angleTextAttributes)
+            
+            drawLine(from: leftHip, to: leftKnee)
+            drawLine(from: leftKnee, to: leftAnkle)
+        }
+
+    }
+    
+    // draw elbow function namin is opposite bacause of mirroring
+    private func drawLeftElbow(person: Person){
+        if let rightShoulder = getKeyPointPosition(of: .rightShoulder, in: person),
+            let rightElbow = getKeyPointPosition(of: .rightElbow, in: person),
+           let rightWrist = getKeyPointPosition(of: .rightWrist, in: person) {
+           
+            let rightElbowAngle = Int(calculateAngle(pointA: rightShoulder, pointB: rightElbow, pointC: rightWrist))
+            
+            let rightAngleText = String(format: "%d°", 180 - rightElbowAngle)
+            
+            let rightAnglePosition = CGPoint(x: rightElbow.x + 20 , y: rightElbow.y - 10)
+            rightAngleText.draw(at: rightAnglePosition, withAttributes: Config.angleTextAttributes)
+            
+            drawLine(from: rightShoulder, to: rightElbow)
+            drawLine(from: rightElbow, to: rightWrist)
+            
+        }
+            
+    }
+
+    private func drawRightElbow(person: Person){
+        if let leftShoulder = getKeyPointPosition(of: .leftShoulder, in: person),
+           let leftElbow = getKeyPointPosition(of: .leftElbow, in: person),
+           let leftWrist = getKeyPointPosition(of: .leftWrist, in: person) {
+
+            let leftElbowAngle = Int(calculateAngle(pointA: leftShoulder, pointB: leftElbow, pointC: leftWrist))
+            
+            let leftAngleText = String(format: "%d°", 180 - leftElbowAngle)
+            
+            let leftAnglePosition = CGPoint(x: leftElbow.x + 20, y: leftElbow.y - 10)
+            leftAngleText.draw(at: leftAnglePosition, withAttributes: Config.angleTextAttributes)
+            
+            drawLine(from: leftShoulder, to: leftElbow)
+            drawLine(from: leftElbow, to: leftWrist)
+        }
+
     }
     /// nameing is opposite of drawRightShoulder because of mirroring
         private func drawRightShoulder(person: Person) {

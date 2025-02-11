@@ -1,17 +1,3 @@
-// Copyright 2021 The TensorFlow Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// =============================================================================
 
 import AVFoundation
 import UIKit
@@ -21,12 +7,12 @@ final class ViewController: UIViewController {
 
   // MARK: Storyboards Connections
   @IBOutlet private weak var overlayView: OverlayView!
-  @IBOutlet private weak var threadStepperLabel: UILabel!
-  @IBOutlet private weak var threadStepper: UIStepper!
-  @IBOutlet private weak var totalTimeLabel: UILabel!
-  @IBOutlet private weak var scoreLabel: UILabel!
-  @IBOutlet private weak var delegatesSegmentedControl: UISegmentedControl!
-  @IBOutlet private weak var modelSegmentedControl: UISegmentedControl!
+  //@IBOutlet private weak var threadStepperLabel: UILabel!
+ // @IBOutlet private weak var threadStepper: UIStepper!
+ // @IBOutlet private weak var totalTimeLabel: UILabel!
+ // @IBOutlet private weak var scoreLabel: UILabel!
+  //@IBOutlet private weak var delegatesSegmentedControl: UISegmentedControl!
+  //@IBOutlet private weak var modelSegmentedControl: UISegmentedControl!
 
   // MARK: Pose estimation model configs
   private var modelType: ModelType = Constants.defaultModelType
@@ -35,6 +21,8 @@ final class ViewController: UIViewController {
   private let minimumScore = Constants.minimumScore
   var selectedShoulder: ShoulderSide = .left
   var recordDirection: RecordDirection = .front
+  var selectedBodySide: BodySide = .left
+  var selectedJoint: Joint = .shoulder
   // MARK: Visualization
   // Relative location of `overlayView` to `previewView`.
   private var imageViewFrame: CGRect?
@@ -55,8 +43,8 @@ final class ViewController: UIViewController {
   // MARK: View Handling Methods
   override func viewDidLoad() {
     super.viewDidLoad()
-    configSegmentedControl()
-    configStepper()
+ //   configSegmentedControl()
+ //   configStepper()
     updateModel()
     configCameraCapture()
   }
@@ -81,7 +69,7 @@ final class ViewController: UIViewController {
     cameraFeedManager.startRunning()
     cameraFeedManager.delegate = self
   }
-
+/*
   private func configStepper() {
     threadStepper.value = Double(threadCount)
     threadStepper.setDecrementImage(threadStepper.decrementImage(for: .normal), for: .normal)
@@ -131,7 +119,7 @@ final class ViewController: UIViewController {
     }
     modelSegmentedControl.selectedSegmentIndex = defaultModelTypeIndex
   }
-
+*/
   /// Call this method when there's change in pose estimation model config, including changing model
   /// or updating runtime config.
   private func updateModel() {
@@ -154,7 +142,7 @@ final class ViewController: UIViewController {
       }
     }
   }
-
+/*
   @IBAction private func threadStepperValueChanged(_ sender: UIStepper) {
     threadCount = Int(sender.value)
     threadStepperLabel.text = "\(threadCount)"
@@ -168,7 +156,7 @@ final class ViewController: UIViewController {
   @IBAction private func modelTypeValueChanged(_ sender: UISegmentedControl) {
     modelType = ModelType.allCases[sender.selectedSegmentIndex]
     updateModel()
-  }
+  }*/
 }
 
 // MARK: - CameraFeedManagerDelegate Methods
@@ -199,9 +187,9 @@ extension ViewController: CameraFeedManagerDelegate {
 
         // Return to main thread to show detection results on the app UI.
         DispatchQueue.main.async {
-          self.totalTimeLabel.text = String(format: "%.2fms",
-                                            times.total * 1000)
-          self.scoreLabel.text = String(format: "%.3f", result.score)
+      //    self.totalTimeLabel.text = String(format: "%.2fms",
+      //                                      times.total * 1000)
+      //    self.scoreLabel.text = String(format: "%.3f", result.score)
 
           // Allowed to set image and overlay
           let image = UIImage(ciImage: CIImage(cvPixelBuffer: pixelBuffer))
@@ -213,7 +201,7 @@ extension ViewController: CameraFeedManagerDelegate {
           }
 
           // Visualize the pose estimation result.
-            self.overlayView.draw(at: image, person: result, shoulderSide: self.selectedShoulder, recordDirection: self.recordDirection)
+            self.overlayView.draw(at: image, person: result, recordDirection: self.recordDirection, bodySide: self.selectedBodySide, joint: self.selectedJoint)
         }
       } catch {
         os_log("Error running pose estimation.", type: .error)
@@ -240,4 +228,17 @@ enum ShoulderSide {
 enum RecordDirection {
     case front
     case side
+}
+
+enum Joint {
+    case shoulder
+    case elbow
+    case knee
+    case hip
+    case ankle
+}
+
+enum BodySide {
+    case left
+    case right
 }

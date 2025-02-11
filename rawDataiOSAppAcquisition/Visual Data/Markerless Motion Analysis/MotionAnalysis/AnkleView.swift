@@ -16,11 +16,15 @@ struct AnkleView : View {
             Button("DORSI PLANTER FLEXION") {
                 // Action for Flexion
             }
-            .font(.system(size: 25, weight: .bold))
-            .frame(width: 300, height: 100)
-            .background(Color.black)
-            .foregroundColor(.white)
+            .font(.title2)
+            .frame(width: 350, height: 80)
+            .background(Color.white)
+            .foregroundColor(.black)
             .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.blue, lineWidth: 5)
+        )
             
             
         }

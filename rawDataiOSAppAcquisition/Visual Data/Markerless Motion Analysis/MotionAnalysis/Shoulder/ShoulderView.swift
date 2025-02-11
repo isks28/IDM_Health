@@ -12,10 +12,9 @@ struct ShoulderView: View {
         NavigationView {
             VStack(spacing: 20) {
                 Text("LEFT SHOULDER MOVEMENTS")
-                    .font(.title)
-                    .bold()
+                    .font(.system(size: 30, weight: .bold))
                 
-                NavigationLink(destination: StoryboardViewWrapper(shoulderSide: .left, recordDirection: .side)) {
+                NavigationLink(destination: StoryboardViewWrapper(joint: .shoulder, bodySide: .left, recordDirection: .side)) {
                     Text("FLEXION EXTENSION")
                         .font(.title2)
                         .frame(width: 350, height: 80)
@@ -28,7 +27,7 @@ struct ShoulderView: View {
                     )
                 }
                 
-                NavigationLink(destination: StoryboardViewWrapper(shoulderSide: .left, recordDirection: .front)) {
+                NavigationLink(destination: StoryboardViewWrapper(joint: .shoulder, bodySide: .left, recordDirection: .front)) {
                     Text("ABDUCTION ADDUCTION")
                         .font(.title2)
                         .frame(width: 350, height: 80)
@@ -42,10 +41,9 @@ struct ShoulderView: View {
                 }
                 
                 Text("RIGHT SHOULDER MOVEMENTS")
-                    .font(.title)
-                    .bold()
+                    .font(.system(size: 30, weight: .bold))
                 
-                NavigationLink(destination: StoryboardViewWrapper(shoulderSide: .right, recordDirection: .side)) {
+                NavigationLink(destination: StoryboardViewWrapper(joint: .shoulder, bodySide: .right, recordDirection: .side)) {
                     Text("FLEXION EXTENSION")
                         .font(.title2)
                         .frame(width: 350, height: 80)
@@ -58,7 +56,7 @@ struct ShoulderView: View {
                     )
                 }
                 
-                NavigationLink(destination: StoryboardViewWrapper(shoulderSide: .right, recordDirection: .front)) {
+                NavigationLink(destination: StoryboardViewWrapper(joint: .shoulder, bodySide: .right, recordDirection: .front)) {
                     Text("ABDUCTION ADDUCTION")
                         .font(.title2)
                         .frame(width: 350, height: 80)

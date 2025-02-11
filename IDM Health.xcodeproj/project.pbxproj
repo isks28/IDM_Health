@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 76;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -143,27 +143,8 @@
 		86C921612D395674002AD774 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		8629D6412D5AAAEB007B553C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"/Localized/PoseEstimation/UI/Storyboards/Launch Screen.storyboard",
-				/Localized/PoseEstimation/UI/Storyboards/Main.storyboard,
-			);
-			target = 5A554E672C8705090081747B /* rawDataiOSAppAcquisitionTests */;
-		};
-		8629D6422D5AAAEB007B553C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"/Localized/PoseEstimation/UI/Storyboards/Launch Screen.storyboard",
-				/Localized/PoseEstimation/UI/Storyboards/Main.storyboard,
-			);
-			target = 5A554E712C8705090081747B /* rawDataiOSAppAcquisitionUITests */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		8629D52F2D5A696D007B553C /* MotionAnalysis */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (8629D6412D5AAAEB007B553C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 8629D6422D5AAAEB007B553C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = MotionAnalysis; sourceTree = "<group>"; };
+		8629D52F2D5A696D007B553C /* MotionAnalysis */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = MotionAnalysis; sourceTree = "<group>"; };
 		8629D5E12D5A6BE7007B553C /* StyleExtenstions */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = StyleExtenstions; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -569,6 +550,7 @@
 				};
 			};
 			buildConfigurationList = 5A554E522C8705080081747B /* Build configuration list for PBXProject "IDM Health" */;
+			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -576,7 +558,6 @@
 				Base,
 			);
 			mainGroup = 5A554E4E2C8705080081747B;
-			preferredProjectObjectVersion = 56;
 			productRefGroup = 5A554E582C8705080081747B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -928,7 +909,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 2.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.UKGM.IDMHealth";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -987,7 +968,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 2.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.UKGM.IDMHealth";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1207,7 +1188,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 2.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.UKGM.IDMHealth";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";
