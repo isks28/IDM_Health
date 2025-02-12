@@ -39,7 +39,9 @@ class BodyPointsEstimationManager: NSObject, ObservableObject, AVCaptureVideoDat
             session.addOutput(videoOutput)
         }
         
-        session.startRunning()
+        DispatchQueue.global(qos: .background).async {
+            self.session.startRunning()
+        }
     }
     
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
