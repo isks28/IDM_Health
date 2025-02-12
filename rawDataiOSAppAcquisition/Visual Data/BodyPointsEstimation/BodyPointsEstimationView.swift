@@ -37,6 +37,18 @@ struct BodyPointsEstimationView: View {
     @StateObject private var bodyPointsEstimationManager = BodyPointsEstimationManager()
     @State private var showingInfo = false
     @State private var selectedAngle: BodyPointsEstimationManager.JointAngle = .rightShoulderFlexionExtension
+    @State private var displayedAngle: Double? = nil
+    @State private var timer: Timer? = nil
+
+    let categories: [String: [BodyPointsEstimationManager.JointAngle]] = [
+        "Shoulder": [.rightShoulderFlexionExtension, .rightShoulderAbductionAdduction, .leftShoulderFlexionExtension, .leftShoulderAbductionAdduction],
+        "Elbow": [.rightElbowFlexionExtension, .leftElbowFlexionExtension],
+        "Hip": [.rightHipFlexionExtension, .rightHipAbductionAdduction, .leftHipFlexionExtension, .leftHipAbductionAdduction],
+        "Knee": [.rightKneeFlexionExtension, .leftKneeFlexionExtension]
+    ]
+
+    @State private var expandedCategory: String? = nil
+    @State private var isMenuVisible = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -65,36 +77,107 @@ struct BodyPointsEstimationView: View {
                     }
                 }
 
-                if let angleValue = bodyPointsEstimationManager.calculateAngle(for: selectedAngle) {
-                    Text("\(selectedAngle.rawValue): \(String(format: "%.2f", angleValue)) °")
-                        .font(.title)
-                        .padding()
-                        .background(Color.black.opacity(0.7))
-                        .cornerRadius(10)
-                        .foregroundColor(.white)
-                        .position(x: geometry.size.width / 2, y: geometry.size.height * 0.1)
+                VStack {
+                    if let angleValue = displayedAngle {
+                        Text("\(selectedAngle.rawValue): \(String(format: "%.2f", angleValue)) °")
+                            .font(.title)
+                            .padding()
+                            .background(Color.white.opacity(0.8))
+                            .cornerRadius(10)
+                            .foregroundColor(.black)
+                            .padding(.top, 20)
+                    }
+
+                    Spacer()
+                    ZStack(alignment: .bottom) {
+                        if isMenuVisible {
+                            VStack(alignment: .leading, spacing: 5) {
+                                ForEach(categories.keys.sorted(), id: \ .self) { category in
+                                    Button(action: {
+                                        withAnimation(.none) {
+                                            if expandedCategory == category {
+                                                expandedCategory = nil
+                                            } else {
+                                                expandedCategory = category
+                                            }
+                                        }
+                                    }) {
+                                        HStack {
+                                            Text(category)
+                                                .font(.title2)
+                                                .foregroundStyle(Color.white)
+                                                .padding()
+                                                .background(Color.blue.opacity(0.75))
+                                                .cornerRadius(15)
+                                            Spacer()
+                                            Image(systemName: expandedCategory == category ? "chevron.up" : "chevron.down")
+                                                .foregroundStyle(Color.blue.opacity(0.75))
+                                        }
+                                    }
+                                    
+                                    if expandedCategory == category {
+                                        ForEach(categories[category]!, id: \ .self) { angle in
+                                            Button(action: {
+                                                selectedAngle = angle
+                                                isMenuVisible = false
+                                                expandedCategory = nil
+                                            }) {
+                                                Text(angle.rawValue)
+                                                    .font(.headline)
+                                                    .foregroundStyle(Color.white)
+                                                    .padding()
+                                                    .background(Color.blue.opacity(0.75))
+                                                    .cornerRadius(15)
+                                            }
+                                            .padding(.leading, 35)
+                                        }
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(Color.white.opacity(0.5))
+                            .cornerRadius(15)
+                            .shadow(radius: 5)
+                            .offset(y: -80)
+                        }
+                        Spacer()
+                        Button(action: {
+                            withAnimation(.none) {
+                                isMenuVisible.toggle()
+                            }
+                        }) {
+                            Image(systemName: "angle")
+                                .resizable()
+                                .frame(width: 25, height: 25)
+                                .padding(12)
+                                .background(Color.blue.opacity(0.75))
+                                .clipShape(Circle())
+                                .foregroundColor(.white)
+                                .padding()
+                        }
+                    }
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if isMenuVisible {
+                    isMenuVisible = false
+                    expandedCategory = nil
                 }
             }
             .onAppear {
                 bodyPointsEstimationManager.setupCamera()
+                timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+                    displayedAngle = bodyPointsEstimationManager.calculateAngle(for: selectedAngle)
+                }
+            }
+            .onDisappear {
+                timer?.invalidate()
+                timer = nil
             }
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Menu {
-                    ForEach(BodyPointsEstimationManager.JointAngle.allCases, id: \ .self) { angle in
-                        Button(action: {
-                            selectedAngle = angle
-                        }) {
-                            Text(angle.rawValue)
-                        }
-                    }
-                } label: {
-                    Image(systemName: "angle")
-                }
-            }
-
-            ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: { showingInfo.toggle() }) {
                     Image(systemName: "info.circle")
                 }

@@ -93,7 +93,7 @@ class BodyPointsEstimationManager: NSObject, ObservableObject, AVCaptureVideoDat
             print("Error recognizing body points: \(error.localizedDescription)")
         }
     }
-
+    
     enum JointAngle: String, CaseIterable {
         case rightShoulderFlexionExtension = "Right Shoulder Flexion/Extension"
         case rightShoulderAbductionAdduction = "Right Shoulder Abduction/Adduction"
@@ -110,25 +110,66 @@ class BodyPointsEstimationManager: NSObject, ObservableObject, AVCaptureVideoDat
     }
 
     func calculateAngle(for jointAngle: JointAngle) -> Double? {
+        guard let neck = jointPoints[.neck],
+              let hip = jointPoints[.root] else { return nil }
+
+        let sagittalPlaneVector = CGPoint(x: hip.x - neck.x, y: hip.y - neck.y)
+        let frontalPlaneVector = CGPoint(x: sagittalPlaneVector.y, y: -sagittalPlaneVector.x)
+
         switch jointAngle {
-        case .rightShoulderFlexionExtension:
-            return calculateRightShoulderFlexionExtension()
-        default:
-            return nil
+        case .rightShoulderFlexionExtension, .leftShoulderFlexionExtension,
+             .rightElbowFlexionExtension, .leftElbowFlexionExtension,
+             .rightHipFlexionExtension, .leftHipFlexionExtension,
+             .rightKneeFlexionExtension, .leftKneeFlexionExtension:
+            return calculateAngleBetween(joint1: jointStartPoint(for: jointAngle), joint2: jointEndPoint(for: jointAngle), referenceVector: sagittalPlaneVector, isFrontal: false)
+
+        case .rightShoulderAbductionAdduction, .leftShoulderAbductionAdduction,
+             .rightHipAbductionAdduction, .leftHipAbductionAdduction:
+            return calculateAngleBetween(joint1: jointStartPoint(for: jointAngle), joint2: jointEndPoint(for: jointAngle), referenceVector: frontalPlaneVector, isFrontal: true)
         }
     }
 
-    func calculateRightShoulderFlexionExtension() -> Double? {
-        guard let rightShoulder = jointPoints[.rightShoulder],
-              let rightElbow = jointPoints[.rightElbow],
-              let rightHip = jointPoints[.rightHip] else {
-            return nil
+    private func jointStartPoint(for jointAngle: JointAngle) -> VNHumanBodyPoseObservation.JointName {
+        switch jointAngle {
+        case .rightShoulderFlexionExtension, .rightShoulderAbductionAdduction: return .rightShoulder
+        case .leftShoulderFlexionExtension, .leftShoulderAbductionAdduction: return .leftShoulder
+        case .rightElbowFlexionExtension: return .rightElbow
+        case .leftElbowFlexionExtension: return .leftElbow
+        case .rightHipFlexionExtension, .rightHipAbductionAdduction: return .rightHip
+        case .leftHipFlexionExtension, .leftHipAbductionAdduction: return .leftHip
+        case .rightKneeFlexionExtension: return .rightKnee
+        case .leftKneeFlexionExtension: return .leftKnee
         }
+    }
 
-        let shoulderToElbow = CGPoint(x: rightElbow.x - rightShoulder.x, y: rightElbow.y - rightShoulder.y)
-        let shoulderToHip = CGPoint(x: rightHip.x - rightShoulder.x, y: rightHip.y - rightShoulder.y)
+    private func jointEndPoint(for jointAngle: JointAngle) -> VNHumanBodyPoseObservation.JointName {
+        switch jointAngle {
+        case .rightShoulderFlexionExtension, .rightShoulderAbductionAdduction: return .rightElbow
+        case .leftShoulderFlexionExtension, .leftShoulderAbductionAdduction: return .leftElbow
+        case .rightElbowFlexionExtension: return .rightWrist
+        case .leftElbowFlexionExtension: return .leftWrist
+        case .rightHipFlexionExtension, .rightHipAbductionAdduction: return .rightKnee
+        case .leftHipFlexionExtension, .leftHipAbductionAdduction: return .leftKnee
+        case .rightKneeFlexionExtension: return .rightAnkle
+        case .leftKneeFlexionExtension: return .leftAnkle
+        }
+    }
 
-        let angle = atan2(shoulderToElbow.y, shoulderToElbow.x) - atan2(shoulderToHip.y, shoulderToHip.x)
-        return abs(angle * (180.0 / .pi)) // Convert to degrees
+    private func calculateAngleBetween(joint1: VNHumanBodyPoseObservation.JointName, joint2: VNHumanBodyPoseObservation.JointName, referenceVector: CGPoint, isFrontal: Bool) -> Double? {
+        guard let point1 = jointPoints[joint1], let point2 = jointPoints[joint2] else { return nil }
+
+        let limbVector = CGPoint(x: point2.x - point1.x, y: point2.y - point1.y)
+
+        let dotProduct = (limbVector.x * referenceVector.x) + (limbVector.y * referenceVector.y)
+        let magnitudeLimb = sqrt(pow(limbVector.x, 2) + pow(limbVector.y, 2))
+        let magnitudeReference = sqrt(pow(referenceVector.x, 2) + pow(referenceVector.y, 2))
+
+        guard magnitudeLimb != 0 && magnitudeReference != 0 else { return nil }
+
+        let angle = acos(max(min(dotProduct / (magnitudeLimb * magnitudeReference), 1.0), -1.0))
+
+        let adjustedAngle = (angle * (180.0 / .pi))
+
+        return adjustedAngle
     }
 }
