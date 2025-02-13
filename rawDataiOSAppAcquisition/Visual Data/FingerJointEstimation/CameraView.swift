@@ -123,7 +123,7 @@ struct CameraView: View {
             }
             .onAppear {
                 cameraViewModel.setupCamera()
-                Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+                Timer.scheduledTimer(withTimeInterval: 0.8, repeats: true) { _ in
                         displayedAngles = cameraViewModel.jointAngles
                 }
             }

@@ -246,11 +246,11 @@ struct ChartWithTimeFramePicker: View {
                     showDatePicker = true
                 }) {
                     Text(getTitleForCurrentPage(timeFrame: selectedTimeFrame, page: currentPageForTimeFrames[selectedTimeFrame] ?? 0, startDate: startDate, endDate: endDate))
-                        .foregroundColor(.primary)
+                        .foregroundColor(.black)
                         .padding(.vertical, 5)
                         .padding(.horizontal, 10)
                         .background(.white)
-                        .cornerRadius(25)
+                        .cornerRadius(5)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
                                 .stroke(Color.blue, lineWidth: 2)
