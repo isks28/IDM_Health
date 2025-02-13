@@ -67,9 +67,9 @@ struct CameraView: View {
 
                             if showAnglesOverlay, let angle = displayedAngles[jointName] {
                                 Text("\(String(format: "%.2f", angle))°")
-                                    .font(.caption)
+                                    .font(.footnote)
                                     .padding(4)
-                                    .background(Color.white.opacity(0.7))
+                                    .background(Color.white.opacity(0.8))
                                     .cornerRadius(5)
                                     .foregroundColor(.black)
                                     .offset(y: -20)
