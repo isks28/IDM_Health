@@ -40,6 +40,7 @@ struct CameraView: View {
     @StateObject private var cameraViewModel = CameraViewModel()
     @State private var showingInfo = false
     @State private var showAnglesOverlay = false
+    @State private var displayedAngles: [VNHumanHandPoseObservation.JointName: CGFloat] = [:]
 
     var body: some View {
         GeometryReader { geometry in
@@ -57,26 +58,27 @@ struct CameraView: View {
                 HandSkeletonShape(jointPoints: cameraViewModel.jointPoints)
                     .stroke(Color.white, lineWidth: 3)
 
-                    ForEach(cameraViewModel.jointPoints.keys.sorted(by: { $0.rawValue.rawValue < $1.rawValue.rawValue }), id: \.self) { jointName in
-                        if let point = cameraViewModel.jointPoints[jointName] {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.cyan)
-                                    .frame(width: 12, height: 12)
+                ForEach(cameraViewModel.jointPoints.keys.sorted(by: { $0.rawValue.rawValue < $1.rawValue.rawValue }), id: \.self) { jointName in
+                    if let point = cameraViewModel.jointPoints[jointName] {
+                        ZStack {
+                            Circle()
+                                .fill(Color.cyan)
+                                .frame(width: 12, height: 12)
 
-                                if showAnglesOverlay, let angle = cameraViewModel.jointAngles[jointName] {
-                                    Text("\(String(format: "%.2f", angle))°")
-                                        .font(.caption)
-                                        .padding(4)
-                                        .background(Color.white.opacity(0.7))
-                                        .cornerRadius(5)
-                                        .foregroundColor(.black)
-                                        .offset(y: -20)
-                                }
+                            if showAnglesOverlay, let angle = displayedAngles[jointName] {
+                                Text("\(String(format: "%.2f", angle))°")
+                                    .font(.caption)
+                                    .padding(4)
+                                    .background(Color.white.opacity(0.7))
+                                    .cornerRadius(5)
+                                    .foregroundColor(.black)
+                                    .offset(y: -20)
                             }
-                            .position(x: point.x * geometry.size.width, y: point.y * geometry.size.height)
                         }
+                        .position(x: point.x * geometry.size.width, y: point.y * geometry.size.height)
                     }
+                }
+
                 VStack {
                     if cameraViewModel.countdown > 0 {
                         Text("\(cameraViewModel.countdown)")
@@ -84,9 +86,9 @@ struct CameraView: View {
                             .foregroundColor(.white)
                             .padding()
                     }
-                    
+
                     Spacer()
-                    
+
                     HStack {
                         Button(action: {
                             withAnimation {
@@ -121,6 +123,9 @@ struct CameraView: View {
             }
             .onAppear {
                 cameraViewModel.setupCamera()
+                Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+                        displayedAngles = cameraViewModel.jointAngles
+                }
             }
         }
         .toolbar {
