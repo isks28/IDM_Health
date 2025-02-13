@@ -86,6 +86,17 @@ struct BodyPointsEstimationView: View {
                             .cornerRadius(10)
                             .foregroundColor(.black)
                             .padding(.top, 20)
+                            .multilineTextAlignment(.center)
+                    } else {
+                        Text("Reposition in the camera until calculated angle being displayed")
+                            .font(.title3)
+                            .padding()
+                            .background(Color.white.opacity(0.8))
+                            .cornerRadius(10)
+                            .foregroundColor(.pink)
+                            .padding(.top, 5)
+                            .padding(.horizontal, 2)
+                            .multilineTextAlignment(.center)
                     }
 
                     Spacer()
@@ -105,10 +116,8 @@ struct BodyPointsEstimationView: View {
                                         HStack {
                                             Text(category)
                                                 .font(.title2)
-                                                .foregroundStyle(Color.white)
+                                                .foregroundStyle(Color.blue)
                                                 .padding()
-                                                .background(Color.blue.opacity(0.75))
-                                                .cornerRadius(15)
                                             Spacer()
                                             Image(systemName: expandedCategory == category ? "chevron.up" : "chevron.down")
                                                 .foregroundStyle(Color.blue.opacity(0.75))
@@ -124,18 +133,16 @@ struct BodyPointsEstimationView: View {
                                             }) {
                                                 Text(angle.rawValue)
                                                     .font(.headline)
-                                                    .foregroundStyle(Color.white)
+                                                    .foregroundStyle(Color.blue)
                                                     .padding()
-                                                    .background(Color.blue.opacity(0.75))
-                                                    .cornerRadius(15)
                                             }
-                                            .padding(.leading, 35)
+                                            .padding(.leading, 8)
                                         }
                                     }
                                 }
                             }
                             .padding()
-                            .background(Color.white.opacity(0.5))
+                            .background(Color.white.opacity(0.9))
                             .cornerRadius(15)
                             .shadow(radius: 5)
                             .offset(y: -80)
@@ -156,6 +163,7 @@ struct BodyPointsEstimationView: View {
                                 .padding()
                         }
                     }
+                    .padding(.horizontal, 15)
                 }
             }
             .contentShape(Rectangle())

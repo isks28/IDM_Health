@@ -95,40 +95,39 @@ class BodyPointsEstimationManager: NSObject, ObservableObject, AVCaptureVideoDat
     }
     
     enum JointAngle: String, CaseIterable {
-        case rightShoulderFlexionExtension = "Right Shoulder Flexion/Extension"
-        case rightShoulderAbductionAdduction = "Right Shoulder Abduction/Adduction"
-        case leftShoulderFlexionExtension = "Left Shoulder Flexion/Extension"
-        case leftShoulderAbductionAdduction = "Left Shoulder Abduction/Adduction"
-        case rightElbowFlexionExtension = "Right Elbow Flexion/Extension"
-        case leftElbowFlexionExtension = "Left Elbow Flexion/Extension"
-        case rightHipFlexionExtension = "Right Hip Flexion/Extension"
-        case rightHipAbductionAdduction = "Right Hip Abduction/Adduction"
-        case leftHipFlexionExtension = "Left Hip Flexion/Extension"
-        case leftHipAbductionAdduction = "Left Hip Abduction/Adduction"
-        case rightKneeFlexionExtension = "Right Knee Flexion/Extension"
-        case leftKneeFlexionExtension = "Left Knee Flexion/Extension"
+        case rightShoulderFlexionExtension = "Left Shoulder Flexion/Extension"
+        case rightShoulderAbductionAdduction = "Left Shoulder Abduction/Adduction"
+        case leftShoulderFlexionExtension = "Right Shoulder Flexion/Extension"
+        case leftShoulderAbductionAdduction = "Right Shoulder Abduction/Adduction"
+        case rightElbowFlexionExtension = "Left Elbow Flexion/Extension"
+        case leftElbowFlexionExtension = "Right Elbow Flexion/Extension"
+        case rightHipFlexionExtension = "Left Hip Flexion/Extension"
+        case rightHipAbductionAdduction = "Left Hip Abduction/Adduction"
+        case leftHipFlexionExtension = "Right Hip Flexion/Extension"
+        case leftHipAbductionAdduction = "Right Hip Abduction/Adduction"
+        case rightKneeFlexionExtension = "Left Knee Flexion/Extension"
+        case leftKneeFlexionExtension = "Right Knee Flexion/Extension"
     }
 
     func calculateAngle(for jointAngle: JointAngle) -> Double? {
         guard let neck = jointPoints[.neck],
               let hip = jointPoints[.root] else { return nil }
 
-        let sagittalPlaneVector = CGPoint(x: hip.x - neck.x, y: hip.y - neck.y)
-        let frontalPlaneVector = CGPoint(x: sagittalPlaneVector.y, y: -sagittalPlaneVector.x)
+        let NeckRootPlaneVector = CGPoint(x: hip.x - neck.x, y: hip.y - neck.y)
 
         switch jointAngle {
         case .rightShoulderFlexionExtension, .leftShoulderFlexionExtension,
              .rightElbowFlexionExtension, .leftElbowFlexionExtension,
              .rightHipFlexionExtension, .leftHipFlexionExtension,
              .rightKneeFlexionExtension, .leftKneeFlexionExtension:
-            return calculateAngleBetween(joint1: jointStartPoint(for: jointAngle), joint2: jointEndPoint(for: jointAngle), referenceVector: sagittalPlaneVector, isFrontal: false)
+            return calculateAngleBetween(joint1: jointStartPoint(for: jointAngle), joint2: jointEndPoint(for: jointAngle), referenceVector: NeckRootPlaneVector)
 
         case .rightShoulderAbductionAdduction, .leftShoulderAbductionAdduction,
              .rightHipAbductionAdduction, .leftHipAbductionAdduction:
-            return calculateAngleBetween(joint1: jointStartPoint(for: jointAngle), joint2: jointEndPoint(for: jointAngle), referenceVector: frontalPlaneVector, isFrontal: true)
+            return calculateAngleBetween(joint1: jointStartPoint(for: jointAngle), joint2: jointEndPoint(for: jointAngle), referenceVector: NeckRootPlaneVector)
         }
     }
-
+    
     private func jointStartPoint(for jointAngle: JointAngle) -> VNHumanBodyPoseObservation.JointName {
         switch jointAngle {
         case .rightShoulderFlexionExtension, .rightShoulderAbductionAdduction: return .rightShoulder
@@ -155,7 +154,7 @@ class BodyPointsEstimationManager: NSObject, ObservableObject, AVCaptureVideoDat
         }
     }
 
-    private func calculateAngleBetween(joint1: VNHumanBodyPoseObservation.JointName, joint2: VNHumanBodyPoseObservation.JointName, referenceVector: CGPoint, isFrontal: Bool) -> Double? {
+    private func calculateAngleBetween(joint1: VNHumanBodyPoseObservation.JointName, joint2: VNHumanBodyPoseObservation.JointName, referenceVector: CGPoint) -> Double? {
         guard let point1 = jointPoints[joint1], let point2 = jointPoints[joint2] else { return nil }
 
         let limbVector = CGPoint(x: point2.x - point1.x, y: point2.y - point1.y)
@@ -168,8 +167,6 @@ class BodyPointsEstimationManager: NSObject, ObservableObject, AVCaptureVideoDat
 
         let angle = acos(max(min(dotProduct / (magnitudeLimb * magnitudeReference), 1.0), -1.0))
 
-        let adjustedAngle = (angle * (180.0 / .pi))
-
-        return adjustedAngle
+        return angle * (180.0 / .pi)
     }
 }
