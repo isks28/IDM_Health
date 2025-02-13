@@ -40,11 +40,11 @@ struct BodyPointsEstimationView: View {
     @State private var displayedAngle: Double? = nil
     @State private var timer: Timer? = nil
 
-    let categories: [String: [BodyPointsEstimationManager.JointAngle]] = [
-        "Shoulder": [.rightShoulderFlexionExtension, .rightShoulderAbductionAdduction, .leftShoulderFlexionExtension, .leftShoulderAbductionAdduction],
-        "Elbow": [.rightElbowFlexionExtension, .leftElbowFlexionExtension],
-        "Hip": [.rightHipFlexionExtension, .rightHipAbductionAdduction, .leftHipFlexionExtension, .leftHipAbductionAdduction],
-        "Knee": [.rightKneeFlexionExtension, .leftKneeFlexionExtension]
+    let categories: [(name: String, angles: [BodyPointsEstimationManager.JointAngle])] = [
+        (name: "Shoulder", angles: [.rightShoulderFlexionExtension, .rightShoulderAbductionAdduction, .leftShoulderFlexionExtension, .leftShoulderAbductionAdduction]),
+        (name: "Elbow", angles: [.rightElbowFlexionExtension, .leftElbowFlexionExtension]),
+        (name: "Hip", angles: [.rightHipFlexionExtension, .rightHipAbductionAdduction, .leftHipFlexionExtension, .leftHipAbductionAdduction]),
+        (name: "Knee", angles: [.rightKneeFlexionExtension, .leftKneeFlexionExtension])
     ]
 
     @State private var expandedCategory: String? = nil
@@ -81,51 +81,58 @@ struct BodyPointsEstimationView: View {
                     if let angleValue = displayedAngle {
                         Text("\(selectedAngle.rawValue): \(String(format: "%.2f", angleValue)) °")
                             .font(.title)
-                            .padding()
-                            .background(Color.white.opacity(0.8))
+                            .padding(8)
+                            .background(Color.white.opacity(0.9))
                             .cornerRadius(10)
                             .foregroundColor(.black)
                             .padding(.top, 20)
                             .multilineTextAlignment(.center)
                     } else {
                         Text("Reposition in the camera until calculated angle being displayed")
-                            .font(.title3)
-                            .padding()
-                            .background(Color.white.opacity(0.8))
+                            .font(.headline)
+                            .padding(8)
+                            .background(Color.pink.opacity(0.9))
                             .cornerRadius(10)
-                            .foregroundColor(.pink)
+                            .foregroundColor(.white)
                             .padding(.top, 5)
                             .padding(.horizontal, 2)
                             .multilineTextAlignment(.center)
+                    }
+                    
+                    if bodyPointsEstimationManager.countdown > 0 {
+                        Text("\(bodyPointsEstimationManager.countdown)")
+                            .font(.system(size: 100))
+                            .foregroundColor(.white)
+                            .padding()
                     }
 
                     Spacer()
                     ZStack(alignment: .bottom) {
                         if isMenuVisible {
                             VStack(alignment: .leading, spacing: 5) {
-                                ForEach(categories.keys.sorted(), id: \ .self) { category in
+                                ForEach(categories, id: \.name) { category in
                                     Button(action: {
                                         withAnimation(.none) {
-                                            if expandedCategory == category {
+                                            if expandedCategory == category.name {
                                                 expandedCategory = nil
                                             } else {
-                                                expandedCategory = category
+                                                expandedCategory = category.name
                                             }
                                         }
                                     }) {
                                         HStack {
-                                            Text(category)
+                                            Text(category.name)
                                                 .font(.title2)
                                                 .foregroundStyle(Color.blue)
                                                 .padding()
                                             Spacer()
-                                            Image(systemName: expandedCategory == category ? "chevron.up" : "chevron.down")
+                                            Image(systemName: expandedCategory == category.name ? "chevron.up" : "chevron.down")
                                                 .foregroundStyle(Color.blue.opacity(0.75))
                                         }
                                     }
                                     
-                                    if expandedCategory == category {
-                                        ForEach(categories[category]!, id: \ .self) { angle in
+                                    if expandedCategory == category.name {
+                                        ForEach(category.angles, id: \.self) { angle in
                                             Button(action: {
                                                 selectedAngle = angle
                                                 isMenuVisible = false
@@ -142,25 +149,40 @@ struct BodyPointsEstimationView: View {
                                 }
                             }
                             .padding()
-                            .background(Color.white.opacity(0.9))
+                            .background(Color.white.opacity(0.8))
                             .cornerRadius(15)
                             .shadow(radius: 5)
                             .offset(y: -80)
                         }
                         Spacer()
-                        Button(action: {
-                            withAnimation(.none) {
-                                isMenuVisible.toggle()
+                        HStack {
+                            Button(action: {
+                                withAnimation(.none) {
+                                    isMenuVisible.toggle()
+                                }
+                            }) {
+                                Image(systemName: "angle")
+                                    .resizable()
+                                    .frame(width: 25, height: 25)
+                                    .padding(12)
+                                    .background(Color.blue.opacity(0.75))
+                                    .clipShape(Circle())
+                                    .foregroundColor(.white)
+                                    .padding()
                             }
-                        }) {
-                            Image(systemName: "angle")
-                                .resizable()
-                                .frame(width: 25, height: 25)
-                                .padding(12)
-                                .background(Color.blue.opacity(0.75))
-                                .clipShape(Circle())
-                                .foregroundColor(.white)
-                                .padding()
+                            Button(action: {
+                                if bodyPointsEstimationManager.isRecording {
+                                    bodyPointsEstimationManager.stopRecording()
+                                } else {
+                                    bodyPointsEstimationManager.startRecording()
+                                }
+                            }) {
+                                Text(bodyPointsEstimationManager.isRecording ? "Stop" : "Start")
+                                    .padding()
+                                    .background(bodyPointsEstimationManager.isRecording ? Color.pink.opacity(0.75) : Color.blue.opacity(0.75))
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                            }
                         }
                     }
                     .padding(.horizontal, 15)

@@ -39,7 +39,8 @@ struct HandSkeletonShape: Shape {
 struct CameraView: View {
     @StateObject private var cameraViewModel = CameraViewModel()
     @State private var showingInfo = false
-    
+    @State private var showAnglesOverlay = false
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -52,21 +53,30 @@ struct CameraView: View {
                 } else {
                     Color.black
                 }
-                
+
                 HandSkeletonShape(jointPoints: cameraViewModel.jointPoints)
                     .stroke(Color.white, lineWidth: 3)
-                
-                ForEach(cameraViewModel.jointPoints.keys.sorted(by: { $0.rawValue.rawValue < $1.rawValue.rawValue }), id: \.self) { jointName in
-                    if let point = cameraViewModel.jointPoints[jointName] {
-                        ZStack {
-                            Circle()
-                                .fill(Color.cyan)
-                                .frame(width: 12, height: 12)
+
+                    ForEach(cameraViewModel.jointPoints.keys.sorted(by: { $0.rawValue.rawValue < $1.rawValue.rawValue }), id: \.self) { jointName in
+                        if let point = cameraViewModel.jointPoints[jointName] {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.cyan)
+                                    .frame(width: 12, height: 12)
+
+                                if showAnglesOverlay, let angle = cameraViewModel.jointAngles[jointName] {
+                                    Text("\(String(format: "%.2f", angle))°")
+                                        .font(.caption)
+                                        .padding(4)
+                                        .background(Color.white.opacity(0.7))
+                                        .cornerRadius(5)
+                                        .foregroundColor(.black)
+                                        .offset(y: -20)
+                                }
+                            }
+                            .position(x: point.x * geometry.size.width, y: point.y * geometry.size.height)
                         }
-                        .position(x: point.x * geometry.size.width, y: point.y * geometry.size.height)
                     }
-                }
-                /*
                 VStack {
                     if cameraViewModel.countdown > 0 {
                         Text("\(cameraViewModel.countdown)")
@@ -77,22 +87,37 @@ struct CameraView: View {
                     
                     Spacer()
                     
-                    Button(action: {
-                        if cameraViewModel.isRecording {
-                            cameraViewModel.stopRecording()
-                        } else {
-                            cameraViewModel.startRecording()
+                    HStack {
+                        Button(action: {
+                            withAnimation {
+                                showAnglesOverlay.toggle()
+                            }
+                        }) {
+                            Image(systemName: showAnglesOverlay ? "angle" : "angle")
+                                .resizable()
+                                .frame(width: 25, height: 25)
+                                .padding(12)
+                                .background(showAnglesOverlay ? Color.pink.opacity(0.75) : Color.blue.opacity(0.75))
+                                .clipShape(Circle())
+                                .foregroundColor(.white)
+                                .padding()
                         }
-                    }) {
-                        Text(cameraViewModel.isRecording ? "Stop" : "Start")
-                            .padding()
-                            .background(cameraViewModel.isRecording ? Color.gray : Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
+                        Button(action: {
+                            if cameraViewModel.isRecording {
+                                cameraViewModel.stopRecording()
+                            } else {
+                                cameraViewModel.startRecording()
+                            }
+                        }) {
+                            Text(cameraViewModel.isRecording ? "Stop" : "Start")
+                                .padding()
+                                .background(cameraViewModel.isRecording ? Color.pink.opacity(0.75) : Color.blue.opacity(0.75))
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                        }
                     }
-                    .padding()
+                    .padding(.horizontal, 15)
                 }
-                */
             }
             .onAppear {
                 cameraViewModel.setupCamera()
@@ -109,7 +134,7 @@ struct CameraView: View {
                             .font(.largeTitle)
                             .multilineTextAlignment(.center)
                             .padding()
-                        Text("Using Apple's Vision framework, this view demonstrates figner joints estimation, showing joints and connections in real-time using computer vision technology.")
+                        Text("Using Apple's Vision framework, this view demonstrates finger joints estimation, showing joints and connections in real-time using computer vision technology.")
                             .font(.body)
                             .multilineTextAlignment(.center)
                             .padding()

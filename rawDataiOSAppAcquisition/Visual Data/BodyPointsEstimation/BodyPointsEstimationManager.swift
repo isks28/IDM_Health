@@ -19,6 +19,11 @@ class BodyPointsEstimationManager: NSObject, ObservableObject, AVCaptureVideoDat
     private let videoOutput = AVCaptureVideoDataOutput()
     private var bodyPoseRequest = VNDetectHumanBodyPoseRequest()
     
+    @Published var isRecording = false
+    @Published var countdown = 0
+    private var countdownTimer: AnyCancellable?
+    private var recordedJointPoints: [[VNHumanBodyPoseObservation.JointName: CGPoint]] = []
+    
     override init() {
         super.init()
         setupCamera()
@@ -61,6 +66,10 @@ class BodyPointsEstimationManager: NSObject, ObservableObject, AVCaptureVideoDat
         DispatchQueue.main.async {
             self.currentFrame = cgImage
             self.estimateBodyPose(from: cgImage)
+            
+            if self.isRecording {
+                self.recordedJointPoints.append(self.jointPoints)
+            }
         }
     }
     
@@ -168,5 +177,71 @@ class BodyPointsEstimationManager: NSObject, ObservableObject, AVCaptureVideoDat
         let angle = acos(max(min(dotProduct / (magnitudeLimb * magnitudeReference), 1.0), -1.0))
 
         return angle * (180.0 / .pi)
+    }
+    
+    func startRecording() {
+        isRecording = false
+        countdown = 3
+        countdownTimer?.cancel()
+        
+        countdownTimer = Timer.publish(every: 1, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                if self.countdown > 1 {
+                    self.countdown -= 1
+                } else {
+                    self.countdown = 0
+                    self.isRecording = true
+                    self.countdownTimer?.cancel()
+                }
+            }
+    }
+    
+    func stopRecording() {
+        isRecording = false
+        saveRecordedData()
+    }
+    
+    func saveRecordedData() {
+        // Ensure there are recorded joint points to process
+        guard !recordedJointPoints.isEmpty else {
+            print("No recorded joint points to save.")
+            return
+        }
+
+        // Define the CSV header
+        var csvString = "Frame"
+        for angle in JointAngle.allCases {
+            csvString.append(",\(angle.rawValue)")
+        }
+        csvString.append("\n")
+
+        // Iterate through recorded joint points and calculate angles
+        for (index, jointPoints) in recordedJointPoints.enumerated() {
+            self.jointPoints = jointPoints // Set the current joint points
+            var row = "\(index + 1)" // Frame number
+            for angle in JointAngle.allCases {
+                if let calculatedAngle = calculateAngle(for: angle) {
+                    row.append(",\(calculatedAngle)")
+                } else {
+                    row.append(",N/A") // If angle can't be calculated
+                }
+            }
+            csvString.append("\(row)\n")
+        }
+
+        // Get the path to the documents directory
+        let fileManager = FileManager.default
+        do {
+            let documentsURL = try fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+            let fileURL = documentsURL.appendingPathComponent("Body_Joints_Angles.csv")
+
+            // Write the CSV string to the file
+            try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
+            print("CSV file saved successfully at \(fileURL.path)")
+        } catch {
+            print("Error saving CSV file: \(error.localizedDescription)")
+        }
     }
 }

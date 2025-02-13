@@ -57,7 +57,6 @@ class CameraViewModel: NSObject, ObservableObject, AVCaptureVideoDataOutputSampl
             countdown = 3
             countdownTimer?.cancel()
             
-            // 3-second countdown before starting to record
             countdownTimer = Timer.publish(every: 1, on: .main, in: .common)
                 .autoconnect()
                 .sink { [weak self] _ in
@@ -83,7 +82,6 @@ class CameraViewModel: NSObject, ObservableObject, AVCaptureVideoDataOutputSampl
         let ciImage = CIImage(cvImageBuffer: pixelBuffer)
         let context = CIContext()
         
-        // Apply the correct transformation
         let transform = CGAffineTransform(rotationAngle: -.pi / 2)
             .translatedBy(x: -ciImage.extent.height, y: 0)
             .scaledBy(x: 1, y: -1)
@@ -139,8 +137,7 @@ class CameraViewModel: NSObject, ObservableObject, AVCaptureVideoDataOutputSampl
     
     private func calculateAllJointAngles(jointPoints: [VNHumanHandPoseObservation.JointName: CGPoint]) {
         var angles: [VNHumanHandPoseObservation.JointName: CGFloat] = [:]
-        
-        // Calculate angles for each finger
+
         // Thumb
         if let thumbTip = jointPoints[.thumbTip],
            let thumbIP = jointPoints[.thumbIP],
@@ -149,45 +146,53 @@ class CameraViewModel: NSObject, ObservableObject, AVCaptureVideoDataOutputSampl
             angles[.thumbIP] = angleBetweenPoints(thumbTip, thumbIP, thumbMP)
             angles[.thumbMP] = angleBetweenPoints(thumbIP, thumbMP, thumbCMC)
         }
-        
+
         // Index
         if let indexTip = jointPoints[.indexTip],
            let indexDIP = jointPoints[.indexDIP],
            let indexPIP = jointPoints[.indexPIP],
-           let indexMCP = jointPoints[.indexMCP] {
+           let indexMCP = jointPoints[.indexMCP],
+           let wrist = jointPoints[.wrist] {
             angles[.indexDIP] = angleBetweenPoints(indexTip, indexDIP, indexPIP)
             angles[.indexPIP] = angleBetweenPoints(indexDIP, indexPIP, indexMCP)
+            angles[.indexMCP] = angleBetweenPoints(indexPIP, indexMCP, wrist) 
         }
-        
+
         // Middle
         if let middleTip = jointPoints[.middleTip],
            let middleDIP = jointPoints[.middleDIP],
            let middlePIP = jointPoints[.middlePIP],
-           let middleMCP = jointPoints[.middleMCP] {
+           let middleMCP = jointPoints[.middleMCP],
+           let wrist = jointPoints[.wrist] {
             angles[.middleDIP] = angleBetweenPoints(middleTip, middleDIP, middlePIP)
             angles[.middlePIP] = angleBetweenPoints(middleDIP, middlePIP, middleMCP)
+            angles[.middleMCP] = angleBetweenPoints(middlePIP, middleMCP, wrist)
         }
-        
+
         // Ring
         if let ringTip = jointPoints[.ringTip],
            let ringDIP = jointPoints[.ringDIP],
            let ringPIP = jointPoints[.ringPIP],
-           let ringMCP = jointPoints[.ringMCP] {
+           let ringMCP = jointPoints[.ringMCP],
+           let wrist = jointPoints[.wrist] {
             angles[.ringDIP] = angleBetweenPoints(ringTip, ringDIP, ringPIP)
             angles[.ringPIP] = angleBetweenPoints(ringDIP, ringPIP, ringMCP)
+            angles[.ringMCP] = angleBetweenPoints(ringPIP, ringMCP, wrist)
         }
-        
+
         // Little
         if let littleTip = jointPoints[.littleTip],
            let littleDIP = jointPoints[.littleDIP],
            let littlePIP = jointPoints[.littlePIP],
-           let littleMCP = jointPoints[.littleMCP] {
+           let littleMCP = jointPoints[.littleMCP],
+           let wrist = jointPoints[.wrist] {
             angles[.littleDIP] = angleBetweenPoints(littleTip, littleDIP, littlePIP)
             angles[.littlePIP] = angleBetweenPoints(littleDIP, littlePIP, littleMCP)
+            angles[.littleMCP] = angleBetweenPoints(littlePIP, littleMCP, wrist)
         }
-        
+
         self.jointAngles = angles
-        
+
         if isRecording {
             recordAngles(angles: angles)
         }
