@@ -34,19 +34,9 @@
 
 
 NS_ASSUME_NONNULL_BEGIN
-@class ORKRecordButton;
-
-@protocol ORKSpeechRecognitionContentViewDelegate <NSObject>
-
-- (void)didPressRecordButton:(ORKRecordButton *)recordButton;
-
-- (void)didPressUseKeyboardButton;
-
-@end
+@class ORKBorderedButton;
 
 @interface ORKSpeechRecognitionContentView : ORKActiveStepCustomView
-
-@property (nonatomic, weak) id<ORKSpeechRecognitionContentViewDelegate> delegate;
 
 @property (nonatomic, copy, nullable) UIColor *keyColor;
 
@@ -56,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy, nullable) NSArray *samples;
 
-@property (nonatomic) ORKRecordButton *recordButton;
+@property (nonatomic) ORKBorderedButton *recordButton;
 
 @property (nonatomic, copy, nullable) UIImage *speechRecognitionImage;
 
@@ -70,9 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateRecognitionText:(NSString *)recognitionText;
 
-- (void)addRecognitionError:(NSString * _Nullable)errorMsg;
-
-- (void)updateButtonStates;
+- (void)addRecognitionError:(NSString *)errorMsg;
 
 @end
 

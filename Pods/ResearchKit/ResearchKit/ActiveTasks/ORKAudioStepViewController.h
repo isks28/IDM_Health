@@ -29,7 +29,6 @@
  */
 
 
-
 @import Foundation;
 #import <ResearchKit/ORKDefines.h>
 #import <ResearchKit/ORKActiveStepViewController.h>
@@ -45,4 +44,3 @@ ORK_CLASS_AVAILABLE
 @end
 
 NS_ASSUME_NONNULL_END
-

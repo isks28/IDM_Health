@@ -29,13 +29,13 @@
  */
 
 #import "ORKPlaybackButton.h"
-#import "ORKPlaybackButton_Internal.h"
 
 static const CGFloat ImageViewDimension = 60.0;
 static const CGFloat ImageToLabelPadding = 2.0;
 
 @implementation ORKPlaybackButton {
     UILabel *_textLabel;
+    UIImageView *_imageView;
 }
 
 - (instancetype)initWithText:(NSString *)text image:(UIImage *)image {
@@ -55,24 +55,18 @@ static const CGFloat ImageToLabelPadding = 2.0;
     _normalTintColor = [self.tintColor colorWithAlphaComponent:0.4];
 }
 
-- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
-{
-    [super traitCollectionDidChange:previousTraitCollection];
-    _textLabel.font = [self bodyTextFont];
-}
-
 - (void)setupImageView {
-    if (!_iconImageView) {
-        _iconImageView = [UIImageView new];
+    if (!_imageView) {
+        _imageView = [UIImageView new];
     }
-    _iconImageView.image = _image;
-    _iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:_iconImageView];
+    _imageView.image = _image;
+    _imageView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:_imageView];
     
-    [[_iconImageView.topAnchor constraintEqualToAnchor:self.topAnchor] setActive:YES];
-    [[_iconImageView.widthAnchor constraintEqualToConstant:ImageViewDimension] setActive:YES];
-    [[_iconImageView.heightAnchor constraintEqualToConstant:ImageViewDimension] setActive:YES];
-    [[_iconImageView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor] setActive:YES];
+    [[_imageView.topAnchor constraintEqualToAnchor:self.topAnchor] setActive:YES];
+    [[_imageView.widthAnchor constraintEqualToConstant:ImageViewDimension] setActive:YES];
+    [[_imageView.heightAnchor constraintEqualToConstant:ImageViewDimension] setActive:YES];
+    [[_imageView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor] setActive:YES];
 }
 
 - (UIFont *)bodyTextFont {
@@ -91,7 +85,7 @@ static const CGFloat ImageToLabelPadding = 2.0;
     _textLabel.font = [self bodyTextFont];
     [self addSubview:_textLabel];
     
-    [[_textLabel.topAnchor constraintEqualToAnchor:_iconImageView.bottomAnchor constant:ImageToLabelPadding] setActive:YES];
+    [[_textLabel.topAnchor constraintEqualToAnchor:_imageView.bottomAnchor constant:ImageToLabelPadding] setActive:YES];
     [[_textLabel.centerXAnchor constraintEqualToAnchor:self.centerXAnchor] setActive:YES];
     [[self.widthAnchor constraintEqualToAnchor:_textLabel.widthAnchor] setActive:YES];
     [[self.bottomAnchor constraintEqualToAnchor:_textLabel.bottomAnchor] setActive:YES];
@@ -99,8 +93,7 @@ static const CGFloat ImageToLabelPadding = 2.0;
 
 - (void)setTintColor:(UIColor *)tintColor {
     [super setTintColor:tintColor];
-
-    _iconImageView.tintColor = tintColor;
+    _imageView.tintColor = tintColor;
     _textLabel.textColor = tintColor;
 }
 
@@ -118,11 +111,11 @@ static const CGFloat ImageToLabelPadding = 2.0;
     [super setHighlighted:highlighted];
     if (highlighted) {
         _textLabel.textColor = _highlightTintColor;
-        _iconImageView.tintColor = _highlightTintColor;
+        _imageView.tintColor = _highlightTintColor;
     }
     else {
         _textLabel.textColor = _normalTintColor;
-        _iconImageView.tintColor = _normalTintColor;
+        _imageView.tintColor = _normalTintColor;
     }
 }
 
@@ -130,11 +123,11 @@ static const CGFloat ImageToLabelPadding = 2.0;
     [super setEnabled:enabled];
     if (enabled) {
         _textLabel.textColor = _highlightTintColor;
-        _iconImageView.tintColor = _highlightTintColor;
+        _imageView.tintColor = _highlightTintColor;
     }
     else {
         _textLabel.textColor = _normalTintColor;
-        _iconImageView.tintColor = _normalTintColor;
+        _imageView.tintColor = _normalTintColor;
     }
 }
 
@@ -145,11 +138,7 @@ static const CGFloat ImageToLabelPadding = 2.0;
 
 - (void)setImage:(UIImage *)image {
     _image = image;
-    _iconImageView.image = image;
-}
-
-- (NSString *)accessibilityLabel {
-    return _textLabel.text;
+    _imageView.image = image;
 }
 
 @end

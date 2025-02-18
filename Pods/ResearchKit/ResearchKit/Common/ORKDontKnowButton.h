@@ -29,20 +29,24 @@
  */
 
 @import UIKit;
-
-#import <ResearchKit/ORKDefines.h>
-#import <ResearchKit/ORKTypes.h>
+#import "ORKDefines.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 ORK_CLASS_AVAILABLE
 @interface ORKDontKnowButton : UIButton
 
-@property (nonatomic, copy, nullable) NSString *customDontKnowButtonText;
+- (void)setButtonActive;
+- (void)setButtonInactive;
 
-@property (nonatomic) ORKDontKnowButtonStyle dontKnowButtonStyle;
+@property (nonatomic) BOOL isDontKnowButtonActive;
+@property (nonatomic, nullable) NSString *customDontKnowButtonText;
 
-@property (nonatomic, assign) BOOL active;
+@end
+
+@interface ORKDontKnowButton()
+
+- (void)init_ORKDontKnowButton;
 
 @end
 

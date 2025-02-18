@@ -57,7 +57,7 @@ ORK_CLASS_AVAILABLE
 
 @property (nonatomic, assign) SystemSoundID failureSound;
 
-@property (nonatomic) double currentInterval;
+@property (nonatomic) NSNumber *currentInterval;
 
 
 @end

@@ -30,7 +30,6 @@
 
 
 @import Foundation;
-
 #import <ResearchKit/ORKStep.h>
 #import <ResearchKit/ORKDefines.h>
 

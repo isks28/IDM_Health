@@ -33,7 +33,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class ORKEnvironmentSPLMeterBarView;
 @class ORKRingView;
 @class ORKRoundTappingButton;
 @class ORKNavigationContainerView;
@@ -51,15 +50,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak) id<ORKEnvironmentSPLMeterContentViewVoiceOverDelegate> voiceOverDelegate;
 
-- (ORKEnvironmentSPLMeterBarView *)barView;
-
 - (ORKRingView *)ringView;
 
 - (void)setProgress:(CGFloat)progress;
 
 - (void)setProgressCircle:(CGFloat)progress;
-
-- (void)setProgressBar:(CGFloat)progress;
 
 - (void)reachedOptimumNoiseLevel;
 

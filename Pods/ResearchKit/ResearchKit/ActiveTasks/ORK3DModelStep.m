@@ -73,7 +73,7 @@
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self ) {
-        ORK_DECODE_OBJ_CLASS(aDecoder, modelManager, ORK3DModelManager);
+        ORK_DECODE_OBJ(aDecoder, modelManager);
     }
     return self;
 }
@@ -90,7 +90,8 @@
     return (isParentSame && ORKEqualObjects(self.modelManager, castObject.modelManager));
 }
 
-- (NSUInteger)hash {
+- (NSUInteger)hash
+{
     return [super hash] ^ [_modelManager hash];
 }
 

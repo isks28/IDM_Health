@@ -29,9 +29,8 @@
  */
 
 
-
 #import "ORKAudioContentView.h"
-#import "ORKAudioMeteringView.h"
+#import "ORKAudioGraphView.h"
 
 #import "ORKHeadlineLabel.h"
 #import "ORKLabel.h"
@@ -39,7 +38,6 @@
 #import "ORKAccessibility.h"
 #import "ORKHelpers_Internal.h"
 #import "ORKSkin.h"
-#import "ORKRecordButton.h"
 
 
 // The central blue region.
@@ -47,8 +45,6 @@ static const CGFloat GraphViewBlueZoneHeight = 170;
 
 // The two bands at top and bottom which are "loud" each have this height.
 static const CGFloat GraphViewRedZoneHeight = 25;
-
-static const CGFloat ORKAudioStepContentRecordButtonVerticalSpacing = 20.0;
 
 @interface ORKAudioTimerLabel : ORKLabel
 
@@ -65,12 +61,11 @@ static const CGFloat ORKAudioStepContentRecordButtonVerticalSpacing = 20.0;
 
 @end
 
-@interface ORKAudioContentView () <ORKRecordButtonDelegate>
+@interface ORKAudioContentView ()
 
 @property (nonatomic, strong) ORKHeadlineLabel *alertLabel;
 @property (nonatomic, strong) UILabel *timerLabel;
-@property (nonatomic, strong) ORKAudioMeteringView *graphView;
-@property (nonatomic, copy, nullable) ORKAudioStepContentViewEventHandler viewEventhandler;
+@property (nonatomic, strong) ORKAudioGraphView *graphView;
 
 @end
 
@@ -78,23 +73,19 @@ static const CGFloat ORKAudioStepContentRecordButtonVerticalSpacing = 20.0;
 @implementation ORKAudioContentView {
     NSMutableArray *_samples;
     UIColor *_keyColor;
-    ORKRecordButton *_recordButton;
-    BOOL _checkAudioLevel;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
         self.layoutMargins = ORKStandardFullScreenLayoutMarginsForView(self);
-        _checkAudioLevel = YES;
-        _useRecordButton = NO;
         
         self.alertLabel = [ORKHeadlineLabel new];
         _alertLabel.translatesAutoresizingMaskIntoConstraints = NO;
         self.timerLabel = [ORKAudioTimerLabel new];
         _timerLabel.translatesAutoresizingMaskIntoConstraints = NO;
         _timerLabel.textAlignment = NSTextAlignmentRight;
-        self.graphView = [[ORKAudioMeteringView alloc] init];
+        self.graphView = [ORKAudioGraphView new];
         _graphView.translatesAutoresizingMaskIntoConstraints = NO;
         self.translatesAutoresizingMaskIntoConstraints = NO;
         
@@ -131,22 +122,10 @@ static const CGFloat ORKAudioStepContentRecordButtonVerticalSpacing = 20.0;
     [self updateAlertLabelHidden];
 }
 
-- (void)setUseRecordButton:(BOOL)useRecordButton {
-    _useRecordButton = useRecordButton;
-    
-    if (_useRecordButton) {
-        _checkAudioLevel = NO;
-        [_timerLabel setHidden: YES];
-        
-        [self setupRecordButton];
-        [self setUpConstraints];
-    }
-}
-
 - (void)applyKeyColor {
     UIColor *keyColor = [self keyColor];
     _timerLabel.textColor = keyColor;
-    _graphView.meterColor = keyColor;
+    _graphView.keyColor = keyColor;
 }
 
 - (UIColor *)keyColor {
@@ -162,44 +141,6 @@ static const CGFloat ORKAudioStepContentRecordButtonVerticalSpacing = 20.0;
     _alertColor = alertColor;
     _alertLabel.textColor = alertColor;
     _graphView.alertColor = alertColor;
-}
-
-- (void)setViewEventHandler:(ORKAudioStepContentViewEventHandler)handler {
-    self.viewEventhandler = [handler copy];
-}
-
-- (void)invokeViewEventHandlerWithEvent:(ORKAudioContentViewEvent)event {
-    if (self.viewEventhandler) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            self.viewEventhandler(event);
-        });
-    }
-}
-
-- (void)buttonPressed:(ORKRecordButton *)recordButton {
-    switch (recordButton.buttonType) {
-        case ORKRecordButtonTypeRecord:
-            [self invokeViewEventHandlerWithEvent:ORKAudioContentViewEventStartRecording];
-            [_recordButton setButtonType:ORKRecordButtonTypeStop];
-            break;
-        default:
-            [self invokeViewEventHandlerWithEvent:ORKAudioContentViewEventStopRecording];
-            [_recordButton setButtonState:ORKRecordButtonStateDisabled];
-            break;
-    }
-}
-
-- (void)setupRecordButton {
-    if (!_recordButton) {
-        _recordButton = [[ORKRecordButton alloc] init];
-        _recordButton.delegate = self;
-        _recordButton.translatesAutoresizingMaskIntoConstraints = NO;
-        
-        [_recordButton setButtonType:ORKRecordButtonTypeRecord];
-        
-        [self addSubview:_recordButton];
-    }
 }
 
 - (void)setUpConstraints {
@@ -220,23 +161,12 @@ static const CGFloat ORKAudioStepContentRecordButtonVerticalSpacing = 20.0;
     
     const CGFloat sideMargin = self.layoutMargins.left + (2 * ORKStandardLeftMarginForTableViewCell(self));
     const CGFloat innerMargin = 2;
-    
-    if (_useRecordButton) {
-        [constraints addObjectsFromArray:
-         [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-sideMargin-[_graphView]-sideMargin-|"
-                                                 options:NSLayoutFormatAlignAllCenterY
-                                                 metrics:@{@"sideMargin": @(sideMargin)}
-                                                   views:views]];
-        
-        [constraints addObject:[_recordButton.topAnchor constraintEqualToAnchor:_graphView.bottomAnchor constant:ORKAudioStepContentRecordButtonVerticalSpacing]];
-        [constraints addObject:[_recordButton.centerXAnchor constraintEqualToAnchor:self.centerXAnchor]];
-    } else {
-        [constraints addObjectsFromArray:
-         [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-sideMargin-[_graphView]-innerMargin-[_timerLabel]-sideMargin-|"
-                                                 options:NSLayoutFormatAlignAllCenterY
-                                                 metrics:@{@"sideMargin": @(sideMargin), @"innerMargin": @(innerMargin)}
-                                                   views:views]];
-    }
+
+    [constraints addObjectsFromArray:
+     [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-sideMargin-[_graphView]-innerMargin-[_timerLabel]-sideMargin-|"
+                                             options:NSLayoutFormatAlignAllCenterY
+                                             metrics:@{@"sideMargin": @(sideMargin), @"innerMargin": @(innerMargin)}
+                                               views:views]];
     
     [constraints addObject:[NSLayoutConstraint constraintWithItem:_graphView
                                                         attribute:NSLayoutAttributeHeight
@@ -276,21 +206,18 @@ static const CGFloat ORKAudioStepContentRecordButtonVerticalSpacing = 20.0;
 }
 
 - (void)updateGraphSamples {
-    _graphView.samples = _samples;
+    _graphView.values = _samples;
     [self updateAlertLabelHidden];
 }
 
 - (void)updateAlertLabelHidden {
     NSNumber *sample = _samples.lastObject;
+    BOOL show = (!_finished && (sample.doubleValue > _alertThreshold)) || _failed;
     
-    if (_checkAudioLevel) {
-        BOOL show = (!_finished && (sample.doubleValue > _alertThreshold)) || _failed;
-        
-        if (_alertLabel.hidden && show) {
-            UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, _alertLabel.text);
-        }
-        _alertLabel.hidden = !show;
+    if (_alertLabel.hidden && show) {
+        UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, _alertLabel.text);
     }
+    _alertLabel.hidden = !show;
 }
 
 - (void)setSamples:(NSArray *)samples {
@@ -333,4 +260,3 @@ static const CGFloat ORKAudioStepContentRecordButtonVerticalSpacing = 20.0;
 }
 
 @end
-

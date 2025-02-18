@@ -28,6 +28,7 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #import "ORKHealthAnswerFormat.h"
 
 #import "ORKAnswerFormat_Internal.h"
@@ -37,7 +38,6 @@
 #import "ORKQuestionResult_Private.h"
 #import "ORKResult.h"
 
-#if ORK_FEATURE_HEALTHKIT_AUTHORIZATION
 
 #pragma mark - ORKHealthAnswerFormat
 
@@ -420,4 +420,3 @@ NSString *ORKHKBloodTypeString(HKBloodType bloodType) {
 }
 
 @end
-#endif

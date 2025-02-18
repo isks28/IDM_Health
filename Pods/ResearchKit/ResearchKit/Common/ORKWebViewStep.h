@@ -61,9 +61,6 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 - (UIView<ORKCustomSignatureAccessoryViewProtocol> * _Nullable)customHeaderViewForSignatureContent;
 
-@optional
-- (UIScrollViewKeyboardDismissMode)keyboardDismissModeForCustomView;
-
 @end
 
 /**

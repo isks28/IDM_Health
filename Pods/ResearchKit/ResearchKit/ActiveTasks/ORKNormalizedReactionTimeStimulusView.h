@@ -31,7 +31,7 @@
 
 
 @import UIKit;
-#import <ResearchKit/ORKCustomStepView_Internal.h>
+#import "ORKCustomStepView_Internal.h"
 
 
 NS_ASSUME_NONNULL_BEGIN

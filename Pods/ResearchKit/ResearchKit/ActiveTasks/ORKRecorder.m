@@ -89,12 +89,9 @@
     return nil;
 }
 
-#if ORK_FEATURE_HEALTHKIT_AUTHORIZATION
 - (NSSet<HKObjectType *> *)requestedHealthKitTypesForReading {
     return nil;
 }
-#endif
-
 - (ORKPermissionMask)requestedPermissionMask {
     return ORKPermissionNone;
 }
@@ -245,7 +242,6 @@
             ORKFileResult *result = [[ORKFileResult alloc] initWithIdentifier:self.identifier];
             result.contentType = [self mimeType];
             result.fileURL = fileUrl;
-            result.fileName = [fileUrl lastPathComponent];
             result.userInfo = self.userInfo;
             result.startDate = self.startDate;
             

@@ -28,10 +28,8 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import "ORKDefines.h"
 
-#if ORK_FEATURE_HEALTHKIT_AUTHORIZATION
-#import <HealthKit/HealthKit.h>
+@import HealthKit;
 
 
 NS_ASSUME_NONNULL_BEGIN
@@ -62,5 +60,3 @@ typedef NS_OPTIONS(NSInteger, ORKSampleJSONOptions) {
 @end
 
 NS_ASSUME_NONNULL_END
-
-#endif

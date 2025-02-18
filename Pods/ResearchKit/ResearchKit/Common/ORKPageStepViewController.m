@@ -84,9 +84,7 @@ typedef NS_ENUM(NSInteger, ORKPageNavigationDirection) {
 @synthesize pageResult = _pageResult;
 - (ORKPageResult *)pageResult {
     if (_pageResult == nil) {
-        _pageResult = [[ORKPageResult alloc] initWithTaskIdentifier:self.step.identifier
-                                                        taskRunUUID:self.taskViewController.taskRunUUID
-                                                    outputDirectory:self.outputDirectory];
+        _pageResult = [[ORKPageResult alloc] initWithIdentifier:self.step.identifier];
     }
     if (!ORKEqualObjects(_pageResult.outputDirectory, self.outputDirectory)) {
         _pageResult = [_pageResult copyWithOutputDirectory:self.outputDirectory];

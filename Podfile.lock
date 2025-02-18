@@ -18,12 +18,12 @@ PODS:
     - LiteRTSwift/Core (= 0.0.1-nightly.20250205)
     - LiteRTSwift/Privacy (= 0.0.1-nightly.20250205)
   - LiteRTSwift/Privacy (0.0.1-nightly.20250205)
-  - ResearchKit (2.2.16)
+  - ResearchKit (2.1.0)
 
 DEPENDENCIES:
   - LiteRTSwift/CoreML (~> 0.0.1-nightly)
   - LiteRTSwift/Metal (~> 0.0.1-nightly)
-  - ResearchKit
+  - ResearchKit (~> 2.1.0)
 
 SPEC REPOS:
   trunk:
@@ -34,8 +34,8 @@ SPEC REPOS:
 SPEC CHECKSUMS:
   LiteRTC: 19dcb48d52a6705ba93a319df0088b0e7e7b0f83
   LiteRTSwift: 11bb09351f87effd8b01b0e370a2b69584e5ed0a
-  ResearchKit: 4ce3751136fc82a02ac83f873b09b01b6974a761
+  ResearchKit: d7fba1d5b00f5dd299373e46727c5940fc5c1890
 
-PODFILE CHECKSUM: b7afd69080a8443d2950ac72a6e2904f1690e82a
+PODFILE CHECKSUM: d70927cfc16bdd0a1ea4f398e8aeb00ef9ea634e
 
 COCOAPODS: 1.16.2

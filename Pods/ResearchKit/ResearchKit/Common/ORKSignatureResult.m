@@ -37,10 +37,9 @@
 
 @implementation ORKSignatureResult
 
-- (instancetype)initWithIdentifier:(NSString *)identifier
-                    signatureImage:(UIImage *)signatureImage
-                     signaturePath:(NSArray <UIBezierPath *> *)signaturePath {
-    self = [super initWithIdentifier:identifier];
+- (instancetype)initWithSignatureImage:(UIImage *)signatureImage
+                         signaturePath:(NSArray <UIBezierPath *> *)signaturePath {
+    self = [super init];
     if (self) {
         _signatureImage = [signatureImage copy];
         _signaturePath = ORKArrayCopyObjects(signaturePath);

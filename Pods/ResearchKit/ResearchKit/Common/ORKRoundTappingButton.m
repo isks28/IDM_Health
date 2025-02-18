@@ -46,7 +46,6 @@ static const CGFloat RoundTappingButtonDefaultDiameter = 104;
     self.fadeDelay = 0.2;
     [self setDiameter:RoundTappingButtonDefaultDiameter];
     [self updateDimensionConstraints];
-    [self.layer setCornerCurveCircular];
 }
 
 - (void)setDiameter:(CGFloat)diameter {
@@ -77,6 +76,7 @@ static const CGFloat RoundTappingButtonDefaultDiameter = 104;
                                                     multiplier:1.0
                                                       constant:_diameter];
     [NSLayoutConstraint activateConstraints:@[_widthConstraint, _heightConstraint]];
+
 }
 
 - (void)tintColorDidChange {

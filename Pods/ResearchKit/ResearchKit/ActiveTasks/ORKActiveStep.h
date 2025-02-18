@@ -30,6 +30,7 @@
 
 
 @import UIKit;
+@import HealthKit;
 #import <ResearchKit/ORKStep.h>
 
 
@@ -204,6 +205,15 @@ The default value of this property is `NO`.
  See also: `ORKRecorderConfiguration` and `ORKRecorder`.
  */
 @property (nonatomic, copy, nullable) NSArray<ORKRecorderConfiguration *> *recorderConfigurations;
+
+/**
+ A Boolean value that determines if a step is a practice  step or not.
+ 
+ When the value of this property is `YES`, the ResearchKit framework sets the allowsBackNavigation property to 'YES'
+ 
+ The default value of this property is `NO`.
+*/
+@property (nonatomic, assign) BOOL isPractice;
 
 @end
 

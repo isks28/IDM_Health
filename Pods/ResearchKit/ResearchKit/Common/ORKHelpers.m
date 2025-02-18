@@ -53,7 +53,6 @@ NSBundle *ORKAssetsBundle(void) {
     return bundle;
 }
 
-#if TARGET_OS_IOS
 ORK_INLINE CGFloat ORKCGFloor(CGFloat value) {
     if (sizeof(value) == sizeof(float)) {
         return (CGFloat)floorf((float)value);
@@ -61,9 +60,7 @@ ORK_INLINE CGFloat ORKCGFloor(CGFloat value) {
         return (CGFloat)floor((double)value);
     }
 }
-#endif
 
-#if TARGET_OS_IOS
 ORK_INLINE CGFloat ORKAdjustToScale(CGFloat (adjustFunction)(CGFloat), CGFloat value, CGFloat scale) {
     if (scale == 0) {
         static CGFloat screenScale = 1.0;
@@ -83,7 +80,6 @@ ORK_INLINE CGFloat ORKAdjustToScale(CGFloat (adjustFunction)(CGFloat), CGFloat v
 CGFloat ORKFloorToViewScale(CGFloat value, UIView *view) {
     return ORKAdjustToScale(ORKCGFloor, value, view.contentScaleFactor);
 }
-#endif
 
 id ORKFindInArrayByKey(NSArray *array, NSString *key, id value) {
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"%K == %@", key, value];
@@ -170,7 +166,6 @@ NSString *ORKFileProtectionFromMode(ORKFileProtectionMode mode) {
     return NSFileProtectionNone;
 }
 
-#if TARGET_OS_IOS
 CGFloat ORKExpectedLabelHeight(UILabel *label) {
     CGSize expectedLabelSize = [label.text boundingRectWithSize:CGSizeMake(label.frame.size.width, CGFLOAT_MAX)
                                                         options:NSStringDrawingUsesLineFragmentOrigin
@@ -178,36 +173,6 @@ CGFloat ORKExpectedLabelHeight(UILabel *label) {
                                                         context:nil].size;
     return expectedLabelSize.height;
 }
-
-UIColor *ORKWindowTintcolor(UIWindow *window) {
-    UIColor *windowTintColor = window.tintColor;
-    if (!windowTintColor) {
-        return nil;
-    }
-    
-    //Return nil if the window tint color is clear
-    CGFloat redColor;
-    CGFloat blueColor;
-    CGFloat greenColor;
-    CGFloat alpha;
-    
-    [window.tintColor getRed:&redColor green:&greenColor blue:&blueColor alpha:&alpha];
-    
-    if (redColor == 0 && blueColor == 0 && greenColor == 0 && alpha == 0) {
-        return nil;
-    }
-    
-    return windowTintColor;
-}
-
-UIColor *ORKViewTintColor(UIView *view) {
-    UIColor *existingTintColor = view.tintColor ? : [UIColor systemBlueColor];
-    UIColor *tintColor = ORKWindowTintcolor(view.window) ? : existingTintColor;
-
-    return tintColor;
-}
-
-#endif
 
 UIImage *ORKImageWithColor(UIColor *color) {
     CGRect rect = CGRectMake(0.0f, 0.0f, 1.0f, 1.0f);
@@ -223,13 +188,11 @@ UIImage *ORKImageWithColor(UIColor *color) {
     return image;
 }
 
-#if TARGET_OS_IOS
 void ORKEnableAutoLayoutForViews(NSArray *views) {
     [views enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         [(UIView *)obj setTranslatesAutoresizingMaskIntoConstraints:NO];
     }];
 }
-#endif
 
 NSDateFormatter *ORKResultDateTimeFormatter() {
     static NSDateFormatter *dateTimeformatter = nil;
@@ -524,7 +487,6 @@ void ORKValidateArrayForObjectsOfClass(NSArray *array, Class expectedObjectClass
     }
 }
 
-#if TARGET_OS_IOS
 void ORKRemoveConstraintsForRemovedViews(NSMutableArray *constraints, NSArray *removedViews) {
     for (NSLayoutConstraint *constraint in [constraints copy]) {
         for (UIView *view in removedViews) {
@@ -534,19 +496,16 @@ void ORKRemoveConstraintsForRemovedViews(NSMutableArray *constraints, NSArray *r
         }
     }
 }
-#endif
 
 const double ORKDoubleInvalidValue = DBL_MAX;
 
 const CGFloat ORKCGFloatInvalidValue = CGFLOAT_MAX;
 
-#if TARGET_OS_IOS
 void ORKAdjustPageViewControllerNavigationDirectionForRTL(UIPageViewControllerNavigationDirection *direction) {
     if ([UIApplication sharedApplication].userInterfaceLayoutDirection == UIUserInterfaceLayoutDirectionRightToLeft) {
         *direction = (*direction == UIPageViewControllerNavigationDirectionForward) ? UIPageViewControllerNavigationDirectionReverse : UIPageViewControllerNavigationDirectionForward;
     }
 }
-#endif
 
 NSString *ORKPaddingWithNumberOfSpaces(NSUInteger numberOfPaddingSpaces) {
     return [@"" stringByPaddingToLength:numberOfPaddingSpaces withString:@" " startingAtIndex:0];

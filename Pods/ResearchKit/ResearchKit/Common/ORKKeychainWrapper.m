@@ -32,7 +32,6 @@
 #import "ORKKeychainWrapper.h"
 
 #import "ORKHelpers_Internal.h"
-#import "ResearchKit/ResearchKit-Swift.h"
 
 
 static NSString *ORKKeychainWrapperDefaultService() {

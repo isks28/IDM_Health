@@ -45,9 +45,6 @@
 #import "ORKTaskViewController_Internal.h"
 #import "ORKRecorder_Internal.h"
 
-#import "ORKStepView_Private.h"
-#import "ORKStepContentView.h"
-
 #import "ORKActiveStep_Internal.h"
 #import "ORKCollectionResult_Private.h"
 #import "ORKResult.h"
@@ -128,7 +125,6 @@
     if (_customView) {
         _activeStepView.customContentView = _customView;
     }
-    _activeStepView.stepContentView.shouldAutomaticallyAdjustImageTintColor = YES;
     [self.view addSubview:_activeStepView];
 }
 
@@ -299,9 +295,8 @@
                                           outputDirectory:self.outputDirectory];
         recorder.configuration = provider;
         recorder.delegate = self;
-        if (recorder) {
-            [recorders addObject:recorder];
-        }
+        
+        [recorders addObject:recorder];
     }
     self.recorders = recorders;
     
@@ -571,7 +566,7 @@ static NSString *const _ORKRecorderResultsRestoreKey = @"recorderResults";
     [super decodeRestorableStateWithCoder:coder];
     
     self.finished = [coder decodeBoolForKey:_ORKFinishedRestoreKey];
-    _recorderResults = [coder decodeObjectOfClasses:[NSSet setWithArray:@[NSArray.self, ORKResult.self]] forKey:_ORKRecorderResultsRestoreKey];
+    _recorderResults = [coder decodeObjectOfClass:[NSArray class] forKey:_ORKRecorderResultsRestoreKey];
 }
 
 @end

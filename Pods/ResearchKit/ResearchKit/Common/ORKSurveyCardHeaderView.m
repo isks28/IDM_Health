@@ -28,6 +28,7 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #import "ORKSurveyCardHeaderView.h"
 #import "ORKSkin.h"
 #import "ORKLearnMoreView.h"
@@ -66,33 +67,32 @@ static const CGFloat SelectAllThatApplyBottomPadding = 6.0;
     self = [super init];
     if (self) {
         _title = title;
-        [self setupView];
+        [self setBackgroundColor:[UIColor clearColor]];
+        [self setupHeaderView];
+        [self setupConstraints];
     }
     return self;
 }
 
-- (instancetype)initWithTitle:(NSString *)title
-                   detailText:(nullable NSString *)text
-                learnMoreView:(nullable ORKLearnMoreView *)learnMoreView
-                 progressText:(nullable NSString *)progressText
-                      tagText:(nullable NSString *)tagText {
+- (instancetype)initWithTitle:(NSString *)title detailText:(nullable NSString *)text learnMoreView:(nullable ORKLearnMoreView *)learnMoreView progressText:(nullable NSString *)progressText tagText:(nullable NSString *)tagText {
     
-    return [self initWithTitle:title
-                    detailText:text
-                 learnMoreView:learnMoreView
-                  progressText:progressText
-                       tagText:tagText
-                    showBorder:NO
-         hasMultipleChoiceItem:NO];
+    self = [super init];
+    if (self) {
+        _title = title;
+        _detailText = text;
+        _learnMoreView = learnMoreView;
+        _progressText = progressText;
+        _showBorder = NO;
+        _hasMultipleChoiceItem = NO;
+        _tagText = tagText;
+        [self setBackgroundColor:[UIColor clearColor]];
+        [self setupHeaderView];
+        [self setupConstraints];
+    }
+    return self;
 }
 
-- (instancetype)initWithTitle:(NSString *)title
-                   detailText:(NSString *)text
-                learnMoreView:(ORKLearnMoreView *)learnMoreView
-                 progressText:(NSString *)progressText
-                      tagText:(nullable NSString *)tagText
-                   showBorder:(BOOL)showBorder
-        hasMultipleChoiceItem:(BOOL)hasMultipleChoiceItem {
+- (instancetype)initWithTitle:(NSString *)title detailText:(NSString *)text learnMoreView:(ORKLearnMoreView *)learnMoreView progressText:(NSString *)progressText tagText:(nullable NSString *)tagText showBorder:(BOOL)showBorder hasMultipleChoiceItem:(BOOL)hasMultipleChoiceItem {
     
     self = [super init];
     if (self) {
@@ -103,15 +103,11 @@ static const CGFloat SelectAllThatApplyBottomPadding = 6.0;
         _showBorder = showBorder;
         _tagText = tagText;
         _hasMultipleChoiceItem = hasMultipleChoiceItem;
-        [self setupView];
+        [self setBackgroundColor:[UIColor clearColor]];
+        [self setupHeaderView];
+        [self setupConstraints];
     }
     return self;
-}
-
-- (void)setupView {
-    [self setBackgroundColor:[UIColor clearColor]];
-    [self setupHeaderView];
-    [self setupConstraints];
 }
 
 - (void)setupHeaderView {
@@ -319,6 +315,7 @@ static const CGFloat SelectAllThatApplyBottomPadding = 6.0;
         _tagLabel.translatesAutoresizingMaskIntoConstraints = NO;
         [_tagLabel.topAnchor constraintEqualToAnchor:lastYAxisAnchor constant:topPadding].active = YES;
         [_tagLabel.leadingAnchor constraintEqualToAnchor:_titleLabel.leadingAnchor].active = YES;
+        // FIXME:- learnMoreView gets compressed if we use _learnMoreView.leadingAnchor
         [_tagLabel.trailingAnchor constraintLessThanOrEqualToAnchor:_headlineView.trailingAnchor constant:-ORKSurveyItemMargin].active = YES;
         lastYAxisAnchor = _tagLabel.bottomAnchor;
     }
@@ -380,8 +377,7 @@ static const CGFloat SelectAllThatApplyBottomPadding = 6.0;
     [[self.bottomAnchor constraintEqualToAnchor:_headlineView.bottomAnchor constant:0.0] setActive:YES];
 }
 
-- (void)setupLearnMoreViewConstraints {
-    
+- (void) setupLearnMoreViewConstraints {
     if (_learnMoreViewConstraints) {
         [NSLayoutConstraint deactivateConstraints:_learnMoreViewConstraints];
     }

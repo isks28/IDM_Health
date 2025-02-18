@@ -94,7 +94,7 @@ Float32 const VolumeClamp = 60.0;
     if (self) {
         ORK_DECODE_OBJ_CLASS(aDecoder, audioLevelStepIdentifier, NSString);
         ORK_DECODE_OBJ_CLASS(aDecoder, destinationStepIdentifier, NSString);
-        ORK_DECODE_OBJ_PLIST(aDecoder, recordingSettings);
+        ORK_DECODE_OBJ_CLASS(aDecoder, recordingSettings, NSDictionary);
     }
     return self;
 }
@@ -216,4 +216,3 @@ Float32 const VolumeClamp = 60.0;
 
 
 @end
-

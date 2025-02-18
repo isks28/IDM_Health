@@ -46,7 +46,6 @@
 #import "ORKResult_Private.h"
 #import "ORKStepContainerView_Private.h"
 #import "ORKStepViewController_Internal.h"
-#import "ORKTaskViewController_Internal.h"
 
 @interface ORKFrontFacingCameraStepViewController () <AVCaptureFileOutputRecordingDelegate, AVCaptureVideoDataOutputSampleBufferDelegate>
 
@@ -90,8 +89,6 @@
     [self setupContentView];
     [self setupConstraints];
     [self startSession];
-
-    [self.taskViewController setNavigationBarColor:[self.view backgroundColor]];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -352,7 +349,6 @@
     frontFacingCameraResult.endDate = now;
     frontFacingCameraResult.contentType = @"video/quicktime";
     frontFacingCameraResult.fileURL = _savedFileURL;
-    frontFacingCameraResult.fileName = _savedFileName;
     frontFacingCameraResult.retryCount = retryCount;
 
     [results addObject:frontFacingCameraResult];

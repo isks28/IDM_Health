@@ -40,10 +40,7 @@
 #import "ORKHelpers_Internal.h"
 
 
-@implementation ORKQuestionResult {
-    @protected
-    NSObject<NSCopying, NSSecureCoding> *_typedAnswerOrNoAnswer;
-}
+@implementation ORKQuestionResult
 
 - (BOOL)isSaveable {
     return YES;
@@ -52,16 +49,12 @@
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [super encodeWithCoder:aCoder];
     ORK_ENCODE_ENUM(aCoder, questionType);
-    // New generic answer property
-    ORK_ENCODE_OBJ(aCoder, typedAnswerOrNoAnswer);
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
         ORK_DECODE_ENUM(aDecoder, questionType);
-        // New generic answer property (backward-compatible decoding provided by subclasses)
-        ORK_DECODE_OBJ_CLASSES(aDecoder, typedAnswerOrNoAnswer, [[self class] answerClassesIncludingNoAnswer]);
     }
     return self;
 }
@@ -75,27 +68,24 @@
     
     __typeof(self) castObject = object;
     return (isParentSame &&
-            _questionType == castObject.questionType &&
-            ORKEqualObjects(_typedAnswerOrNoAnswer, castObject->_typedAnswerOrNoAnswer));
+            (_questionType == castObject.questionType));
 }
 
 - (NSUInteger)hash {
-    return super.hash ^ self.answer.hash ^ _questionType;
+    return super.hash ^ ((id<NSObject>)self.answer).hash ^ _questionType;
 }
 
 - (instancetype)copyWithZone:(NSZone *)zone {
-    ORKQuestionResult *copy = [super copyWithZone:zone];
-    copy.questionType = self.questionType;
-    copy->_typedAnswerOrNoAnswer = [_typedAnswerOrNoAnswer copyWithZone:zone];
-    return copy;
+    ORKQuestionResult *result = [super copyWithZone:zone];
+    result.questionType = self.questionType;
+    return result;
 }
 
-- (NSObject<NSCopying, NSSecureCoding> *)validateAnswer:(NSObject<NSCopying, NSSecureCoding> *)answer {
+- (NSObject *)validateAnswer:(id)answer {
     if (answer == ORKNullAnswerValue()) {
         answer = nil;
     }
-
-    NSParameterAssert(!answer || [answer isKindOfClass:[[self class] answerClass]] || [answer isKindOfClass:[ORKNoAnswer class]]);
+    NSParameterAssert(!answer || [answer isKindOfClass:[[self class] answerClass]] || [answer isKindOfClass:[ORKDontKnowAnswer class]]);
     return answer;
 }
 
@@ -103,42 +93,11 @@
     return nil;
 }
 
-+ (NSArray<Class> *)answerClassesIncludingNoAnswer {
-    if (self == [ORKQuestionResult class]) {
-        // [ORKQuestionResult answerClass] is nil
-        return @[[ORKNoAnswer class]];
-    } else {
-        // Case for subclasses
-        return @[[[self class] answerClass], [ORKNoAnswer class]];
-    }
+- (void)setAnswer:(id)answer {
 }
 
-- (void)setAnswer:(NSObject<NSCopying, NSSecureCoding> *)answer {
-    answer = [self validateAnswer:answer];
-    _typedAnswerOrNoAnswer = [answer copy];
-}
-
-- (NSObject<NSCopying, NSSecureCoding> *)answer {
-    return _typedAnswerOrNoAnswer;
-}
-
-- (void)setNoAnswerType:(ORKNoAnswer *)noAnswerType {
-    if (noAnswerType != nil) {
-        self.answer = noAnswerType;
-    // Do not overwrite answer if the current value is not a `ORKNoAnswer` subclass instance
-    } else if (noAnswerType == nil && [self.answer isKindOfClass:[ORKNoAnswer class]]) {
-        self.answer = nil;
-    }
-}
-
-- (ORKNoAnswer *)noAnswerType {
-    id answer = self.answer;
-    return [answer isKindOfClass:[ORKNoAnswer class]] ? answer : nil;
-}
-
-- (NSObject<NSCopying, NSSecureCoding> *)typedAnswer {
-    id answer = self.answer;
-    return [answer isKindOfClass:[[self class] answerClass]] ? answer : nil;
+- (id)answer {
+    return nil;
 }
 
 - (NSString *)descriptionWithNumberOfPaddingSpaces:(NSUInteger)numberOfPaddingSpaces {
@@ -174,111 +133,15 @@
 
 @implementation ORKBooleanQuestionResult
 
-- (instancetype)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
-    if (self) {
-        if (_typedAnswerOrNoAnswer == nil) {
-            // Backwards compatibility, do not change the key
-            ORK_DECODE_OBJ_CLASSES_FOR_KEY(aDecoder, typedAnswerOrNoAnswer, [[self class] answerClassesIncludingNoAnswer], booleanAnswer);
-        }
-    }
-    return self;
-}
-
-+ (BOOL)supportsSecureCoding {
-    return YES;
-}
-
-+ (Class)answerClass {
-    return [NSNumber class];
-}
-
-- (void)setAnswer:(NSObject<NSCopying,NSSecureCoding> *)answer {
-    if ([answer isKindOfClass:[NSArray class]]) {
-        // Because ORKBooleanAnswerFormat has ORKChoiceAnswerFormat as its implied format.
-        NSArray *answerArray = (NSArray *)answer;
-        NSAssert(answerArray.count <= 1, @"Should be no more than one answer");
-        answer = answerArray.firstObject;
-    }
-    [super setAnswer:answer];
-}
-
-- (void)setBooleanAnswer:(NSNumber *)booleanAnswer {
-    self.answer = booleanAnswer;
-}
-
-- (NSNumber *)booleanAnswer {
-    return ORKDynamicCast(self.typedAnswer, NSNumber);
-}
-
-@end
-
-
-#pragma mark - ORKChoiceQuestionResult
-
-@implementation ORKChoiceQuestionResult
-
-- (instancetype)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
-    if (self) {
-        if (_typedAnswerOrNoAnswer == nil) {
-            // Backwards compatibility, do not change the key
-            ORK_DECODE_OBJ_CLASSES_FOR_KEY(aDecoder, typedAnswerOrNoAnswer, [[self class] answerClassesIncludingNoAnswer], choiceAnswers);
-        }
-    }
-    return self;
-}
-
-+ (BOOL)supportsSecureCoding {
-    return YES;
-}
-
-+ (Class)answerClass {
-    return [NSArray<NSObject<NSCopying, NSSecureCoding> *> class];
-}
-
-+ (NSArray<Class> *)answerClassesIncludingNoAnswer {
-    NSArray *classes = [[super answerClassesIncludingNoAnswer] arrayByAddingObjectsFromArray:ORKAllowableValueClasses()];
-    return classes;
-}
-
-- (void)setChoiceAnswers:(NSArray<NSObject<NSCopying, NSSecureCoding> *> *)choiceAnswers {
-    self.answer = choiceAnswers;
-}
-
-- (NSArray<NSObject<NSCopying, NSSecureCoding> *> *)choiceAnswers {
-    #define ORKChoiceQuestionResultAnswerClass NSArray<NSObject<NSCopying,NSSecureCoding> *>
-    return ORKDynamicCast(self.typedAnswer, ORKChoiceQuestionResultAnswerClass);
-    #undef ORKChoiceQuestionResultAnswerClass
-}
-
-@end
-
-
-#pragma mark - ORKDateQuestionResult
-
-@implementation ORKDateQuestionResult
-
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [super encodeWithCoder:aCoder];
-    ORK_ENCODE_OBJ(aCoder, calendar);
-    ORK_ENCODE_OBJ(aCoder, timeZone);
+    ORK_ENCODE_OBJ(aCoder, booleanAnswer);
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        ORK_DECODE_OBJ_CLASS(aDecoder, calendar, NSCalendar);
-        ORK_DECODE_OBJ_CLASS(aDecoder, timeZone, NSTimeZone);
-        if (_typedAnswerOrNoAnswer == nil) {
-            // Backwards compatibility, do not change the key
-            ORK_DECODE_OBJ_CLASSES_FOR_KEY(aDecoder, typedAnswerOrNoAnswer, [[self class] answerClassesIncludingNoAnswer], dateAnswer);
-        }
-
-        if (_typedAnswerOrNoAnswer != nil && ![_typedAnswerOrNoAnswer isKindOfClass:[NSDate class]] && ![_typedAnswerOrNoAnswer isKindOfClass:[ORKNoAnswer class]]) {
-            ORK_Log_Fault("ORKDateQuestionResult: Discarding answer of wrong class: %{public}@ (%@, identifier: %{public}@)", [_typedAnswerOrNoAnswer class], _typedAnswerOrNoAnswer, self.identifier);
-            _typedAnswerOrNoAnswer = nil;
-        }
+        ORK_DECODE_OBJ_CLASS(aDecoder, booleanAnswer, NSNumber);
     }
     return self;
 }
@@ -292,18 +155,141 @@
     
     __typeof(self) castObject = object;
     return (isParentSame &&
-            ORKEqualObjects(self.timeZone, castObject.timeZone) &&
-            ORKEqualObjects(self.calendar, castObject.calendar));
+            ORKEqualObjects(self.booleanAnswer, castObject.booleanAnswer));
 }
 
 - (NSUInteger)hash {
-    return super.hash ^ self.timeZone.hash ^ self.calendar.hash;
+    return super.hash;
+}
+
+- (instancetype)copyWithZone:(NSZone *)zone {
+    ORKBooleanQuestionResult *result = [super copyWithZone:zone];
+    result->_booleanAnswer = [self.booleanAnswer copyWithZone:zone];
+    return result;
+}
+
++ (Class)answerClass {
+    return [NSNumber class];
+}
+
+- (void)setAnswer:(id)answer {
+    if ([answer isKindOfClass:[NSArray class]]) {
+        // Because ORKBooleanAnswerFormat has ORKChoiceAnswerFormat as its implied format.
+        NSArray *answerArray = answer;
+        NSAssert(answerArray.count <= 1, @"Should be no more than one answer");
+        answer = answerArray.firstObject;
+    }
+    answer = [self validateAnswer:answer];
+    self.booleanAnswer = answer;
+}
+
+- (id)answer {
+    return self.booleanAnswer;
+}
+
+@end
+
+
+#pragma mark - ORKChoiceQuestionResult
+
+@implementation ORKChoiceQuestionResult
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    ORK_ENCODE_OBJ(aCoder, choiceAnswers);
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        ORK_DECODE_OBJ_ARRAY(aDecoder, choiceAnswers, NSObject);
+    }
+    return self;
+}
+
++ (BOOL)supportsSecureCoding {
+    return YES;
+}
+
+- (BOOL)isEqual:(id)object {
+    BOOL isParentSame = [super isEqual:object];
+    
+    __typeof(self) castObject = object;
+    return (isParentSame &&
+            ORKEqualObjects(self.choiceAnswers, castObject.choiceAnswers));
+}
+
+- (NSUInteger)hash {
+    return super.hash;
+}
+
+- (instancetype)copyWithZone:(NSZone *)zone {
+    ORKChoiceQuestionResult *result = [super copyWithZone:zone];
+    result->_choiceAnswers = [self.choiceAnswers copyWithZone:zone];
+    return result;
+}
+
++ (Class)answerClass {
+    return [NSArray class];
+}
+
+- (void)setAnswer:(id)answer {
+    answer = [self validateAnswer:answer];
+    self.choiceAnswers = answer;
+}
+
+- (id)answer {
+    return self.choiceAnswers;
+}
+
+@end
+
+
+#pragma mark - ORKDateQuestionResult
+
+@implementation ORKDateQuestionResult
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    ORK_ENCODE_OBJ(aCoder, calendar);
+    ORK_ENCODE_OBJ(aCoder, timeZone);
+    ORK_ENCODE_OBJ(aCoder, dateAnswer);
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        ORK_DECODE_OBJ_CLASS(aDecoder, calendar, NSCalendar);
+        ORK_DECODE_OBJ_CLASS(aDecoder, timeZone, NSTimeZone);
+        ORK_DECODE_OBJ_CLASS(aDecoder, dateAnswer, NSDate);
+    }
+    return self;
+}
+
++ (BOOL)supportsSecureCoding {
+    return YES;
+}
+
+
+- (BOOL)isEqual:(id)object {
+    BOOL isParentSame = [super isEqual:object];
+    
+    __typeof(self) castObject = object;
+    return (isParentSame &&
+            ORKEqualObjects(self.timeZone, castObject.timeZone) &&
+            ORKEqualObjects(self.calendar, castObject.calendar) &&
+            ORKEqualObjects(self.dateAnswer, castObject.dateAnswer));
+}
+
+- (NSUInteger)hash {
+    return super.hash;
 }
 
 - (instancetype)copyWithZone:(NSZone *)zone {
     ORKDateQuestionResult *result = [super copyWithZone:zone];
-    result->_timeZone = [self.timeZone copyWithZone:zone];
     result->_calendar = [self.calendar copyWithZone:zone];
+    result->_timeZone = [self.timeZone copyWithZone:zone];
+    result->_dateAnswer = [self.dateAnswer copyWithZone:zone];
     return result;
 }
 
@@ -311,19 +297,13 @@
     return [NSDate class];
 }
 
-// Date answer sometimes gets a wrong NSNumber value
-+ (NSArray<Class> *)answerClassesIncludingNoAnswer {
-    NSArray *classes = [[super answerClassesIncludingNoAnswer] arrayByAddingObjectsFromArray:ORKAllowableValueClasses()];
-    return classes;
+- (void)setAnswer:(id)answer {
+    answer = [self validateAnswer:answer];
+    self.dateAnswer = answer;
 }
 
-- (void)setDateAnswer:(NSDate *)dateAnswer {
-    self.answer = dateAnswer;
-}
-
-
-- (NSDate *)dateAnswer {
-    return ORKDynamicCast(self.typedAnswer, NSDate);
+- (id)answer {
+    return self.dateAnswer;
 }
 
 @end
@@ -442,47 +422,77 @@ static NSString *const RegionIdentifierKey = @"region.identifier";
 
 @implementation ORKLocationQuestionResult
 
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    ORK_ENCODE_OBJ(aCoder, locationAnswer);
+}
+
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        if (_typedAnswerOrNoAnswer == nil) {
-            // Backwards compatibility, do not change the key
-            ORK_DECODE_OBJ_CLASSES_FOR_KEY(aDecoder, typedAnswerOrNoAnswer, [[self class] answerClassesIncludingNoAnswer], locationAnswer);
-        }
+        ORK_DECODE_OBJ_CLASS(aDecoder, locationAnswer, ORKLocation);
     }
     return self;
 }
 
 + (BOOL)supportsSecureCoding {
     return YES;
+}
+
+- (BOOL)isEqual:(id)object {
+    BOOL isParentSame = [super isEqual:object];
+    
+    __typeof(self) castObject = object;
+    return (isParentSame && ORKEqualObjects(self.locationAnswer, castObject.locationAnswer));
+}
+
+- (instancetype)copyWithZone:(NSZone *)zone {
+    ORKLocationQuestionResult *result = [super copyWithZone:zone];
+    result->_locationAnswer = [self.locationAnswer copy];
+    return result;
 }
 
 + (Class)answerClass {
     return [ORKLocation class];
 }
 
-- (void)setLocationAnswer:(ORKLocation *)locationAnswer {
-    self.answer = locationAnswer;
+- (void)setAnswer:(id)answer {
+    answer = [self validateAnswer:answer];
+    self.locationAnswer = [answer copy];
 }
 
-- (ORKLocation *)locationAnswer {
-    return ORKDynamicCast(self.typedAnswer, ORKLocation);
+- (id)answer {
+    return self.locationAnswer;
 }
 
 @end
 
-
-#pragma mark - ORKSESQuestionResult
+#pragma mark ORKSESQuestionResult
 
 @implementation ORKSESQuestionResult
+
+- (void)setAnswer:(id)answer {
+    answer = [self validateAnswer:answer];
+    self.rungPicked = [answer copy];
+}
+
++ (Class)answerClass {
+    return [NSNumber class];
+}
+
+- (id)answer {
+    return self.rungPicked;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    ORK_ENCODE_OBJ(aCoder, rungPicked);
+}
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        if (_typedAnswerOrNoAnswer == nil) {
-            // Backwards compatibility, do not change the key
-            ORK_DECODE_OBJ_CLASSES_FOR_KEY(aDecoder, typedAnswerOrNoAnswer, [[self class] answerClassesIncludingNoAnswer], rungPicked);
-        }
+        ORK_DECODE_OBJ_CLASS(aDecoder, rungPicked, NSNumber);
     }
     return self;
 }
@@ -491,17 +501,17 @@ static NSString *const RegionIdentifierKey = @"region.identifier";
     return YES;
 }
 
-+ (Class)answerClass {
-    return [NSNumber class];
+- (BOOL)isEqual:(id)object {
+    BOOL isParentSame = [super isEqual:object];
+
+    __typeof(self) castObject = object;
+    return (isParentSame && ORKEqualObjects(self.rungPicked, castObject.rungPicked));
 }
 
-
-- (void)setRungPicked:(NSNumber *)rungPicked {
-    self.answer = rungPicked;
-}
-
-- (NSNumber *)rungPicked {
-    return ORKDynamicCast(self.typedAnswer, NSNumber);
+- (instancetype)copyWithZone:(NSZone *)zone {
+    ORKSESQuestionResult *result = [super copyWithZone:zone];
+    result->_rungPicked = [self.rungPicked copy];
+    return result;
 }
 
 @end
@@ -513,17 +523,15 @@ static NSString *const RegionIdentifierKey = @"region.identifier";
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [super encodeWithCoder:aCoder];
+    ORK_ENCODE_OBJ(aCoder, componentsAnswer);
     ORK_ENCODE_OBJ(aCoder, separator);
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
+        ORK_DECODE_OBJ_ARRAY(aDecoder, componentsAnswer, NSObject);
         ORK_DECODE_OBJ_CLASS(aDecoder, separator, NSString);
-        if (_typedAnswerOrNoAnswer == nil) {
-            // Backwards compatibility, do not change the key
-            ORK_DECODE_OBJ_CLASSES_FOR_KEY(aDecoder, typedAnswerOrNoAnswer, [[self class] answerClassesIncludingNoAnswer], componentsAnswer);
-        }
     }
     return self;
 }
@@ -534,38 +542,35 @@ static NSString *const RegionIdentifierKey = @"region.identifier";
 
 - (BOOL)isEqual:(id)object {
     BOOL isParentSame = [super isEqual:object];
+    
     __typeof(self) castObject = object;
     return (isParentSame &&
+            ORKEqualObjects(self.componentsAnswer, castObject.componentsAnswer) &&
             ORKEqualObjects(self.separator, castObject.separator));
 }
 
 - (NSUInteger)hash {
-    return super.hash ^ self.separator.hash;
+    return super.hash;
 }
 
 - (instancetype)copyWithZone:(NSZone *)zone {
     __typeof(self) copy = [super copyWithZone:zone];
+    copy.componentsAnswer = self.componentsAnswer;
     copy.separator = self.separator;
     return copy;
 }
 
 + (Class)answerClass {
-    return [NSArray<NSObject<NSCopying, NSSecureCoding> *> class];
+    return [NSArray class];
 }
 
-+ (NSArray<Class> *)answerClassesIncludingNoAnswer {
-    NSArray *classes = [[super answerClassesIncludingNoAnswer] arrayByAddingObjectsFromArray:ORKAllowableValueClasses()];
-    return classes;
+- (void)setAnswer:(id)answer {
+    answer = [self validateAnswer:answer];
+    self.componentsAnswer = answer;
 }
 
-- (void)setComponentsAnswer:(NSArray<NSObject<NSCopying, NSSecureCoding> *> *)componentsAnswer {
-    self.answer = componentsAnswer;
-}
-
-- (NSArray<NSObject<NSCopying, NSSecureCoding> *> *)componentsAnswer {
-    #define ORKMultipleComponentQuestionResultAnswerClass NSArray<NSObject<NSCopying,NSSecureCoding> *>
-    return ORKDynamicCast(self.typedAnswer, ORKMultipleComponentQuestionResultAnswerClass);
-    #undef ORKMultipleComponentQuestionResultAnswerClass
+- (id)answer {
+    return self.componentsAnswer;
 }
 
 @end
@@ -577,19 +582,79 @@ static NSString *const RegionIdentifierKey = @"region.identifier";
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [super encodeWithCoder:aCoder];
+    ORK_ENCODE_OBJ(aCoder, numericAnswer);
     ORK_ENCODE_OBJ(aCoder, unit);
-    ORK_ENCODE_OBJ(aCoder, displayUnit);
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
+        ORK_DECODE_OBJ_CLASS(aDecoder, numericAnswer, NSNumber);
         ORK_DECODE_OBJ_CLASS(aDecoder, unit, NSString);
-        ORK_DECODE_OBJ_CLASS(aDecoder, displayUnit, NSString);
-        if (_typedAnswerOrNoAnswer == nil) {
-            // Backwards compatibility, do not change the key
-            ORK_DECODE_OBJ_CLASSES_FOR_KEY(aDecoder, typedAnswerOrNoAnswer, [[self class] answerClassesIncludingNoAnswer], numericAnswer);
-        }
+    }
+    return self;
+}
+
++ (BOOL)supportsSecureCoding {
+    return YES;
+}
+
+- (BOOL)isEqual:(id)object {
+    BOOL isParentSame = [super isEqual:object];
+    
+    __typeof(self) castObject = object;
+    return (isParentSame &&
+            ORKEqualObjects(self.numericAnswer, castObject.numericAnswer) &&
+            ORKEqualObjects(self.unit, castObject.unit));
+}
+
+- (NSUInteger)hash {
+    return super.hash;
+}
+
+- (instancetype)copyWithZone:(NSZone *)zone {
+    ORKNumericQuestionResult *result = [super copyWithZone:zone];
+    result->_unit = [self.unit copyWithZone:zone];
+    result->_numericAnswer = [self.numericAnswer copyWithZone:zone];
+    return result;
+}
+
++ (Class)answerClass {
+    return [NSNumber class];
+}
+
+- (void)setAnswer:(id)answer {
+    if (answer == ORKNullAnswerValue()) {
+        answer = nil;
+    }
+    NSAssert(!answer || [answer isKindOfClass:[[self class] answerClass]] || [answer isKindOfClass:[ORKDontKnowAnswer class]], @"Answer should be of class %@", NSStringFromClass([[self class] answerClass]));
+    self.numericAnswer = answer;
+}
+
+- (id)answer {
+    return self.numericAnswer;
+}
+
+- (NSString *)descriptionSuffix {
+    return [NSString stringWithFormat:@" %@>", _unit];
+}
+
+@end
+
+
+#pragma mark - ORKScaleQuestionResult
+
+@implementation ORKScaleQuestionResult
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    ORK_ENCODE_OBJ(aCoder, scaleAnswer);
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        ORK_DECODE_OBJ_CLASS(aDecoder, scaleAnswer, NSNumber);
     }
     return self;
 }
@@ -602,70 +667,30 @@ static NSString *const RegionIdentifierKey = @"region.identifier";
     BOOL isParentSame = [super isEqual:object];
     __typeof(self) castObject = object;
     return (isParentSame &&
-            ORKEqualObjects(self.unit, castObject.unit) &&
-            ORKEqualObjects(self.displayUnit, castObject.displayUnit));
+            ORKEqualObjects(self.scaleAnswer, castObject.scaleAnswer));
 }
 
 - (NSUInteger)hash {
-    return super.hash ^ self.unit.hash ^ self.displayUnit.hash;
+    return super.hash;
 }
-
 
 - (instancetype)copyWithZone:(NSZone *)zone {
-    ORKNumericQuestionResult *copy = [super copyWithZone:zone];
-    copy->_unit = [self.unit copyWithZone:zone];
-    copy->_displayUnit = [self.displayUnit copyWithZone:zone];
-    return copy;
+    ORKScaleQuestionResult *result = [super copyWithZone:zone];
+    result->_scaleAnswer = [self.scaleAnswer copyWithZone:zone];
+    return result;
 }
 
 + (Class)answerClass {
     return [NSNumber class];
 }
 
-- (NSString *)descriptionSuffix {
-    return [NSString stringWithFormat:@" %@> displayUnit: %@", _unit, _displayUnit];
+- (void)setAnswer:(id)answer {
+    answer = [self validateAnswer:answer];
+    self.scaleAnswer = answer;
 }
 
-- (void)setNumericAnswer:(NSNumber *)numericAnswer {
-    self.answer = numericAnswer;
-}
-
-- (NSNumber *)numericAnswer {
-    return ORKDynamicCast(self.typedAnswer, NSNumber);
-}
-
-@end
-
-
-#pragma mark - ORKScaleQuestionResult
-
-@implementation ORKScaleQuestionResult
-
-- (instancetype)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
-    if (self) {
-        if (_typedAnswerOrNoAnswer == nil) {
-            // Backwards compatibility, do not change the key
-            ORK_DECODE_OBJ_CLASSES_FOR_KEY(aDecoder, typedAnswerOrNoAnswer, [[self class] answerClassesIncludingNoAnswer], scaleAnswer);
-        }
-    }
-    return self;
-}
-
-+ (BOOL)supportsSecureCoding {
-    return YES;
-}
-
-+ (Class)answerClass {
-    return [NSNumber class];
-}
-
-- (void)setScaleAnswer:(NSNumber *)scaleAnswer {
-    self.answer = scaleAnswer;
-}
-
-- (NSNumber *)scaleAnswer {
-    return ORKDynamicCast(self.typedAnswer, NSNumber);
+- (id)answer {
+    return self.scaleAnswer;
 }
 
 @end
@@ -675,13 +700,15 @@ static NSString *const RegionIdentifierKey = @"region.identifier";
 
 @implementation ORKTextQuestionResult
 
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    ORK_ENCODE_OBJ(aCoder, textAnswer);
+}
+
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        if (_typedAnswerOrNoAnswer == nil) {
-            // Backwards compatibility, do not change the key
-            ORK_DECODE_OBJ_CLASSES_FOR_KEY(aDecoder, typedAnswerOrNoAnswer, [[self class] answerClassesIncludingNoAnswer], textAnswer);
-        }
+        ORK_DECODE_OBJ_CLASS(aDecoder, textAnswer, NSString);
     }
     return self;
 }
@@ -690,16 +717,35 @@ static NSString *const RegionIdentifierKey = @"region.identifier";
     return YES;
 }
 
+- (BOOL)isEqual:(id)object {
+    BOOL isParentSame = [super isEqual:object];
+    
+    __typeof(self) castObject = object;
+    return (isParentSame &&
+            ORKEqualObjects(self.textAnswer, castObject.textAnswer));
+}
+
+- (NSUInteger)hash {
+    return super.hash;
+}
+
+- (instancetype)copyWithZone:(NSZone *)zone {
+    ORKTextQuestionResult *result = [super copyWithZone:zone];
+    result->_textAnswer = [self.textAnswer copyWithZone:zone];
+    return result;
+}
+
 + (Class)answerClass {
     return [NSString class];
 }
 
-- (void)setTextAnswer:(NSString *)textAnswer {
-    self.answer = textAnswer;
+- (void)setAnswer:(id)answer {
+    answer = [self validateAnswer:answer];
+    self.textAnswer = answer;
 }
 
-- (NSString *)textAnswer {
-    return ORKDynamicCast(self.typedAnswer, NSString);
+- (id)answer {
+    return self.textAnswer;
 }
 
 @end
@@ -709,13 +755,15 @@ static NSString *const RegionIdentifierKey = @"region.identifier";
 
 @implementation ORKTimeIntervalQuestionResult
 
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    ORK_ENCODE_OBJ(aCoder, intervalAnswer);
+}
+
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        if (_typedAnswerOrNoAnswer == nil) {
-            // Backwards compatibility, do not change the key
-            ORK_DECODE_OBJ_CLASSES_FOR_KEY(aDecoder, typedAnswerOrNoAnswer, [[self class] answerClassesIncludingNoAnswer], intervalAnswer);
-        }
+        ORK_DECODE_OBJ_CLASS(aDecoder, intervalAnswer, NSNumber);
     }
     return self;
 }
@@ -724,16 +772,35 @@ static NSString *const RegionIdentifierKey = @"region.identifier";
     return YES;
 }
 
+- (BOOL)isEqual:(id)object {
+    BOOL isParentSame = [super isEqual:object];
+    
+    __typeof(self) castObject = object;
+    return (isParentSame &&
+            ORKEqualObjects(self.intervalAnswer, castObject.intervalAnswer));
+}
+
+- (NSUInteger)hash {
+    return super.hash;
+}
+
+- (instancetype)copyWithZone:(NSZone *)zone {
+    ORKTimeIntervalQuestionResult *result = [super copyWithZone:zone];
+    result->_intervalAnswer = [self.intervalAnswer copyWithZone:zone];
+    return result;
+}
+
 + (Class)answerClass {
     return [NSNumber class];
 }
 
-- (void)setIntervalAnswer:(NSNumber *)intervalAnswer {
-    self.answer = intervalAnswer;
+- (void)setAnswer:(id)answer {
+    answer = [self validateAnswer:answer];
+    self.intervalAnswer = answer;
 }
 
-- (NSNumber *)intervalAnswer {
-    return ORKDynamicCast(self.typedAnswer, NSNumber);
+- (id)answer {
+    return self.intervalAnswer;
 }
 
 @end
@@ -743,13 +810,15 @@ static NSString *const RegionIdentifierKey = @"region.identifier";
 
 @implementation ORKTimeOfDayQuestionResult
 
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    ORK_ENCODE_OBJ(aCoder, dateComponentsAnswer);
+}
+
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        if (_typedAnswerOrNoAnswer == nil) {
-            // Backwards compatibility, do not change the key
-            ORK_DECODE_OBJ_CLASSES_FOR_KEY(aDecoder, typedAnswerOrNoAnswer, [[self class] answerClassesIncludingNoAnswer], dateComponentsAnswer);
-        }
+        ORK_DECODE_OBJ_CLASS(aDecoder, dateComponentsAnswer, NSDateComponents);
     }
     return self;
 }
@@ -758,27 +827,39 @@ static NSString *const RegionIdentifierKey = @"region.identifier";
     return YES;
 }
 
+- (BOOL)isEqual:(id)object {
+    BOOL isParentSame = [super isEqual:object];
+    
+    __typeof(self) castObject = object;
+    return (isParentSame &&
+            ORKEqualObjects(self.dateComponentsAnswer, castObject.dateComponentsAnswer));
+}
+
+- (NSUInteger)hash {
+    return super.hash;
+}
+
+- (instancetype)copyWithZone:(NSZone *)zone {
+    ORKTimeOfDayQuestionResult *result = [super copyWithZone:zone];
+    result->_dateComponentsAnswer = [self.dateComponentsAnswer copyWithZone:zone];
+    return result;
+}
+
 + (Class)answerClass {
     return [NSDateComponents class];
 }
 
-- (void)setAnswer:(NSObject<NSCopying, NSSecureCoding> *)answer {
-    if ([answer isKindOfClass:[NSDateComponents class]]) {
-        NSDateComponents *dateComponents = (NSDateComponents *)answer;
-        // For time of day, the day, month and year should be zero
-        dateComponents.day = 0;
-        dateComponents.month = 0;
-        dateComponents.year = 0;
-    }
-    [super setAnswer:answer];
+- (void)setAnswer:(id)answer {
+    NSDateComponents *dateComponents = (NSDateComponents *)[self validateAnswer:answer];
+    // For time of day, the day, month and year should be zero
+    dateComponents.day = 0;
+    dateComponents.month = 0;
+    dateComponents.year = 0;
+    self.dateComponentsAnswer = dateComponents;
 }
 
-- (void)setDateComponentsAnswer:(NSDateComponents *)dateComponentsAnswer {
-    self.answer = dateComponentsAnswer;
-}
-
-- (NSDateComponents *)dateComponentsAnswer {
-    return ORKDynamicCast(self.typedAnswer, NSDateComponents);
+- (id)answer {
+    return self.dateComponentsAnswer;
 }
 
 @end

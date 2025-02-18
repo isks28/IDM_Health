@@ -146,7 +146,6 @@ static const CGFloat LineWidthStepValue = 0.25f;
 @implementation ORKSignatureView {
     NSLayoutConstraint *_heightConstraint;
     NSLayoutConstraint *_widthConstraint;
-    CGSize _signatureSize;
 }
 
 + (void)initialize {
@@ -500,8 +499,6 @@ static CGPoint mmid_Point(CGPoint p1, CGPoint p2) {
     
     [self.lineColor setStroke];
     [self.currentPath stroke];
-    _signatureSize = (self.bounds.size.width == 0 || self.bounds.size.height == 0) ? CGSizeMake(200, 200) :
-                        self.bounds.size;
 }
 
 - (NSArray <UIBezierPath *> *)signaturePath {
@@ -516,7 +513,10 @@ static CGPoint mmid_Point(CGPoint p1, CGPoint p2) {
 }
 
 - (UIImage *)signatureImage {
-    UIGraphicsBeginImageContext(_signatureSize);
+    CGSize imageContextSize;
+    imageContextSize = (self.bounds.size.width == 0 || self.bounds.size.height == 0) ? CGSizeMake(200, 200) :
+                        self.bounds.size;
+    UIGraphicsBeginImageContext(imageContextSize);
 
     for (UIBezierPath *path in self.pathArray) {
         [[UIColor blackColor] setStroke];
@@ -546,11 +546,6 @@ static CGPoint mmid_Point(CGPoint p1, CGPoint p2) {
 
 - (void)cancelAutoScrollTimer {
     [(ORKSignatureGestureRecognizer *)_signatureGestureRecognizer cancelAutoScrollTimer];
-}
-
-- (void)setEnabled:(BOOL)enabled {
-    _enabled = enabled;
-    [self setUserInteractionEnabled:enabled];
 }
 
 #pragma mark - Accessibility

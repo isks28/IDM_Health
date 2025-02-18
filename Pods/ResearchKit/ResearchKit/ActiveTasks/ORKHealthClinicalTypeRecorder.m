@@ -39,7 +39,6 @@
 #import "ORKRecorder_Internal.h"
 #import "HKSample+ORKJSONDictionary.h"
 
-#if ORK_FEATURE_HEALTHKIT_AUTHORIZATION
 
 @interface ORKHealthClinicalTypeRecorder () {
     ORKDataLogger *_logger;
@@ -206,7 +205,7 @@
     self = [super initWithCoder:aDecoder];
     if (self) {
         ORK_DECODE_OBJ_CLASS(aDecoder, healthClinicalType, HKClinicalType);
-        ORK_DECODE_OBJ_CLASS(aDecoder, healthFHIRResourceType, NSString);
+        ORK_DECODE_OBJ(aDecoder, healthFHIRResourceType);
     }
     return self;
 }
@@ -234,5 +233,4 @@
 }
 
 @end
-#endif
 #endif

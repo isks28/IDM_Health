@@ -31,6 +31,7 @@
 
 #import "ORKResult.h"
 #import "ORKResult_Private.h"
+
 #import "ORKHelpers_Internal.h"
 
 
@@ -69,7 +70,7 @@ const NSUInteger NumberOfPaddingSpacesForIndentationLevel = 4;
         ORK_DECODE_OBJ_CLASS(aDecoder, identifier, NSString);
         ORK_DECODE_OBJ_CLASS(aDecoder, startDate, NSDate);
         ORK_DECODE_OBJ_CLASS(aDecoder, endDate, NSDate);
-        ORK_DECODE_OBJ_PLIST(aDecoder, userInfo);
+        ORK_DECODE_OBJ_CLASS(aDecoder, userInfo, NSDictionary);
     }
     return self;
 }
@@ -97,6 +98,15 @@ const NSUInteger NumberOfPaddingSpacesForIndentationLevel = 4;
     result.userInfo = [self.userInfo copy];
     result.identifier = [self.identifier copy];
     return result;
+}
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        self.startDate = [NSDate date];
+        self.endDate = [NSDate date];
+    }
+    return self;
 }
 
 - (NSString *)descriptionPrefixWithNumberOfPaddingSpaces:(NSUInteger)numberOfPaddingSpaces {

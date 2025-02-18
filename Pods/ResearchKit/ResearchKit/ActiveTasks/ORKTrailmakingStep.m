@@ -79,7 +79,7 @@
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        ORK_DECODE_OBJ_CLASS(aDecoder, trailType, NSString);
+        ORK_DECODE_OBJ(aDecoder, trailType);
     }
     return self;
 }

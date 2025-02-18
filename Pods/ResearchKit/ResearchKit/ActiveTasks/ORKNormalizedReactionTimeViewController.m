@@ -254,8 +254,7 @@ static const NSTimeInterval OutcomeAnimationDuration = 0.3;
 - (NSTimeInterval)stimulusInterval {
     ORKNormalizedReactionTimeStep *step = [self reactionTimeStep];
     NSNumber* interval = [self getRandomInterval];
-    step.currentInterval = interval.doubleValue;
-
+    step.currentInterval = interval;
     return [interval doubleValue];
 }
     

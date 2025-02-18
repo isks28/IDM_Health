@@ -36,14 +36,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class ORKHealthKitPermissionType;
 @class ORKNotificationPermissionType;
-@class ORKSensorPermissionType;
 @class ORKMotionActivityPermissionType;
-@class ORKLocationPermissionType;
 @class ORKRequestPermissionView;
 @class HKSampleType, HKObjectType;
 
 typedef NS_OPTIONS(NSUInteger, UNAuthorizationOptions);
-typedef NSString * SRSensor NS_TYPED_ENUM API_AVAILABLE(ios(14.0));
 
 ORK_CLASS_AVAILABLE
 @interface ORKPermissionType : NSObject
@@ -53,13 +50,9 @@ ORK_CLASS_AVAILABLE
 + (ORKHealthKitPermissionType *)healthKitPermissionTypeWithSampleTypesToWrite:(nullable NSSet<HKSampleType *> *)sampleTypesToWrite
                                                             objectTypesToRead:(nullable NSSet<HKObjectType *> *)objectTypesToRead;
 
-+ (ORKNotificationPermissionType *) notificationPermissionType:(UNAuthorizationOptions)options;
++ (ORKNotificationPermissionType *)notificationPermissionType:(UNAuthorizationOptions)options;
 
-+ (ORKSensorPermissionType *) sensorPermissionType:(NSSet<SRSensor>*)sensors API_AVAILABLE(ios(14.0));
-
-+ (ORKMotionActivityPermissionType *) deviceMotionPermissionType;
-
-+ (ORKLocationPermissionType *) locationPermissionType;
++ (ORKMotionActivityPermissionType *)deviceMotionPermissionType;
 
 @end
 

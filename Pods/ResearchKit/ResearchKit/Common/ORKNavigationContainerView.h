@@ -30,7 +30,6 @@
 
 
 @import UIKit;
-#import <ResearchKit/ORKBorderedButton.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,7 +41,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL continueEnabled;
 @property (nonatomic, assign) BOOL neverHasContinueButton;
-@property (nonatomic, assign) ORKBorderedButtonDisabledStyle continueButtonDisabledStyle;
 
 @property (nonatomic, assign) BOOL skipEnabled;
 
@@ -50,8 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) CGFloat bottomMargin;
 
 @property (nonatomic, assign) BOOL useExtendedPadding;
-
-@property (nonatomic, strong) NSString *navigationDetailText;
 
 - (BOOL)hasContinueOrSkip;
 - (BOOL)wasContinueOrSkipButtonJustPressed;

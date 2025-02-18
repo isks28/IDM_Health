@@ -74,10 +74,7 @@ typedef NS_ENUM(NSInteger, ORKTaskViewControllerFinishReason) {
     ORKTaskViewControllerFinishReasonCompleted,
     
     /// An error was detected during the current step.
-    ORKTaskViewControllerFinishReasonFailed,
-    
-    /// Interntional early termination of a task
-    ORKTaskViewControllerFinishReasonEarlyTermination
+    ORKTaskViewControllerFinishReasonFailed
 };
 
 /**
@@ -329,7 +326,7 @@ task view controller and pass that data to `initWithTask:restorationData:` when 
  objects in the result hierarchy.
  */
 ORK_CLASS_AVAILABLE
-@interface ORKTaskViewController : UIViewController <ORKStepViewControllerDelegate, UIViewControllerRestoration, UIAdaptivePresentationControllerDelegate>
+@interface ORKTaskViewController : UIViewController <ORKStepViewControllerDelegate, UIViewControllerRestoration>
 
 /**
  Returns a newly initialized task view controller.
@@ -389,6 +386,8 @@ ORK_CLASS_AVAILABLE
  
  Call this method to start a task from a specific step. Additionally, you can supply a defaultResultSource to resume a
  partially completed task, or to provide your own prefilled results.
+
+ if `startingStepIdentifier` is nil, the task starts from the first step.
  
  @param task                    The task to be presented.
  @param ongoingResult           An optional task result from a previous run of the task. If you provide an ongoingResult, the task will start at the step corresponding to the last result.
@@ -400,7 +399,7 @@ ORK_CLASS_AVAILABLE
 - (instancetype)initWithTask:(id<ORKTask>)task
                ongoingResult:(nullable ORKTaskResult *)ongoingResult
          defaultResultSource:(nullable id<ORKTaskResultSource>)defaultResultSource
-                    delegate:(id<ORKTaskViewControllerDelegate>)delegate NS_DESIGNATED_INITIALIZER;
+                    delegate:(id<ORKTaskViewControllerDelegate>)delegate;
 
 /**
  The delegate for the task view controller.
@@ -513,6 +512,7 @@ ORK_CLASS_AVAILABLE
  */
 @property (nonatomic, strong, readonly, nullable) ORKStepViewController *currentStepViewController;
 
+- (void)flipToFirstPage;
 
 /**
  Forces navigation to the next step.
@@ -530,6 +530,14 @@ ORK_CLASS_AVAILABLE
  if the user takes an action that requires backward navigation.
  */
 - (void)goBackward;
+
+/**
+ Returns the step after the  provided step
+ 
+ @param step         The `ORKStep` before the one returned.
+ @return        The `ORKStep` after `step`.
+ */
+- (nullable ORKStep *)stepAfterStep:(ORKStep *)step;
 
 /**
  Returns true if the step provided is instruction step and is the  first step in the task.
@@ -551,8 +559,6 @@ ORK_CLASS_AVAILABLE
  */
 - (void)setNavigationBarHidden:(BOOL)hidden animated:(BOOL)animated;
 
-- (void)setNavigationBarColor:(UIColor *)color;
-
 /**
  Returns a learn more view controller for the given step.
  @param step The step needing a learn more view controller
@@ -564,9 +570,7 @@ ORK_CLASS_AVAILABLE
  
  You can use this method to customize the appearance of the task view controller's navigation bar.
  */
-#if TARGET_OS_IOS
 @property (nonatomic, readonly) UINavigationBar *navigationBar;
-#endif
 
 /**
  A Boolean value indicating whether the task view controller can be dismissed directly, without showing the "End Task" action sheet, when

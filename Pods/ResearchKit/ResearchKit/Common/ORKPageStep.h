@@ -31,7 +31,6 @@
 #import <ResearchKit/ORKStep.h>
 #import <ResearchKit/ORKOrderedTask.h>
 
-
 NS_ASSUME_NONNULL_BEGIN
 
 /**

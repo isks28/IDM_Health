@@ -1,4 +1,4 @@
-/*
+ /*
  Copyright (c) 2019, Apple Inc. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification,
@@ -69,7 +69,6 @@
         [_containerView setPinNavigationContainer:self.customStep.pinNavigationContainer];
         [_containerView setCustomContentView:[self customStep].contentView withTopPadding:0.0 sidePadding:0.0];
         [_containerView setUseExtendedPadding:self.step.useExtendedPadding];
-        _containerView.navigationFooterView.hidden = self.customStep.hideNavigationContainer;
         [self.view addSubview:_containerView];
         [self setupConstraints];
     }
@@ -127,26 +126,9 @@
 }
 
 - (void)configureContainerView {
-    
-    if (self.customStep.title){
-        [_containerView setStepTitle:self.customStep.title];
-    }
-    
-    if (self.customStep.text) {
-        [_containerView setStepText:self.customStep.text];
-    }
-    
-    if (self.customStep.detailText) {
-        [_containerView setStepDetailText:self.customStep.detailText];
-    }
-    
-    if (self.customStep.headerTextAlignment) {
-        [_containerView setStepHeaderTextAlignment:self.customStep.headerTextAlignment];
-    }
-    
-    if (self.step.iconImage){
-        [_containerView setTitleIconImage:self.step.iconImage];
-    }
+    [_containerView setStepTitle:self.customStep.title];
+    [_containerView setStepText:self.customStep.text];
+    [_containerView setStepDetailText:self.customStep.detailText];
 }
 
 - (void)setStepHeaderTextAlignment:(NSTextAlignment)stepHeaderTextAlignment {
@@ -211,7 +193,11 @@
 }
 
 - (void)resetScrollViewInset {
-    [_containerView resetScrollViewInset];
+    if (_containerView.pinNavigationContainer) {
+        [_containerView setScrollViewInset:UIEdgeInsetsMake(0.0, 0.0, -(_containerView.navigationFooterView.frame.size.height + ORKContentBottomPadding), 0.0)];
+    } else {
+        [_containerView setScrollViewInset:UIEdgeInsetsZero];
+    }
 }
 
 - (void)showActivityIndicatorInContinueButton:(BOOL)showActivityIndicator {

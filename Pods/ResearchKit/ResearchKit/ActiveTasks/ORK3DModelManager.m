@@ -42,7 +42,7 @@ NSNotificationName const ORK3DModelEndStepNotification = @"ORK3DModelEndStepNoti
     self = [super init];
     
     if (self) {
-        _allowsSelection = NO;
+        _allowsSelection = YES;
         _highlightColor = [UIColor yellowColor];
         _identifiersOfObjectsToHighlight = nil;
     }
@@ -117,7 +117,7 @@ NSNotificationName const ORK3DModelEndStepNotification = @"ORK3DModelEndStepNoti
     [NSException raise:@"stepWillEnd not overwitten" format:@"Subclasses must overwrite the stepWillEnd function"];
 }
 
-- (NSArray<ORKResult *> *)provideResultsWithIdentifier:(NSString *)identifier {
+- (NSArray<ORKResult *> *)provideResults {
     [NSException raise:@"provideResults not overwitten" format:@"Subclasses must overwrite the provideResults function"];
        return nil;
 }

@@ -138,7 +138,7 @@ NSString *const ORKLoginFormItemIdentifierPassword = @"ORKLoginFormItemPassword"
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        ORK_DECODE_OBJ_CLASS(aDecoder, loginViewControllerString, NSString);
+        ORK_DECODE_OBJ(aDecoder, loginViewControllerString);
     }
     return self;
 }

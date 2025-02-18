@@ -63,7 +63,6 @@
         _singleChoice = answerFormat.style == ORKChoiceAnswerStyleSingleChoice;
         _immediateNavigation = immediateNavigation;
         _cells = [NSMutableDictionary new];
-        _presentationStyle = ORKQuestionStepPresentationStyleDefault;
         [self setAnswer:answer];
     }
     return self;
@@ -97,17 +96,11 @@
             ORKTextChoiceOther *textChoiceOther = (ORKTextChoiceOther *)textChoice;
             choiceOtherViewCell.textView.placeholder = textChoiceOther.textViewPlaceholderText;
             choiceOtherViewCell.textView.text = textChoiceOther.textViewText;
-            [self updateTextViewForChoiceOtherCell:choiceOtherViewCell withTextChoiceOther:textChoiceOther];
+            [choiceOtherViewCell hideTextView:textChoiceOther.textViewStartsHidden];
             cell = choiceOtherViewCell;
         } else {
-            
-            if ([self.presentationStyle isEqualToString:ORKQuestionStepPresentationStyleDefault]) {
-                cell = [[ORKChoiceViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
-            } else if ([self.presentationStyle isEqualToString:ORKQuestionStepPresentationStylePlatter]) {
-                cell = [[ORKChoiceViewPlatterCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
-            }
+            cell = [[ORKChoiceViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
         }
-        cell.isExclusive = textChoice.exclusive;
         cell.immediateNavigation = _immediateNavigation;
         [cell setPrimaryText:textChoice.text];
         [cell setDetailText:textChoice.detailText];
@@ -126,16 +119,10 @@
 }
 
 - (void)updateTextViewForChoiceOtherCell:(ORKChoiceOtherViewCell *)choiceCell withTextChoiceOther:(ORKTextChoiceOther *)choiceOther {
-    BOOL shouldHideTextView = NO;
-
-    if(choiceOther.textViewStartsHidden) {
-       if(choiceCell.textView.text.length <= 0) {
-           shouldHideTextView = (choiceCell.isCellSelected == NO);
-       }
+    if (choiceOther.textViewStartsHidden && choiceCell.textView.text.length <= 0) {
+        [choiceCell hideTextView:!choiceCell.textViewHidden];
+        [self.delegate tableViewCellHeightUpdated];
     }
-    
-    [choiceCell hideTextView:shouldHideTextView];
-    [self.delegate tableViewCellHeightUpdated];
 }
 
 - (void)textViewDidResignResponderForCellAtIndexPath:(NSIndexPath *)indexPath {
@@ -170,9 +157,6 @@
     if ([textChoice isKindOfClass:[ORKTextChoiceOther class]] && [touchedCell isKindOfClass:[ORKChoiceOtherViewCell class]]) {
         ORKTextChoiceOther *otherTextChoice = (ORKTextChoiceOther *)textChoice;
         ORKChoiceOtherViewCell *touchedOtherCell = (ORKChoiceOtherViewCell *)touchedCell;
-        if (otherTextChoice.textViewInputOptional || touchedOtherCell.textView.text.length > 0) {
-            [touchedOtherCell setCellSelected:YES highlight:NO];
-        }
         [self updateTextViewForChoiceOtherCell:touchedOtherCell withTextChoiceOther:otherTextChoice];
         if (!otherTextChoice.textViewInputOptional && otherTextChoice.textViewText.length <= 0) {
             return;
@@ -181,17 +165,9 @@
     
     if (_singleChoice) {
         [touchedCell setCellSelected:YES highlight:YES];
-        for (NSNumber *key in _cells) {
-            ORKChoiceViewCell *cell = _cells[key];
+        for (ORKChoiceViewCell *cell in _cells.allValues) {
             if (cell != touchedCell) {
-                ORKChoiceOtherViewCell *otherViewCell = ORKDynamicCast(cell, ORKChoiceOtherViewCell);
-                ORKTextChoice *cellTextChoice = [_helper textChoiceAtIndex:key.intValue];
-                ORKTextChoiceOther *textChoiceOther = ORKDynamicCast(cellTextChoice, ORKTextChoiceOther);
                 [cell setCellSelected:NO highlight:NO];
-
-                if (otherViewCell != nil && textChoiceOther != nil) {
-                    [self updateTextViewForChoiceOtherCell:otherViewCell withTextChoiceOther:textChoiceOther];
-                }
             }
         }
     } else {

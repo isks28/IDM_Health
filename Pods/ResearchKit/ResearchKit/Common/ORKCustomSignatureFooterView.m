@@ -226,10 +226,6 @@ static const CGFloat ORKSignatureToClearPadding = 15.0;
     [self setNeedsLayout];
 }
 
-- (void)setEnabled:(BOOL)enabled {
-    [_signatureView setEnabled:enabled];
-}
-
 - (void)setSignatureViewDelegate:(id<ORKSignatureViewDelegate>)signatureViewDelegate {
     _signatureViewDelegate = signatureViewDelegate;
     _signatureView.delegate = signatureViewDelegate;
@@ -260,15 +256,12 @@ static const CGFloat ORKSignatureToClearPadding = 15.0;
     }
 }
 
-- (ORKSignatureResult * _Nullable)resultWithIdentifier:(NSString *)identifier {
+- (ORKSignatureResult * _Nullable)result {
     if (![self isComplete]) {
         return nil;
     }
     
-    ORKSignatureResult *parentResult = [[ORKSignatureResult alloc] initWithIdentifier:identifier
-                                                                       signatureImage:_signatureView.signatureImage
-                                                                        signaturePath:_signatureView.signaturePath];
-    
+    ORKSignatureResult *parentResult = [[ORKSignatureResult alloc] initWithSignatureImage:_signatureView.signatureImage signaturePath:_signatureView.signaturePath];
     if (_customHeaderView || _customFooterView) {
         NSMutableDictionary *userInfo = [parentResult.userInfo mutableCopy];
         if (!userInfo) {
@@ -289,10 +282,6 @@ static const CGFloat ORKSignatureToClearPadding = 15.0;
 
 - (void)cancelAutoScrollTimer {
     [_signatureView cancelAutoScrollTimer];
-}
-
-- (CGRect)signatureViewFrame {
-    return _signatureView.frame;
 }
 
 // MARK: ORKCustomSignatureAccessoryViewDelegate

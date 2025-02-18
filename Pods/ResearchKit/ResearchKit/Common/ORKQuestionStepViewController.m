@@ -56,7 +56,6 @@
 #import "ORKCollectionResult_Private.h"
 #import "ORKQuestionResult_Private.h"
 #import "ORKQuestionStep_Internal.h"
-#import "ORKQuestionStep_Private.h"
 #import "ORKResult_Private.h"
 #import "ORKStep_Private.h"
 #import "ORKStepContentView.h"
@@ -65,17 +64,12 @@
 #import "ORKSkin.h"
 
 
-#import <SwiftUI/SwiftUI.h>
-#import <ResearchKit/ResearchKit-Swift.h>
-
-
 typedef NS_ENUM(NSInteger, ORKQuestionSection) {
     ORKQuestionSectionAnswer = 0,
     ORKQuestionSection_COUNT
 };
 
-static const CGFloat TableViewYOffsetStandard = 30.0;
-static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
+static const CGFloat DelayBeforeAutoScroll = 0.25;
 
 @interface ORKQuestionStepViewController () <UITableViewDataSource, UITableViewDelegate, ORKSurveyAnswerCellDelegate, ORKTextChoiceCellGroupDelegate, ORKChoiceOtherViewCellDelegate, ORKTableContainerViewDelegate, ORKLearnMoreViewDelegate> {
     id _answer;
@@ -88,10 +82,10 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
     NSTimeZone *_savedSystemTimeZone;
     
     ORKTextChoiceCellGroup *_choiceCellGroup;
-    ORKQuestionStepSwiftUIViewHolder *_swiftUIViewHolder;
     ORKQuestionStepCellHolderView *_cellHolderView;
     
     id _defaultAnswer;
+    
     BOOL _visible;
     UITableViewCell *_currentFirstResponderCell;
 }
@@ -100,7 +94,7 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
 @property (nonatomic, strong) ORKQuestionStepView *questionView;
 
 @property (nonatomic, strong) ORKAnswerFormat *answerFormat;
-@property (nonatomic, copy) NSObject<NSCopying, NSSecureCoding> *answer;
+@property (nonatomic, copy) id<NSCopying, NSObject, NSCoding> answer;
 
 @property (nonatomic, strong) ORKContinueButton *continueActionButton;
 
@@ -112,7 +106,7 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
 // If `hasChangedAnswer`, then a new `defaultAnswer` should not change the answer
 @property (nonatomic, assign) BOOL hasChangedAnswer;
 
-@property (nonatomic, copy) NSObject<NSCopying, NSSecureCoding> *originalAnswer;
+@property (nonatomic, copy) id<NSCopying, NSObject, NSCoding> originalAnswer;
 
 @end
 
@@ -146,9 +140,7 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
 - (instancetype)initWithStep:(ORKStep *)step {
     self = [super initWithStep:step];
     if (self) {
-#if ORK_FEATURE_HEALTHKIT_AUTHORIZATION
         _defaultSource = [ORKAnswerDefaultSource sourceWithHealthStore:[HKHealthStore new]];
-#endif
     }
     return self;
 }
@@ -158,7 +150,7 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
     _answerFormat = [self.questionStep impliedAnswerFormat];
     
     self.hasChangedAnswer = NO;
-
+    
     if ([self isViewLoaded]) {
         BOOL neediPadDesign = ORKNeedWideScreenDesign(self.view);
         [_tableContainer removeFromSuperview];
@@ -194,8 +186,7 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
                 } else {
                     [_tableView setBackgroundColor:ORKColor(ORKBackgroundColorKey)];
                 }
-
-                [self.taskViewController setNavigationBarColor:[_tableView backgroundColor]];
+                [self.taskViewController.navigationBar setBarTintColor:[_tableView backgroundColor]];
                 [self.view setBackgroundColor:[_tableView backgroundColor]];
             }
             
@@ -203,6 +194,7 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
             _headerView.titleIconImage = self.step.iconImage;
             _headerView.stepTitle = self.step.title;
             _headerView.stepText = self.step.text;
+            // TODO:- we are currently not setting detailText to _headerView because we are restricting detailText to be displayed only inside ORKSurveyCardHeaderView, might wanna rethink this later. Please use the text property on ORKQuestionStep for adding extra information.
             _headerView.stepHeaderTextAlignment = self.step.headerTextAlignment;
             _headerView.bodyItems = self.step.bodyItems;
             _tableContainer.stepTopContentImageContentMode = self.step.imageContentMode;
@@ -249,58 +241,6 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
                 _customQuestionView.delegate = self;
                 _customQuestionView.answer = [self answer];
                 _customQuestionView.userInteractionEnabled = !self.readOnlyMode;
-            } else if ([self.questionStep formatRequiresSwiftUI]) {
-                _swiftUIViewHolder = [ORKQuestionStepSwiftUIViewHolder new];
-                _swiftUIViewHolder.delegate = self;
-                
-                // unpin navigationFooter if the answerFormat is of type ORKTextChoiceAnswerFormat
-                if ([_answerFormat isKindOfClass:ORKTextChoiceAnswerFormat.class]) {
-                    [_questionView setPinNavigationContainer:NO];
-                }
-                
-                SwiftUIViewFactory *swiftUIViewFactory = [[SwiftUIViewFactory alloc] init];
-                [swiftUIViewFactory setAnswerDidUpdateClosure:^(id answer) {
-                    [self saveAnswer:answer];
-                }];
-                
-                _swiftUIViewHolder.swiftUIView = [swiftUIViewFactory makeSwiftUIViewWithAnswerFormat:self.answerFormat answer:[self answer]];
-                
-                _swiftUIViewHolder.answer = [self answer];
-                _swiftUIViewHolder.userInteractionEnabled = !self.readOnlyMode;
-                if (self.questionStep.useCardView) {
-                    if (@available(iOS 13.0, *)) {
-                        [_questionView setBackgroundColor:UIColor.systemGroupedBackgroundColor];
-                    } else {
-                        [_questionView setBackgroundColor:ORKColor(ORKBackgroundColorKey)];
-                    }
-                    [self.taskViewController setNavigationBarColor:[_questionView backgroundColor]];
-                    [self.view setBackgroundColor:[_questionView backgroundColor]];
-                    ORKLearnMoreView *learnMoreView;
-                    NSString *sectionProgressText = nil;
-                    
-                    if (self.step.showsProgress) {
-                        if ([self.delegate respondsToSelector:@selector(stepViewControllerTotalProgressInfoForStep:currentStep:)]) {
-                            ORKTaskTotalProgress progressInfo = [self.delegate stepViewControllerTotalProgressInfoForStep:self currentStep:self.step];
-                            if (progressInfo.stepShouldShowTotalProgress) {
-                                sectionProgressText = [NSString localizedStringWithFormat:ORKLocalizedString(@"FORM_ITEM_PROGRESS", nil) ,ORKLocalizedStringFromNumber(@(progressInfo.currentStepStartingProgressPosition)), ORKLocalizedStringFromNumber(@(progressInfo.total))];
-                            }
-                        }
-                    }
-                    
-                    if (self.questionStep.learnMoreItem) {
-                        learnMoreView = [ORKLearnMoreView learnMoreViewWithItem:self.questionStep.learnMoreItem];
-                        learnMoreView.delegate = self;
-                    }
-                    
-                    BOOL hasMultipleChoiceFormItem = NO;
-                    if (self.questionStep.impliedAnswerFormat != nil && self.questionStep.impliedAnswerFormat.questionType == ORKQuestionTypeMultipleChoice) {
-                        hasMultipleChoiceFormItem = YES;
-                    }
-                    
-                    [_swiftUIViewHolder useCardViewWithTitle:self.questionStep.question detailText:self.step.detailText learnMoreView:learnMoreView progressText:sectionProgressText tagText:self.questionStep.tagText hasMultipleChoiceFormItem:hasMultipleChoiceFormItem];
-                }
-                
-                _questionView.customContentView = _swiftUIViewHolder;
             } else {
                 _cellHolderView = [ORKQuestionStepCellHolderView new];
                 _cellHolderView.delegate = self;
@@ -315,8 +255,7 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
                     } else {
                         [_questionView setBackgroundColor:ORKColor(ORKBackgroundColorKey)];
                     }
-
-                    [self.taskViewController setNavigationBarColor:[_questionView backgroundColor]];
+                    [self.taskViewController.navigationBar setBarTintColor:[_questionView backgroundColor]];
                     [self.view setBackgroundColor:[_questionView backgroundColor]];
                     ORKLearnMoreView *learnMoreView;
                     NSString *sectionProgressText = nil;
@@ -425,6 +364,7 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
     [self stepDidChange];
     
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
@@ -446,18 +386,10 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
     if (_tableView) {
         [self.taskViewController setRegisteredScrollView:_tableView];
     }
-
-    [self requestAndRefreshDefaults];
-    if (_tableView) {
-        [_tableView reloadData];
-    }
-}
-
-- (void)requestAndRefreshDefaults {
-#if ORK_FEATURE_HEALTHKIT_AUTHORIZATION
+    
+    
     NSMutableSet *types = [NSMutableSet set];
     ORKAnswerFormat *format = [[self questionStep] answerFormat];
-    
     HKObjectType *objType = [format healthKitObjectTypeForAuthorization];
     if (objType) {
         [types addObject:objType];
@@ -480,7 +412,13 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
     if (!scheduledRefresh) {
         [self refreshDefaults];
     }
-#endif
+    
+    if (_tableContainer) {
+        [_tableContainer sizeHeaderToFit];
+        [_tableContainer resizeFooterToFit];
+        [_tableContainer layoutIfNeeded];
+    }
+    
     if (_tableView) {
         [_tableView reloadData];
     }
@@ -522,13 +460,10 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
 - (void)defaultAnswerDidChange {
     id defaultAnswer = _defaultAnswer;
     if (![self hasAnswer] && defaultAnswer && !self.hasChangedAnswer) {
-        [self updateAnswer:defaultAnswer];
+        _answer = defaultAnswer;
+        
+        [self answerDidChange];
     }
-}
-
-- (void)updateAnswer:(id)answer {
-    _answer = answer;
-    [self answerDidChange];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -573,10 +508,6 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
     }
     _navigationFooterView.continueEnabled = [self continueButtonEnabled];
     _navigationFooterView.skipEnabled = [self skipButtonEnabled];
-    
-    if (self.shouldPresentInReview && self.navigationItem.rightBarButtonItem) {
-        self.navigationItem.rightBarButtonItem.enabled = [self continueButtonEnabled];
-    }
 }
 
 // Override to monitor button title change
@@ -594,11 +525,8 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
     [self updateButtonStates];
 }
 
-- (ORKStepResult *)result
-{
+- (ORKStepResult *)result {
     ORKStepResult *parentResult = [super result];
-
-
     ORKQuestionStep *questionStep = self.questionStep;
     
     if (self.answer) {
@@ -616,7 +544,6 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
             ORKNumericQuestionResult *nqr = (ORKNumericQuestionResult *)result;
             if (nqr.unit == nil) {
                 nqr.unit = [(ORKNumericAnswerFormat *)impliedAnswerFormat unit];
-                nqr.displayUnit = [(ORKNumericAnswerFormat *)impliedAnswerFormat displayUnit];
             }
         }
         
@@ -677,7 +604,7 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
     [self.tableView reloadData];
 }
 
-- (NSObject<NSCopying, NSSecureCoding> *)answer {
+- (id<NSCopying, NSCoding, NSObject>)answer {
     if (self.questionStep.questionType == ORKQuestionTypeMultipleChoice && (_answer == nil || _answer == ORKNullAnswerValue())) {
         _answer = [NSMutableArray array];
     }
@@ -689,7 +616,7 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
 }
 
 - (BOOL)continueButtonEnabled {
-    BOOL enabled = (([self hasAnswer] && [self.answerFormat isAnswerValid:self.answer]) || (self.questionStep.optional && !self.skipButtonItem));
+    BOOL enabled = ([self hasAnswer] || (self.questionStep.optional && !self.skipButtonItem));
     if (self.isBeingReviewed) {
         enabled = enabled && (![self.answer isEqual:self.originalAnswer]);
     }
@@ -711,35 +638,26 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
 // Not to use `ImmediateNavigation` when current step already has an answer.
 // So user is able to review the answer when it is present.
 - (BOOL)isStepImmediateNavigation {
+    // FIXME: - add explicit property in QuestionStep to dictate this behavior
+//    return [self.questionStep isFormatImmediateNavigation] && [self hasAnswer] == NO && !self.isBeingReviewed;
     return NO;
 }
 
 #pragma mark NSNotification methods
 
 - (void)keyboardWillShow:(NSNotification *)notification {
+    
     CGRect keyboardFrame = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
     CGRect convertedKeyboardFrame = [self.view convertRect:keyboardFrame fromView:nil];
     
-    if (_currentFirstResponderCell && CGRectGetMaxY(_currentFirstResponderCell.frame) >= CGRectGetMinY(convertedKeyboardFrame)) {
+    if (CGRectGetMaxY(_currentFirstResponderCell.frame) >= CGRectGetMinY(convertedKeyboardFrame)) {
         
-        if ([_currentFirstResponderCell isKindOfClass:[ORKChoiceOtherViewCell class]]) {
-            
-            if (CGRectGetMaxY(_currentFirstResponderCell.frame) >= CGRectGetMinY(convertedKeyboardFrame)) {
-                
-                [self.tableView setContentInset:UIEdgeInsetsMake(0, 0, CGRectGetHeight(convertedKeyboardFrame), 0)];
-                
-                NSIndexPath *currentFirstResponderCellIndex = [self.tableView indexPathForCell:_currentFirstResponderCell];
-                
-                if (currentFirstResponderCellIndex) {
-                    [self.tableView scrollToRowAtIndexPath:currentFirstResponderCellIndex atScrollPosition:UITableViewScrollPositionBottom animated:YES];
-                }
-            }
-        } else {
-            CGSize keyboardSize = keyboardFrame.size;
-            
-            if ((_currentFirstResponderCell.frame.origin.y + CGRectGetHeight(_currentFirstResponderCell.frame)) >= (CGRectGetHeight(self.view.frame) - keyboardSize.height)) {
-                _tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardSize.height + TableViewYOffsetStandard, 0);
-            }
+        [self.tableView setContentInset:UIEdgeInsetsMake(0, 0, CGRectGetHeight(convertedKeyboardFrame) - CGRectGetHeight(_currentFirstResponderCell.frame), 0)];
+        
+        NSIndexPath *currentFirstResponderCellIndex = [self.tableView indexPathForCell:_currentFirstResponderCell];
+        
+        if (currentFirstResponderCellIndex) {
+            [self.tableView scrollToRowAtIndexPath:currentFirstResponderCellIndex atScrollPosition:UITableViewScrollPositionBottom animated:YES];
         }
     }
 }
@@ -796,14 +714,11 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
     
     if (section == ORKQuestionSectionAnswer) {
         if (!_choiceCellGroup) {
-            ORKTextChoiceCellGroup *extractedExpr = [ORKTextChoiceCellGroup alloc];
-            _choiceCellGroup = [extractedExpr initWithTextChoiceAnswerFormat:(ORKTextChoiceAnswerFormat *)impliedAnswerFormat
-                                                                      answer:self.answer
-                                                          beginningIndexPath:[NSIndexPath indexPathForRow:0 inSection:section]
-                                                         immediateNavigation:[self isStepImmediateNavigation]];
+            _choiceCellGroup = [[ORKTextChoiceCellGroup alloc] initWithTextChoiceAnswerFormat:(ORKTextChoiceAnswerFormat *)impliedAnswerFormat
+                                                                                       answer:self.answer
+                                                                           beginningIndexPath:[NSIndexPath indexPathForRow:0 inSection:section]
+                                                                          immediateNavigation:[self isStepImmediateNavigation]];
             _choiceCellGroup.delegate = self;
-            
-            _choiceCellGroup.presentationStyle = [[self questionStep] presentationStyle];
         }
         return _choiceCellGroup.size;
     }
@@ -894,8 +809,9 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
         cell = otherCell;
     }
 
-    cell.userInteractionEnabled = !self.readOnlyMode;
     cell.useCardView = self.questionStep.useCardView;
+    cell.userInteractionEnabled = !self.readOnlyMode;
+    
     cell.isLastItem = indexPath.row == _choiceCellGroup.size - 1;
     cell.isFirstItemInSectionWithoutTitle = (indexPath.row == 0 && ![self questionStep].question);
     return cell;
@@ -1014,10 +930,6 @@ static const NSTimeInterval DelayBeforeAutoScroll = 0.25;
 
 #pragma mark - ORKSurveyAnswerCellDelegate
 
-- (void)testAnswerDidChangeTo:(id)answer {
-    [self answerCell:[ORKSurveyAnswerCell new] answerDidChangeTo:answer dueUserAction:YES];
-}
-
 - (void)answerCell:(ORKSurveyAnswerCell *)cell answerDidChangeTo:(id)answer dueUserAction:(BOOL)dueUserAction {
     [self saveAnswer:answer];
     
@@ -1103,6 +1015,15 @@ static NSString *const _ORKOriginalAnswerRestoreKey = @"originalAnswer";
     NSIndexPath *indexPath = [_tableView indexPathForCell:choiceOtherViewCell];
     [_choiceCellGroup textViewDidResignResponderForCellAtIndexPath:indexPath];
 }
+
+//FIXME: Need Accessibility for Continue and skip button. Lost support when moved navigationFooterViewView outside VerticalContainerView.
+
+//    if (_navigationFooterView.continueButton != nil) {
+//        [elements addObject:self.continueSkipContainer.continueButton];
+//    }
+//    if (_navigationFooterView.skipButton != nil) {
+//        [elements addObject:self.continueSkipContainer.skipButton];
+//    }
 
 #pragma mark - ORKLearnViewDelegate
 

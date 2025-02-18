@@ -194,12 +194,13 @@
     }
 }
 
-- (NSArray<ORKResult *> *)provideResultsWithIdentifier:(NSString *)identifier {
+- (NSArray<ORKResult *> *)provideResults {
     SCNNode *currentSelectedNode = [_usdzModelManagerScene currentSelectedNode];
     
-    ORKUSDZModelManagerResult *result = [[ORKUSDZModelManagerResult alloc] initWithIdentifier:identifier];
+    ORKUSDZModelManagerResult *result = [ORKUSDZModelManagerResult new];
     result.identifierOfObjectSelectedAtClose = currentSelectedNode.name;
     result.identifiersOfSelectedObjects = [_usdzModelManagerScene selectedNodeIdentifierHistory];
+    
     return @[result];
 }
 

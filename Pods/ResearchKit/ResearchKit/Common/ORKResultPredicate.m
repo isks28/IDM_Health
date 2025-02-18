@@ -302,14 +302,14 @@ NSString *const ORKResultPredicateTaskIdentifierVariableName = @"ORK_TASK_IDENTI
 }
 
 + (NSPredicate *)predicateForChoiceQuestionResultWithResultSelector:(ORKResultSelector *)resultSelector
-                                                expectedAnswerValue:(NSObject<NSCopying, NSSecureCoding> *)expectedAnswerValue {
+                                                expectedAnswerValue:(id<NSCopying, NSCoding, NSObject>)expectedAnswerValue {
     return [self predicateForChoiceQuestionResultWithResultSelector:resultSelector
                                                     expectedAnswers:@[ expectedAnswerValue ]
                                                         usePatterns:NO];
 }
 
 + (NSPredicate *)predicateForChoiceQuestionResultWithResultSelector:(ORKResultSelector *)resultSelector
-                                               expectedAnswerValues:(NSArray<NSObject<NSCopying, NSSecureCoding> *> *)expectedAnswerValues {
+                                               expectedAnswerValues:(NSArray<id<NSCopying, NSCoding, NSObject>> *)expectedAnswerValues {
     return [self predicateForChoiceQuestionResultWithResultSelector:resultSelector
                                                     expectedAnswers:expectedAnswerValues
                                                         usePatterns:NO];

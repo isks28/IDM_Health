@@ -32,21 +32,11 @@
 #import "ORKAudioGraphView.h"
 #import "ORKSkin.h"
 
+
 static const CGFloat ValueLineWidth = 4.5;
 static const CGFloat ValueLineMargin = 1.5;
 static const CGFloat GraphHeight = 150.0;
 
-@interface ORKAudioGraphView ()
-
-/// ORKAudioMetering
-@property (nonatomic, copy, nullable) NSArray<NSNumber *> *samples;
-@property (nonatomic, assign) float alertThreshold;
-
-/// ORKAudioMeteringView
-@property (nonatomic, strong) UIColor *meterColor;
-@property (nonatomic, strong, nullable) UIColor *alertColor;
-
-@end
 
 @implementation ORKAudioGraphView
 
@@ -56,7 +46,7 @@ static const CGFloat GraphHeight = 150.0;
         [self setUpConstraints];
         
 #if TARGET_IPHONE_SIMULATOR
-        _samples = @[ @(0.2), @(0.6), @(0.55), @(0.1), @(0.75), @(0.7) ];
+        _values = @[ @(0.2), @(0.6), @(0.55), @(0.1), @(0.75), @(0.7) ];
 #endif
     }
     return self;
@@ -73,6 +63,26 @@ static const CGFloat GraphHeight = 150.0;
     heightConstraint.priority = UILayoutPriorityFittingSizeLevel;
     
     [NSLayoutConstraint activateConstraints:@[heightConstraint]];
+}
+
+- (void)setValues:(NSArray *)values {
+    _values = [values copy];
+    [self setNeedsDisplay];
+}
+
+- (void)setKeyColor:(UIColor *)keyColor {
+    _keyColor = [keyColor copy];
+    [self setNeedsDisplay];
+}
+
+- (void)setAlertColor:(UIColor *)alertColor {
+    _alertColor = [alertColor copy];
+    [self setNeedsDisplay];
+}
+
+- (void)setAlertThreshold:(CGFloat)alertThreshold {
+    _alertThreshold = alertThreshold;
+    [self setNeedsDisplay];
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -94,7 +104,7 @@ static const CGFloat GraphHeight = 150.0;
         [centerLine addLineToPoint:(CGPoint){.x = maxX, .y = midY}];
         
         CGContextSetLineWidth(context, 1.0 / scale);
-        [_meterColor setStroke];
+        [_keyColor setStroke];
         CGFloat lengths[2] = {3, 3};
         CGContextSetLineDash(context, 0, lengths, 2);
         
@@ -115,7 +125,7 @@ static const CGFloat GraphHeight = 150.0;
         path1.lineWidth = ValueLineWidth;
         UIBezierPath *path2 = [path1 copy];
         
-        for (NSNumber *value in [_samples reverseObjectEnumerator]) {
+        for (NSNumber *value in [_values reverseObjectEnumerator]) {
             CGFloat floatValue = value.doubleValue;
             
             UIBezierPath *path = nil;
@@ -124,7 +134,7 @@ static const CGFloat GraphHeight = 150.0;
                 [_alertColor setStroke];
             } else {
                 path = path2;
-                [_meterColor setStroke];
+                [_keyColor setStroke];
             }
             [path moveToPoint:(CGPoint){.x = x, .y = midY - floatValue*halfHeight}];
             [path addLineToPoint:(CGPoint){.x = x, .y = midY + floatValue*halfHeight}];
@@ -140,41 +150,11 @@ static const CGFloat GraphHeight = 150.0;
         [_alertColor setStroke];
         [path1 stroke];
         
-        [_meterColor setStroke];
+        [_keyColor setStroke];
         [path2 stroke];
         
     }
     CGContextRestoreGState(context);
 }
 
-#pragma mark - ORKAudioMetering
-
-- (void)setSamples:(NSArray<NSNumber *> *)samples
-{
-    _samples = [samples copy];
-    [self setNeedsDisplay];
-}
-
-- (void)setAlertThreshold:(float)threshold
-{
-    _alertThreshold = threshold;
-    [self setNeedsDisplay];
-}
-
-#pragma mark = ORKAudioMeteringView
-
-- (void)setMeterColor:(UIColor *)meterColor
-{
-    _meterColor = [meterColor copy];
-    [self setNeedsDisplay];
-}
-
-- (void)setAlertColor:(UIColor *)alertColor
-{
-    _alertColor = [alertColor copy];
-    [self setNeedsDisplay];
-}
-
 @end
-
-

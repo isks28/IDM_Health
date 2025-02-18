@@ -59,8 +59,13 @@
     
     [super updatePaddingConstraints];
     if (_instructionStep.centerImageVertically) {
-        self.centeredVerticallyImage = _instructionStep.image;
-    } else {
+        UIImageView *centeredImageView = [UIImageView new];
+        centeredImageView.image = _instructionStep.image;
+        centeredImageView.contentMode = UIViewContentModeScaleAspectFit;
+        [self setCustomContentView:centeredImageView withTopPadding:80.0];
+        [self customContentFillsAvailableSpace];
+    }
+    else {
         self.stepTopContentImage = _instructionStep.image;
         self.stepTopContentImageContentMode = _instructionStep.imageContentMode;
     }

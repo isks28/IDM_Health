@@ -39,12 +39,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @required
 - (void)bodyContainerLearnMoreButtonPressed:(ORKLearnMoreInstructionStep *)learnMoreStep;
+
 @end
 
 @protocol ORKBodyItemContainerViewDelegate <NSObject>
 
 @optional
 - (void)bodyContainerViewDidLoadBodyItems;
+
 @end
 
 

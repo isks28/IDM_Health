@@ -150,7 +150,7 @@
     if (self) {
         ORK_DECODE_OBJ_ARRAY(aDecoder, formItems, ORKFormItem);
         ORK_DECODE_BOOL(aDecoder, useCardView);
-        ORK_DECODE_OBJ_CLASS(aDecoder, footerText, NSString);
+        ORK_DECODE_OBJ(aDecoder, footerText);
         ORK_DECODE_ENUM(aDecoder, cardViewStyle);
     }
     return self;
@@ -181,7 +181,6 @@
     }
 }
 
-#if ORK_FEATURE_HEALTHKIT_AUTHORIZATION
 - (NSSet<HKObjectType *> *)requestedHealthKitTypesForReading {
     NSMutableSet<HKObjectType *> *healthTypes = [NSMutableSet set];
     
@@ -195,7 +194,7 @@
     
     return healthTypes.count ? healthTypes : nil;
 }
-#endif 
+
 @end
 
 

@@ -75,7 +75,7 @@
         lastView = cardView;
     }
 
-    if (lastView != nil) {
+    if (lastView) {
         [[_contentView.bottomAnchor constraintEqualToAnchor:lastView.bottomAnchor constant:10.0] setActive:YES];
     }
 }

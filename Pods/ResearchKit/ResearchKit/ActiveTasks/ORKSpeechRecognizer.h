@@ -28,28 +28,22 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 @import AVFoundation;
 @import Speech;
 
-@class ORKSpeechRecognizer;
-
-@protocol ORKSpeechRecognitionDelegate <NSObject>
+@protocol ORKSpeechRecognitionDelegate
 
 @optional
 /**
  Tells the delegate when the recognition of requested utterance is finished.
  */
-- (void)didFinishRecognitionWithError:(null_unspecified NSError *)error;
+- (void)didFinishRecognitionWithError:(NSError *)error;
 
 /**
  Tells the delegate that a hypothesized transcription is available.
  */
-- (void)didHypothesizeTranscription:(null_unspecified SFTranscription *)transcription;
-
-/**
- Tells the delegate the recognizer finished recognition, and passes back the full result.
- */
-- (void)didFinishRecognition:(nonnull SFSpeechRecognitionResult *)recognitionResult;
+- (void)didHypothesizeTranscription:(SFTranscription *)transcription;
 
 /**
  Tells the delegate when the availability of the speech recognizer has changed
@@ -64,25 +58,9 @@
 @interface ORKSpeechRecognizer: NSObject
 
 /**
- Queries the client application for speech recognition authorization status.
- 
- @return The current authorization status of the client application.
- 
-*/
-+ (SFSpeechRecognizerAuthorizationStatus)authorizationStatus;
-
-/**
  Asks the user to grant your app permission to perform speech recognition.
  */
 + (void)requestAuthorization;
-
-/**
- Asks the user to grant your app permission to perform speech recognition.
- 
- @param handler A block to execute after the authorization attempt finishes. Not guaranteed to run on the apps main dispatch queue.
- 
- */
-+ (void)requestAuthorization:(void (^ _Nonnull)(SFSpeechRecognizerAuthorizationStatus authorizationStatus))handler;
 
 /**
  Starts speech recognition for the specified locale
@@ -93,14 +71,14 @@
  @param handler A handler to report errors
 
  */
-- (void)startRecognitionWithLocale:(null_unspecified NSLocale *)locale reportPartialResults:(BOOL)reportPartialResults responseDelegate:(null_unspecified id<ORKSpeechRecognitionDelegate>)delegate errorHandler:(void (^ _Null_unspecified)(NSError * _Null_unspecified error))handler;
+- (void)startRecognitionWithLocale:(NSLocale *)locale reportPartialResults:(BOOL)reportPartialResults responseDelegate:(id<ORKSpeechRecognitionDelegate>)delegate errorHandler:(void (^)(NSError *error))handler;
 
 /**
  Appends audio to the end of the recognition request.
  
  @param audioBuffer A buffer of audio
  */
-- (void)addAudio:(null_unspecified AVAudioPCMBuffer *)audioBuffer;
+- (void)addAudio:(AVAudioPCMBuffer *)audioBuffer;
 
 /**
  Indicates that the audio source is finished and no more audio will be appended to the

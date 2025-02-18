@@ -290,7 +290,7 @@ ORK_CLASS_AVAILABLE
  @return A result predicate.
  */
 + (NSPredicate *)predicateForChoiceQuestionResultWithResultSelector:(ORKResultSelector *)resultSelector
-                                                expectedAnswerValue:(NSObject<NSCopying, NSSecureCoding> *)expectedAnswerValue;
+                                                expectedAnswerValue:(id<NSCopying, NSCoding, NSObject>)expectedAnswerValue;
 
 /**
  Returns a predicate matching a result of type `ORKChoiceQuestionResult` whose answers are equal to
@@ -303,7 +303,7 @@ ORK_CLASS_AVAILABLE
  @return A result predicate.
  */
 + (NSPredicate *)predicateForChoiceQuestionResultWithResultSelector:(ORKResultSelector *)resultSelector
-                                               expectedAnswerValues:(NSArray<NSObject<NSCopying, NSSecureCoding> *> *)expectedAnswerValues;
+                                               expectedAnswerValues:(NSArray<id<NSCopying, NSCoding, NSObject>> *)expectedAnswerValues;
 
 /**
  Returns a predicate matching a result of type `ORKChoiceQuestionResult` whose answer matches the

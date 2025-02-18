@@ -116,8 +116,4 @@
     }
 }
 
-- (UIImage *)ork_imageWithRenderingModeForUserInterfaceStyle:(UIUserInterfaceStyle)userInterfaceStyle {
-   return userInterfaceStyle == UIUserInterfaceStyleDark ? [self imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] : [self imageWithRenderingMode:UIImageRenderingModeAutomatic];
-}
-
 @end

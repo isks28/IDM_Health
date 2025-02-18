@@ -55,6 +55,7 @@
     self.stepTopContentImageContentMode = step.imageContentMode;
     self.titleIconImage = step.iconImage;
     self.stepText = step.text;
+    // TODO:- we are currently not setting detailText to _headerView because we are restricting detailText to be displayed only inside ORKSurveyCardHeaderView, might wanna rethink this later. Please use the text property on ORKQuestionStep for adding extra information.
     self.stepHeaderTextAlignment = step.headerTextAlignment;
     self.bodyItems = step.bodyItems;
 }

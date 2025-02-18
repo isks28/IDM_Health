@@ -36,9 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ORKSignatureResult ()
 
-- (instancetype)initWithIdentifier:(NSString *)identifier
-                    signatureImage:(UIImage *)signatureImage
-                     signaturePath:(NSArray <UIBezierPath *> *)signaturePath;
+- (instancetype)initWithSignatureImage:(UIImage *)signatureImage
+                         signaturePath:(NSArray <UIBezierPath *> *)signaturePath;
 
 @end
 

@@ -88,13 +88,4 @@ ORK_CLASS_AVAILABLE
 
 @end
 
-ORK_CLASS_AVAILABLE
-@interface  ORKQuestionStepSwiftUIViewHolder : ORKQuestionStepCustomView
-
-@property (nonatomic) UIView *swiftUIView;
-
-- (void)useCardViewWithTitle:(NSString *)title detailText:(nullable NSString *)detailText learnMoreView:(nullable ORKLearnMoreView *)learnMoreView progressText:(nullable NSString *)progressText tagText:(nullable NSString *)tagText hasMultipleChoiceFormItem:(BOOL)hasMultipleChoiceFormItem;
-
-@end
-
 NS_ASSUME_NONNULL_END

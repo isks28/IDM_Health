@@ -35,7 +35,6 @@
 
 + (instancetype)customStepWithIdentifier:(NSString *)identifier
                              contentView:(UIView *)contentView {
-    NSAssert(contentView != NULL, @"ORKCustomStep must be initialized with a contentView");
     ORKCustomStep *step = [[ORKCustomStep alloc] initWithIdentifier:identifier];
     step.contentView = contentView;
     return step;
@@ -46,7 +45,6 @@
     
     if (self) {
         ORK_DECODE_BOOL(aDecoder, pinNavigationContainer);
-        ORK_DECODE_BOOL(aDecoder, hideNavigationContainer);
     }
     return self;
 }
@@ -54,7 +52,6 @@
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [super encodeWithCoder:aCoder];
     ORK_ENCODE_BOOL(aCoder, pinNavigationContainer);
-    ORK_ENCODE_BOOL(aCoder, hideNavigationContainer);
 }
 
 + (BOOL)supportsSecureCoding {
@@ -66,22 +63,16 @@
     
     __typeof(self) castObject = object;
     return (superIsEqual
-            && self.pinNavigationContainer == castObject.pinNavigationContainer
-            && self.hideNavigationContainer == castObject.hideNavigationContainer);
+            && self.pinNavigationContainer == castObject.pinNavigationContainer);
 }
 
 - (instancetype)copyWithZone:(NSZone *)zone {
     ORKCustomStep *step = [super copyWithZone:zone];
     step.pinNavigationContainer = self.pinNavigationContainer;
-    step.hideNavigationContainer = self.hideNavigationContainer;
     step.detailText = self.detailText;
     step.text = self.text;
     step.title = self.title;
     return step;
-}
-
-+ (Class)stepViewControllerClass {
-    return [ORKCustomStepViewController class];
 }
 
 @end

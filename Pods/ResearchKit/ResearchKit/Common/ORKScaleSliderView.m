@@ -54,7 +54,6 @@ static const CGFloat MoveSliderLabelBottomPadding = 38.0;
 static const CGFloat RangeViewHorizontalPadding = 16.0;
 static const CGFloat SliderBottomPadding = 16.0;
 static const CGFloat DontKnowButtonTopBottomPadding = 16.0;
-static const CGFloat DontKnowButtonMaxWidthOffset = 16.0;
 static const CGFloat kMargin = 25.0;
 
 
@@ -206,14 +205,6 @@ static const CGFloat kMargin = 25.0;
         [self setUpConstraints];
     }
     return self;
-}
-
-- (void)layoutSubviews {
-    [super layoutSubviews];
-    
-    if (self.frame.size.width > 0 && _dontKnowButton) {
-        [[_dontKnowButton.widthAnchor constraintLessThanOrEqualToConstant:self.frame.size.width - DontKnowButtonMaxWidthOffset] setActive:YES];
-    }
 }
 
 - (void)setupTopLabels {
@@ -705,8 +696,8 @@ static const CGFloat kMargin = 25.0;
         [self resetViewToDefault];
     }
     
-    if (_dontKnowButton) {
-        [_dontKnowButton setActive:NO];
+    if (_dontKnowButton && [_dontKnowButton isDontKnowButtonActive]) {
+        [_dontKnowButton setButtonInactive];
     }
     
     _currentNumberValue = [_formatProvider normalizedValueForNumber:@(_slider.value)];
@@ -728,9 +719,9 @@ static const CGFloat kMargin = 25.0;
 
 - (void)dontKnowButtonWasPressed {
 
-    if (_dontKnowButton && ![_dontKnowButton active]) {
+    if (_dontKnowButton && ![_dontKnowButton isDontKnowButtonActive]) {
         [_slider setShowThumb:YES];
-        [_dontKnowButton setActive:YES];
+        [_dontKnowButton setButtonActive];
         _currentNumberValue = nil;
         [self notifyDelegate];
     }
@@ -762,7 +753,7 @@ static const CGFloat kMargin = 25.0;
     }
 }
 
-- (void)setCurrentTextChoiceValue:(NSObject<NSCopying, NSSecureCoding> *)currentTextChoiceValue {
+- (void)setCurrentTextChoiceValue:(id<NSCopying, NSCoding, NSObject>)currentTextChoiceValue {
     
     if (currentTextChoiceValue) {
         NSUInteger index = [[self textScaleFormatProvider] textChoiceIndexForValue:currentTextChoiceValue];
@@ -776,18 +767,17 @@ static const CGFloat kMargin = 25.0;
     }
 }
 
-- (NSObject<NSCopying, NSSecureCoding> *)currentTextChoiceValue {
-    NSObject<NSCopying, NSSecureCoding> *value = [[self textScaleFormatProvider] textChoiceAtIndex:[self currentTextChoiceIndex]].value;
+- (id<NSCopying, NSCoding, NSObject>)currentTextChoiceValue {
+    id<NSCopying, NSCoding, NSObject> value = [[self textScaleFormatProvider] textChoiceAtIndex:[self currentTextChoiceIndex]].value;
     return value;
 }
 
 - (id)currentAnswerValue {
-    
-    if ([_dontKnowButton active]) {
+    if ([_dontKnowButton isDontKnowButtonActive]) {
         return [ORKDontKnowAnswer answer];
     }
     if ([self textScaleFormatProvider]) {
-        NSObject<NSCopying, NSSecureCoding> *value = [self currentTextChoiceValue];
+        id<NSCopying, NSCoding, NSObject> value = [self currentTextChoiceValue];
         return value ? @[value] : @[];
     } else {
         return _currentNumberValue;

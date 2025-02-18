@@ -38,7 +38,6 @@
 #import "ORKActiveStep.h"
 #import "ORKNavigationContainerView_Internal.h"
 #import "ORKTypes.h"
-#import "ORKHelpers_Internal.h"
 
 /*
  +-----------------------------------------+
@@ -81,11 +80,6 @@
  | |  |  | | |   |--LearnMore  | | |  |  | |
  | |  |  | | |___|_____________| | |  |  | |
  | |  |  | |_____________________| |  |  | |
- | |  |  |                         |  |  | |
- | |  |  | +---------------------+ |  |  | |
- | |  |  | | _centeredVertically-| |  |  | |
- | |  |  | |     ImageView       | |  |  | |
- | |  |  | |_____________________| |  |  | |
  | |  |  |_________________________|  |  | |
  | |  |                               |  | |
  | |  |  +-------------------------+  |  | |
@@ -112,31 +106,6 @@ static NSString *scrollContentChangedNotification = @"scrollContentChanged";
 - (void)setContentSize:(CGSize)contentSize {
     [super setContentSize:contentSize];
     [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:scrollContentChangedNotification object:nil]];
-}
-
-- (BOOL)accessibilityScroll:(UIAccessibilityScrollDirection)direction {
-    // Workarround to make VO scroll work when the scrollview is scrollable because the added contentInset.bottom
-    if (self.contentInset.bottom > 0 && self.contentSize.height <= self.bounds.size.height) {
-        switch (direction) {
-            case UIAccessibilityScrollDirectionUp: {
-                [self setContentOffset:CGPointMake(self.contentOffset.x, 0) animated:YES];
-                NSString *announceString = [NSString stringWithFormat:ORKLocalizedString(@"AX_PAGE_NUMBER_FORMAT", nil), 1, 2];
-                UIAccessibilityPostNotification(UIAccessibilityPageScrolledNotification, announceString);
-                return YES;
-            }
-            case UIAccessibilityScrollDirectionDown: {
-                CGFloat offsetY = self.contentSize.height - self.bounds.size.height + self.contentInset.bottom;
-                [self setContentOffset:CGPointMake(self.contentOffset.x, offsetY) animated:YES];
-                
-                NSString *announceString = [NSString stringWithFormat:ORKLocalizedString(@"AX_PAGE_NUMBER_FORMAT", nil), 2, 2];
-                UIAccessibilityPostNotification(UIAccessibilityPageScrolledNotification, announceString);
-                return YES;
-            }
-            default:
-                break;
-        }
-    }
-    return NO;
 }
 
 @end
@@ -186,8 +155,7 @@ static NSString *scrollContentChangedNotification = @"scrollContentChanged";
         [self placeNavigationContainerView];
         _topContentImageShouldScroll = YES;
         _customContentTopPadding = ORKStepContainerTopCustomContentPaddingStandard;
-        [self setPinNavigationContainer:YES]; // Default behavior is to pin the navigation footer
-
+        _pinNavigationContainer = YES; // Default behavior is to pin the navigation footer
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(scrollContentChanged) name:scrollContentChangedNotification object:nil];
     }
     return self;
@@ -505,20 +473,14 @@ static NSString *scrollContentChangedNotification = @"scrollContentChanged";
 - (void)updateNavigationContainerViewTopConstraint {
     BOOL shouldScrollNavigationContainer = (self.isNavigationContainerScrollable || !_pinNavigationContainer);
     if (self.navigationFooterView && shouldScrollNavigationContainer) {
-        [self removeNavigationContainerViewTopConstraint];
+        if (_navigationContainerViewTopConstraint) {
+            [NSLayoutConstraint deactivateConstraints:@[_navigationContainerViewTopConstraint]];
+            if ([_updatedConstraints containsObject:_navigationContainerViewTopConstraint]) {
+                [_updatedConstraints removeObject:_navigationContainerViewTopConstraint];
+            }
+        }
         [self setupNavigationContainerViewTopConstraint];
         [_updatedConstraints addObject:_navigationContainerViewTopConstraint];
-    } else  {
-        [self removeNavigationContainerViewTopConstraint];
-    }
-}
-
-- (void)removeNavigationContainerViewTopConstraint {
-    if (_navigationContainerViewTopConstraint) {
-        [NSLayoutConstraint deactivateConstraints:@[_navigationContainerViewTopConstraint]];
-        if ([_updatedConstraints containsObject:_navigationContainerViewTopConstraint]) {
-            [_updatedConstraints removeObject:_navigationContainerViewTopConstraint];
-        }
     }
 }
 
@@ -631,8 +593,6 @@ static NSString *scrollContentChangedNotification = @"scrollContentChanged";
 - (void)setCustomContentView:(UIView *)customContentView withTopPadding:(CGFloat)topPadding sidePadding:(CGFloat)sidePadding {
     _customContentTopPadding = topPadding;
     _customContentLeftRightPadding = sidePadding;
-
-    [self.stepContentView setCustomTopPadding:[NSNumber numberWithFloat:topPadding]];
     [self setCustomContentView:customContentView];
 }
 
@@ -844,6 +804,7 @@ static NSString *scrollContentChangedNotification = @"scrollContentChanged";
     CGFloat bottomOfView = pointInScrollView.y + bodyItem.frame.size.height;
     CGFloat bottomOfScrollView = _scrollView.frame.size.height - [self navigationFooterView].frame.size.height;
 
+    // TODO:- update ORKBodyItemScrollPadding depending on device size
     if (bottomOfView > bottomOfScrollView) {
         [_scrollView setContentOffset:CGPointMake(0, (bottomOfView - bottomOfScrollView) + ORKBodyItemScrollPadding) animated:YES];
     }
@@ -878,9 +839,9 @@ static NSString *scrollContentChangedNotification = @"scrollContentChanged";
                 // the top and the bottom of the navigation footer view
                 if (contentPosition < endOfFooter) {
                     CGFloat offset = contentPosition - startOfFooter;
-                    self.scrollViewInset = UIEdgeInsetsMake(0, 0, offset + ORKContentBottomPadding, 0);
+                    _scrollView.contentInset = UIEdgeInsetsMake(0, 0, offset + ORKContentBottomPadding, 0);
                 } else {
-                    self.scrollViewInset = UIEdgeInsetsMake(0, 0, self.navigationFooterView.frame.size.height + ORKContentBottomPadding, 0);
+                    _scrollView.contentInset = UIEdgeInsetsMake(0, 0, self.navigationFooterView.frame.size.height + ORKContentBottomPadding, 0);
                 }
             }
         }
@@ -914,21 +875,8 @@ static NSString *scrollContentChangedNotification = @"scrollContentChanged";
     return _scrollView.scrollEnabled;
 }
 
-- (UIEdgeInsets)scrollViewInset {
-    return _scrollView.contentInset;
-}
-
-- (void)setScrollViewInset:(UIEdgeInsets)scrollViewInset {
-    [_scrollView setContentInset:scrollViewInset];
-}
-
-- (void)resetScrollViewInset {
-    if (_pinNavigationContainer) {
-        CGFloat offset = [self contentHeight] - self.navigationFooterView.frame.origin.y;
-        self.scrollViewInset = UIEdgeInsetsMake(0.0, 0.0, offset + ORKContentBottomPadding, 0.0);
-    } else {
-        self.scrollViewInset = UIEdgeInsetsZero;
-    }
+- (void)setScrollViewInset:(UIEdgeInsets)inset {
+    [_scrollView setContentInset:inset];
 }
 
 - (void)scrollToPoint:(CGPoint)point {

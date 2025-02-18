@@ -33,8 +33,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class HKSampleType, HKObjectType;
-
 ORK_CLASS_AVAILABLE
 @interface ORKHealthKitPermissionType : ORKPermissionType
 

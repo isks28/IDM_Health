@@ -42,7 +42,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isFormatTextfield;
 
 - (BOOL)formatRequiresTableView;
-- (BOOL)formatRequiresSwiftUI;
 
 - (nullable ORKAnswerFormat *)impliedAnswerFormat;
 

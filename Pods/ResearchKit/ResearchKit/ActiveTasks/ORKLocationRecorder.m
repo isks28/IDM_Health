@@ -37,8 +37,6 @@
 
 #import "CLLocation+ORKJSONDictionary.h"
 
-#import <ResearchKit/CLLocationManager+ResearchKit.h>
-
 #import <CoreLocation/CoreLocation.h>
 
 
@@ -73,13 +71,8 @@
     return @"location";
 }
 
-
-// Test Seam - unit tests don't support background updates or pausing.
 - (CLLocationManager *)createLocationManager {
-    CLLocationManager *manager = [[CLLocationManager alloc] init];
-    manager.pausesLocationUpdatesAutomatically = NO;
-    manager.allowsBackgroundLocationUpdates = YES;
-    return manager;
+    return [[CLLocationManager alloc] init];
 }
 
 - (void)start {
@@ -95,25 +88,35 @@
     }
     
     self.locationManager = [self createLocationManager];
-    self.locationManager.delegate = self;
-
-    BOOL locationManagerAuthRequestsAllowed = YES;
-    if ([CLLocationManager authorizationStatus] <= kCLAuthorizationStatusDenied) {
-        locationManagerAuthRequestsAllowed = [self.locationManager ork_requestWhenInUseAuthorization];
-    }
-
-    self.uptime = [NSProcessInfo processInfo].systemUptime;
-    [self.locationManager ork_startUpdatingLocation];
     
-    if (locationManagerAuthRequestsAllowed == NO) {
-        // If we weren't able to perform auth requests, then ResearchKit was compiled with auth requests disabled
-        // We won't be getting any callbacks about location changes, so might as well stop recording
-        [self stop];
+    CLAuthorizationStatus status = kCLAuthorizationStatusNotDetermined;
+    
+    if (@available(iOS 14.0, *)) {
+        status = self.locationManager.authorizationStatus;
+    } else {
+        status = [CLLocationManager authorizationStatus];
     }
+    
+    if (status == kCLAuthorizationStatusRestricted || status == kCLAuthorizationStatusNotDetermined) {
+        [self.locationManager requestWhenInUseAuthorization];
+    }
+    self.locationManager.pausesLocationUpdatesAutomatically = NO;
+    self.locationManager.delegate = self;
+    
+    if (!self.locationManager) {
+        NSError *error = [NSError errorWithDomain:NSCocoaErrorDomain
+                                             code:NSFeatureUnsupportedError
+                                         userInfo:@{@"recorder": self}];
+        [self finishRecordingWithError:error];
+        return;
+    }
+    
+    self.uptime = [NSProcessInfo processInfo].systemUptime;
+    [self.locationManager startUpdatingLocation];
 }
 
 - (void)doStopRecording {
-    [self.locationManager ork_stopUpdatingLocation];
+    [self.locationManager stopUpdatingLocation];
     self.locationManager.delegate = nil;
     self.locationManager = nil;
 }
@@ -135,8 +138,7 @@
 }
 
 - (void)locationManager:(CLLocationManager *)manager
-     didUpdateLocations:(NSArray<CLLocation *> *)locations {
-
+     didUpdateLocations:(NSArray *)locations {
     BOOL success = YES;
     NSParameterAssert(locations.count >= 0);
     NSError *error = nil;

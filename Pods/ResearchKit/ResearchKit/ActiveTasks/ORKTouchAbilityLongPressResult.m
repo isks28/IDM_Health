@@ -33,7 +33,6 @@
 #import "ORKResult_Private.h"
 #import "ORKHelpers_Internal.h"
 #import "ORKTouchAbilityTrial.h"
-#import "ORKTouchAbilityTapTrial.h"
 
 @implementation ORKTouchAbilityLongPressResult
 
@@ -48,7 +47,7 @@
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        ORK_DECODE_OBJ_ARRAY(aDecoder, trials, ORKTouchAbilityTapTrial);
+        ORK_DECODE_OBJ(aDecoder, trials);
     }
     return self;
 }

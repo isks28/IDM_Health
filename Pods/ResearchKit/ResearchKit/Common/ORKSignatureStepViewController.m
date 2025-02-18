@@ -248,9 +248,8 @@
     ORKStepResult *parentResult = [super result];
     
     if (self.signatureView.signatureExists) {
-        ORKSignatureResult *sigResult = [[ORKSignatureResult alloc] initWithIdentifier:self.step.identifier
-                                                                        signatureImage:self.signatureView.signatureImage
-                                                                         signaturePath:self.signatureView.signaturePath];
+        ORKSignatureResult *sigResult = [[ORKSignatureResult alloc] initWithSignatureImage:self.signatureView.signatureImage
+                                                                             signaturePath:self.signatureView.signaturePath];
         parentResult.results = @[sigResult];
     }
     

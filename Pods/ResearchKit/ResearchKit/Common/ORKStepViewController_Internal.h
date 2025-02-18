@@ -36,7 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class ORKNavigationContainerView;
 
-#if TARGET_OS_IOS
 @interface ORKStepViewController () <UIViewControllerRestoration> {
     @protected ORKNavigationContainerView *_navigationFooterView;
 }
@@ -71,8 +70,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, nullable) ORKReviewStep* parentReviewStep;
 
-@property (nonatomic, assign) BOOL isEarlyTerminationStep;
-
 - (void)willNavigateDirection:(ORKStepViewControllerNavigationDirection)direction;
 
 - (void)notifyDelegateOnResultChange;
@@ -97,10 +94,6 @@ NS_ASSUME_NONNULL_BEGIN
 // internal method for updating iPadBackgroundViewColor.
 - (void)setiPadBackgroundViewColor:(UIColor *)color;
 
-// internal method for enabling back navigation.
-- (void)enableBackNavigation;
-
 @end
-#endif
 
 NS_ASSUME_NONNULL_END

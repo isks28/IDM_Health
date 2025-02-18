@@ -28,10 +28,11 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 @import Foundation;
 @import UIKit;
-
 #import <ResearchKit/ORKDefines.h>
+
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -364,50 +365,21 @@ typedef NS_ENUM(NSInteger, ORKMeasurementSystem) {
 } ORK_ENUM_AVAILABLE;
 
 /**
- Device Identifiers for supported headphone types.
+ Route Identifiers for supported headphone types.
  */
 typedef NSString *ORKHeadphoneTypeIdentifier NS_STRING_ENUM;
-
-/// Generic AirPods
 ORK_EXTERN ORKHeadphoneTypeIdentifier const ORKHeadphoneTypeIdentifierAirPods;
-
-/// AirPods generation 1
-ORK_EXTERN ORKHeadphoneTypeIdentifier const ORKHeadphoneTypeIdentifierAirPodsGen1;
-
-/// AirPods generation 2
-ORK_EXTERN ORKHeadphoneTypeIdentifier const ORKHeadphoneTypeIdentifierAirPodsGen2;
-
-/// AirPods generation 3
-ORK_EXTERN ORKHeadphoneTypeIdentifier const ORKHeadphoneTypeIdentifierAirPodsGen3;
-
-/// AirPods Pro
 ORK_EXTERN ORKHeadphoneTypeIdentifier const ORKHeadphoneTypeIdentifierAirPodsPro;
-
-/// AirPods Pro generation 2
-ORK_EXTERN ORKHeadphoneTypeIdentifier const ORKHeadphoneTypeIdentifierAirPodsProGen2;
-
-/// AirPods Max
-ORK_EXTERN ORKHeadphoneTypeIdentifier const ORKHeadphoneTypeIdentifierAirPodsMax;
-
-/// Lightning and Audio Jack Earpods
 ORK_EXTERN ORKHeadphoneTypeIdentifier const ORKHeadphoneTypeIdentifierEarPods;
-
-/// Other vendors or even apple ones but not mapped.
 ORK_EXTERN ORKHeadphoneTypeIdentifier const ORKHeadphoneTypeIdentifierUnknown;
 
-
 ORK_CLASS_AVAILABLE
-@interface ORKNoAnswer : NSObject<NSCopying, NSSecureCoding>
+@interface ORKDontKnowAnswer : NSObject<NSCopying, NSSecureCoding>
+
++ (instancetype)answer;
 
 + (instancetype)new NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
-
-@end
-
-ORK_CLASS_AVAILABLE
-@interface ORKDontKnowAnswer : ORKNoAnswer
-
-+ (instancetype)answer NS_SWIFT_NAME(answer());
 
 @end
 
@@ -517,14 +489,6 @@ typedef NS_ENUM(NSInteger, ORKNavigationContainerButtonStyle) {
      A rounded rect button.
      */
     ORKNavigationContainerButtonStyleRoundedRect
-} ORK_ENUM_AVAILABLE;
-
-/**
- An enumeration of the types of button styles for the ORKDontKnowButton.
- */
-typedef NS_ENUM(NSInteger, ORKDontKnowButtonStyle) {
-    ORKDontKnowButtonStyleStandard = 0,
-    ORKDontKnowButtonStyleCircleChoice,
 } ORK_ENUM_AVAILABLE;
 
 extern const double ORKDoubleDefaultValue ORK_AVAILABLE_DECL;

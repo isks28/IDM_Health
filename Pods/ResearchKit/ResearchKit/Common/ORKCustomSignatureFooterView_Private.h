@@ -37,8 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ORKCustomSignatureFooterView () <ORKCustomSignatureAccessoryViewDelegate>
 
-@property (nonatomic, readonly) CGRect signatureViewFrame;
-
 @end
 
 
