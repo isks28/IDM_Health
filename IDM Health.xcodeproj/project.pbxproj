@@ -30,6 +30,7 @@
 		5A554EA52C8706730081747B /* magnetometerDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA42C8706730081747B /* magnetometerDataManager.swift */; };
 		5A554EA72C8706810081747B /* deviceMotionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA62C8706810081747B /* deviceMotionView.swift */; };
 		5A554EA92C87068D0081747B /* deviceMotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A554EA82C87068D0081747B /* deviceMotionManager.swift */; };
+		5A86565784B44A060F385D35 /* Pods_rawDataiOSAppAcquisition.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8629D5EC2D5A6E32007B553C /* Pods_rawDataiOSAppAcquisition.framework */; };
 		5AB490012CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AB490002CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift */; };
 		5ADF90432D41235200F728AC /* VideoPlacerReview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ADF90422D41235200F728AC /* VideoPlacerReview.swift */; };
 		8629D5E92D5A6E2B007B553C /* Pods_rawDataiOSAppAcquisition.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22DD96BC055AB27EF85B652A /* Pods_rawDataiOSAppAcquisition.framework */; };
@@ -50,6 +51,10 @@
 		86C9215E2D395637002AD774 /* PhotosAndVideoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C9215D2D395637002AD774 /* PhotosAndVideoManager.swift */; };
 		86C921602D395653002AD774 /* PhotosAndVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C9215F2D395653002AD774 /* PhotosAndVideoView.swift */; };
 		86C921622D395674002AD774 /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C921612D395674002AD774 /* CameraPreview.swift */; };
+		86F4296A2D649EAD001BCF53 /* RangeOfMotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F429692D649EAD001BCF53 /* RangeOfMotionManager.swift */; };
+		86F4296C2D649EB8001BCF53 /* RangeOfMotionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F4296B2D649EB8001BCF53 /* RangeOfMotionView.swift */; };
+		86F4296E2D649EC5001BCF53 /* RangeOfMotionContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F4296D2D649EC5001BCF53 /* RangeOfMotionContentView.swift */; };
+		86F429702D649F2F001BCF53 /* ResearchKitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F4296F2D649F2F001BCF53 /* ResearchKitView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -141,6 +146,11 @@
 		86C9215D2D395637002AD774 /* PhotosAndVideoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosAndVideoManager.swift; sourceTree = "<group>"; };
 		86C9215F2D395653002AD774 /* PhotosAndVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosAndVideoView.swift; sourceTree = "<group>"; };
 		86C921612D395674002AD774 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
+		86F429692D649EAD001BCF53 /* RangeOfMotionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeOfMotionManager.swift; sourceTree = "<group>"; };
+		86F4296B2D649EB8001BCF53 /* RangeOfMotionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeOfMotionView.swift; sourceTree = "<group>"; };
+		86F4296D2D649EC5001BCF53 /* RangeOfMotionContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeOfMotionContentView.swift; sourceTree = "<group>"; };
+		86F4296F2D649F2F001BCF53 /* ResearchKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResearchKitView.swift; sourceTree = "<group>"; };
+		86F429712D64A147001BCF53 /* ResearchKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ResearchKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -154,6 +164,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8629D5E92D5A6E2B007B553C /* Pods_rawDataiOSAppAcquisition.framework in Frameworks */,
+				5A86565784B44A060F385D35 /* Pods_rawDataiOSAppAcquisition.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,6 +227,7 @@
 				5A554E882C8705720081747B /* rawData */,
 				86419FE92CB9887B0071151C /* processedData */,
 				8649C9B12D05E6A700E15C02 /* Visual Data */,
+				86F428E52D6497DB001BCF53 /* ResearchKit */,
 				5A554E5E2C8705090081747B /* Assets.xcassets */,
 				5A554E602C8705090081747B /* rawDataiOSAppAcquisition.entitlements */,
 				5A554E612C8705090081747B /* Preview Content */,
@@ -331,6 +343,7 @@
 		62282CAD0EFECA9589CAF27F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				86F429712D64A147001BCF53 /* ResearchKit.framework */,
 				8629D5EC2D5A6E32007B553C /* Pods_rawDataiOSAppAcquisition.framework */,
 				22DD96BC055AB27EF85B652A /* Pods_rawDataiOSAppAcquisition.framework */,
 			);
@@ -463,6 +476,25 @@
 			path = photosAndVideoView;
 			sourceTree = "<group>";
 		};
+		86F428E52D6497DB001BCF53 /* ResearchKit */ = {
+			isa = PBXGroup;
+			children = (
+				86F4296F2D649F2F001BCF53 /* ResearchKitView.swift */,
+				86F428E62D6497E5001BCF53 /* ActiveTasks */,
+			);
+			path = ResearchKit;
+			sourceTree = "<group>";
+		};
+		86F428E62D6497E5001BCF53 /* ActiveTasks */ = {
+			isa = PBXGroup;
+			children = (
+				86F429692D649EAD001BCF53 /* RangeOfMotionManager.swift */,
+				86F4296B2D649EB8001BCF53 /* RangeOfMotionView.swift */,
+				86F4296D2D649EC5001BCF53 /* RangeOfMotionContentView.swift */,
+			);
+			path = ActiveTasks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -476,6 +508,7 @@
 				5A554E552C8705080081747B /* Resources */,
 				FD916FE4B0E4192E066DF8E0 /* [CP] Copy Pods Resources */,
 				8629D5EB2D5A6E2B007B553C /* Embed Frameworks */,
+				F29E52A4806484AA45B14883 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -618,6 +651,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		F29E52A4806484AA45B14883 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-rawDataiOSAppAcquisition/Pods-rawDataiOSAppAcquisition-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-rawDataiOSAppAcquisition/Pods-rawDataiOSAppAcquisition-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-rawDataiOSAppAcquisition/Pods-rawDataiOSAppAcquisition-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		FD916FE4B0E4192E066DF8E0 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -663,9 +713,12 @@
 				863757E62CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift in Sources */,
 				5A554E5D2C8705080081747B /* ContentView.swift in Sources */,
 				5A554E952C8706080081747B /* mobilityView.swift in Sources */,
+				86F4296E2D649EC5001BCF53 /* RangeOfMotionContentView.swift in Sources */,
 				5A554EA72C8706810081747B /* deviceMotionView.swift in Sources */,
 				86B0DE662CBE973C00003F50 /* ServerConfig.swift in Sources */,
 				5A554E9D2C87063D0081747B /* accelerometerDataManager.swift in Sources */,
+				86F4296A2D649EAD001BCF53 /* RangeOfMotionManager.swift in Sources */,
+				86F4296C2D649EB8001BCF53 /* RangeOfMotionView.swift in Sources */,
 				86C921622D395674002AD774 /* CameraPreview.swift in Sources */,
 				86419FEC2CB988BF0071151C /* walkingDataView.swift in Sources */,
 				5A554EA92C87068D0081747B /* deviceMotionManager.swift in Sources */,
@@ -675,6 +728,7 @@
 				5A554E932C8705F70081747B /* activityManager.swift in Sources */,
 				5A554E5B2C8705080081747B /* rawDataiOSAppAcquisitionApp.swift in Sources */,
 				5A554E9F2C8706470081747B /* gyroscopeDataView.swift in Sources */,
+				86F429702D649F2F001BCF53 /* ResearchKitView.swift in Sources */,
 				86369D5E2D5BED820090B4D0 /* BodyPointsEstimationManager.swift in Sources */,
 				866B7C4E2CD0F6EA000FC227 /* rawDataAllView.swift in Sources */,
 				5A554EA32C8706690081747B /* magnetometerDataView.swift in Sources */,
@@ -871,7 +925,7 @@
 				CODE_SIGN_ENTITLEMENTS = rawDataiOSAppAcquisition/rawDataiOSAppAcquisition.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"rawDataiOSAppAcquisition/Preview Content\"";
 				DEVELOPMENT_TEAM = P6RD9VN837;
@@ -909,7 +963,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.UKGM.IDMHealth";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -930,7 +984,7 @@
 				CODE_SIGN_ENTITLEMENTS = rawDataiOSAppAcquisition/rawDataiOSAppAcquisition.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"rawDataiOSAppAcquisition/Preview Content\"";
 				DEVELOPMENT_TEAM = P6RD9VN837;
@@ -968,7 +1022,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.UKGM.IDMHealth";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1150,7 +1204,7 @@
 				CODE_SIGN_ENTITLEMENTS = rawDataiOSAppAcquisition/rawDataiOSAppAcquisition.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"rawDataiOSAppAcquisition/Preview Content\"";
 				DEVELOPMENT_TEAM = P6RD9VN837;
@@ -1188,7 +1242,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.UKGM.IDMHealth";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";

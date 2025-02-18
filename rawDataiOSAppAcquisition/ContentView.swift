@@ -66,6 +66,13 @@ struct ContentView: View {
                         Image(systemName: "camera.fill")
                         Text("Visual Data")
                     }
+                
+                ResearchKitView()
+                    .tag("ResearchKit")
+                    .tabItem{
+                        Image(systemName: "cross.case.fill")
+                        Text("ResearchKit")
+                    }
             }
         }
     }

@@ -13,4 +13,7 @@ target 'rawDataiOSAppAcquisition' do
   # Existing pod
   pod 'LiteRTSwift', '~> 0.0.1-nightly', :subspecs => ['CoreML', 'Metal']
 
+  # Add ResearchKit for Active Tasks like Range of Motion
+  pod 'ResearchKit'
+
 end
