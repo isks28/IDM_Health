@@ -60,10 +60,7 @@ struct RangeOfMotionContentView: View {
                             .multilineTextAlignment(.center)
                             .padding()
                         Spacer()
-                        // Replace with your custom close view or button
-                        Button("Close") {
-                            showingInfo = false
-                        }
+                        AnimatedSwipeDownCloseView()
                     }
                     .padding()
                 }
