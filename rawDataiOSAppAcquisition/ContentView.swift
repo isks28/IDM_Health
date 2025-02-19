@@ -35,7 +35,7 @@ struct ContentView: View {
                     .tag("HealthKit")
                     .tabItem{
                         Image(systemName: "cross.case.fill")
-                        Text("HealthKit Data")
+                        Text("HealthKit")
                     }
                     .onAppear {
                         let navAppearance = UINavigationBarAppearance()
@@ -50,21 +50,21 @@ struct ContentView: View {
                     .tag("CoreMotion")
                     .tabItem{
                         Image(systemName: "gyroscope")
-                        Text("Raw Data")
+                        Text("IMU")
                     }
                 
                 processedDataView()
                     .tag("CoreMotionProcessed")
                     .tabItem{
                         Image(systemName: "shoeprints.fill")
-                        Text("Walking Data")
+                        Text("Walking")
                     }
                 
                 visualDataView()
                     .tag("AVFoundation")
                     .tabItem{
                         Image(systemName: "camera.fill")
-                        Text("Visual Data")
+                        Text("Visual")
                     }
                 
                 ResearchKitView()
