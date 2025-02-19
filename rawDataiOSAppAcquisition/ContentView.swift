@@ -34,7 +34,7 @@ struct ContentView: View {
                 healthKitView()
                     .tag("HealthKit")
                     .tabItem{
-                        Image(systemName: "figure.walk")
+                        Image(systemName: "cross.case.fill")
                         Text("HealthKit Data")
                     }
                     .onAppear {
@@ -70,7 +70,7 @@ struct ContentView: View {
                 ResearchKitView()
                     .tag("ResearchKit")
                     .tabItem{
-                        Image(systemName: "cross.case.fill")
+                        Image(systemName: "heart.text.square.fill")
                         Text("ResearchKit")
                     }
             }

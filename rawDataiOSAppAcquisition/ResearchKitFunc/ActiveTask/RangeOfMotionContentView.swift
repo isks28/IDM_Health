@@ -36,7 +36,7 @@ struct RangeOfMotionContentView: View {
             
             NavigationLink(destination: RangeOfMotionView(taskType: .rightKnee)) {
                 HStack {
-                    Text("RIght knee")
+                    Text("Right knee")
                         .font(.title2)
                     Spacer()
                 }
