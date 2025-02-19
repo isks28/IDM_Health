@@ -16,7 +16,7 @@ struct ResearchKitView: View {
             List {
                 NavigationLink(value: "Range of motion") {
                     HStack {
-                        Image(systemName: "person.crop.square.badge.camera")
+                        Image(systemName: "figure.arms.open")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 50, height: 40)

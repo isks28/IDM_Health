@@ -10,32 +10,38 @@ import SwiftUI
 struct RangeOfMotionContentView: View {
     var body: some View {
         List {
-            NavigationLink(destination: RangeOfMotionView(taskType: .shoulder)) {
+            NavigationLink(destination: RangeOfMotionView(taskType: .leftShoulder)) {
                 HStack {
-                    Image(systemName: "person.crop.square.badge.camera")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 40)
-                        .foregroundStyle(Color.blue)
-                    Text("Range of motion")
+                    Text("Left shoulder")
                         .font(.title2)
                     Spacer()
                 }
             }
             
-            NavigationLink(destination: RangeOfMotionView(taskType: .knee)) {
+            NavigationLink(destination: RangeOfMotionView(taskType: .rightShoulder)) {
                 HStack {
-                    Image(systemName: "person.crop.square.badge.camera")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 40)
-                        .foregroundStyle(Color.blue)
-                    Text("Range of motion")
+                    Text("Right shoulder")
+                        .font(.title2)
+                    Spacer()
+                }
+            }
+            
+            NavigationLink(destination: RangeOfMotionView(taskType: .leftKnee)) {
+                HStack {
+                    Text("Left knee")
+                        .font(.title2)
+                    Spacer()
+                }
+            }
+            
+            NavigationLink(destination: RangeOfMotionView(taskType: .rightKnee)) {
+                HStack {
+                    Text("RIght knee")
                         .font(.title2)
                     Spacer()
                 }
             }
         }
-        .navigationTitle("Range of Motion Tasks")
+        .navigationTitle("Range of Motion")
     }
 }

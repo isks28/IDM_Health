@@ -12,8 +12,10 @@ import ResearchKitActiveTask
 
 struct RangeOfMotionView: View {
     enum TaskType {
-        case shoulder
-        case knee
+        case leftShoulder
+        case rightShoulder
+        case leftKnee
+        case rightKnee
     }
     
     var taskType: TaskType
@@ -38,32 +40,45 @@ struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
         let outputDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("ResearchKitData", isDirectory: true)
         
-        // ✅ Include motion sensor recording for higher accuracy
         let motionRecorder = ORKDeviceMotionRecorderConfiguration(
             identifier: "motionRecorder",
-            frequency: 50.0 // 50 Hz sampling rate
+            frequency: 50.0
         )
 
         switch taskType {
-        case .shoulder:
+        case .leftShoulder:
             task = ORKOrderedTask.shoulderRangeOfMotionTask(
-                withIdentifier: "ShoulderRangeOfMotionTask",
+                withIdentifier: "LeftShoulderRangeOfMotionTask",
                 limbOption: .left,
-                intendedUseDescription: "Measure shoulder flexibility.",
+                intendedUseDescription: "Measure left shoulder flexibility.",
                 options: []
             )
-        case .knee:
+        case .rightShoulder:
+            task = ORKOrderedTask.shoulderRangeOfMotionTask(
+                withIdentifier: "RightShoulderRangeOfMotionTask",
+                limbOption: .right,
+                intendedUseDescription: "Measure right shoulder flexibility.",
+                options: []
+            )
+        case .leftKnee:
             task = ORKOrderedTask.kneeRangeOfMotionTask(
-                withIdentifier: "KneeRangeOfMotionTask",
+                withIdentifier: "LeftKneeRangeOfMotionTask",
                 limbOption: .left,
-                intendedUseDescription: "Measure knee flexibility.",
+                intendedUseDescription: "Measure left knee flexibility.",
+                options: []
+            )
+        case .rightKnee:
+            task = ORKOrderedTask.kneeRangeOfMotionTask(
+                withIdentifier: "RightKneeRangeOfMotionTask",
+                limbOption: .right,
+                intendedUseDescription: "Measure right knee flexibility.",
                 options: []
             )
         }
 
         let taskViewController = ORKTaskViewController(task: task, taskRun: nil)
         taskViewController.delegate = context.coordinator
-        taskViewController.outputDirectory = outputDirectory // ✅ Ensure data is stored properly
+        taskViewController.outputDirectory = outputDirectory
         
         return taskViewController
     }
@@ -102,19 +117,26 @@ struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
             let minAngle = motionResult.minimum
             let maxAngle = motionResult.maximum
 
-            // Debugging Output
             print("DEBUG - Range of Motion Result: \(motionResult)")
             print("Timestamp: \(timestamp)")
             print("Start Angle: \(minAngle)")
             print("Finish Angle: \(maxAngle)")
 
             let csvString = "Timestamp,Minimum Angle,Maximum Angle\n\(timestamp),\(minAngle),\(maxAngle)\n"
-
+            
             let fileManager = FileManager.default
             let rangeOfMotionDir = outputDirectory.appendingPathComponent("RangeOfMotion")
-            let jointDir = parent.taskType == .shoulder ? "Left Shoulder" : "Left Knee"
+            let jointDir: String
+            
+            switch parent.taskType {
+            case .leftShoulder: jointDir = "Left Shoulder"
+            case .rightShoulder: jointDir = "Right Shoulder"
+            case .leftKnee: jointDir = "Left Knee"
+            case .rightKnee: jointDir = "Right Knee"
+            }
+            
             let saveDirectory = rangeOfMotionDir.appendingPathComponent(jointDir)
-
+            
             do {
                 try fileManager.createDirectory(at: saveDirectory, withIntermediateDirectories: true, attributes: nil)
                 let fileURL = saveDirectory.appendingPathComponent("RangeOfMotionData.csv")
