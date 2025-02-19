@@ -15,15 +15,17 @@ struct RangeOfMotionView: View {
     }
     
     var taskType: TaskType
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
-        RangeOfMotionTaskViewController(taskType: taskType)
+        RangeOfMotionTaskViewController(taskType: taskType, presentationMode: presentationMode)
             .edgesIgnoringSafeArea(.all)
     }
 }
 
 struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
     var taskType: RangeOfMotionView.TaskType
+    var presentationMode: Binding<PresentationMode>
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -65,7 +67,13 @@ struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
         }
         
         func taskViewController(_ taskViewController: ORKTaskViewController, didFinishWith reason: ORKTaskViewControllerFinishReason, error: Error?) {
-            taskViewController.dismiss(animated: true, completion: nil)
+            if reason == .completed {
+                // Dismiss the ResearchKit task view controller
+                taskViewController.dismiss(animated: true) {
+                    // After dismissal, update the presentationMode to dismiss the SwiftUI view
+                    self.parent.presentationMode.wrappedValue.dismiss()
+                }
+            }
         }
     }
 }
