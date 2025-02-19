@@ -4914,7 +4914,7 @@
 				CODE_SIGN_ENTITLEMENTS = rawDataiOSAppAcquisition/rawDataiOSAppAcquisition.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"rawDataiOSAppAcquisition/Preview Content\"";
 				DEVELOPMENT_TEAM = P6RD9VN837;
@@ -4935,6 +4935,7 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone will be accessed to record audio during video recording";
 				INFOPLIST_KEY_NSMotionUsageDescription = "We use motion data to track your activity";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Speech recognition will be used for ResearchKit purposes";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -4952,7 +4953,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 3;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.UKGM.IDMHealth";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -4976,7 +4977,7 @@
 				CODE_SIGN_ENTITLEMENTS = rawDataiOSAppAcquisition/rawDataiOSAppAcquisition.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"rawDataiOSAppAcquisition/Preview Content\"";
 				DEVELOPMENT_TEAM = P6RD9VN837;
@@ -4997,6 +4998,7 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone will be accessed to record audio during video recording";
 				INFOPLIST_KEY_NSMotionUsageDescription = "We use motion data to track your activity";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Speech recognition will be used for ResearchKit purposes";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -5014,7 +5016,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 3;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.UKGM.IDMHealth";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -5198,7 +5200,7 @@
 				CODE_SIGN_ENTITLEMENTS = rawDataiOSAppAcquisition/rawDataiOSAppAcquisition.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"rawDataiOSAppAcquisition/Preview Content\"";
 				DEVELOPMENT_TEAM = P6RD9VN837;
@@ -5219,6 +5221,7 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to track motion in the background";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone will be accessed to record audio during video recording";
 				INFOPLIST_KEY_NSMotionUsageDescription = "We use motion data to track your activity";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Speech recognition will be used for ResearchKit purposes";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -5236,7 +5239,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 3;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.marburg-uni.UKGM.IDMHealth";
 				PRODUCT_NAME = "IDM Health";
 				PROVISIONING_PROFILE_SPECIFIER = "";
