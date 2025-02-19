@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct RangeOfMotionContentView: View {
+    @State private var showingInfo = false
+    
     var body: some View {
         List {
             NavigationLink(destination: RangeOfMotionView(taskType: .leftShoulder)) {
@@ -43,5 +45,29 @@ struct RangeOfMotionContentView: View {
             }
         }
         .navigationTitle("Range of Motion")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: { showingInfo.toggle() }) {
+                    Image(systemName: "info.circle")
+                }
+                .sheet(isPresented: $showingInfo) {
+                    VStack {
+                        Text("Range of motion Information")
+                            .font(.largeTitle)
+                            .padding()
+                        Text(".....")
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                        Spacer()
+                        // Replace with your custom close view or button
+                        Button("Close") {
+                            showingInfo = false
+                        }
+                    }
+                    .padding()
+                }
+            }
+        }
     }
 }
