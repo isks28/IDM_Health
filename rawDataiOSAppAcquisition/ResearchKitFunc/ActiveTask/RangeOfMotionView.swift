@@ -39,11 +39,6 @@ struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
         let task: ORKOrderedTask
         let outputDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("ResearchKitData", isDirectory: true)
-        
-        let motionRecorder = ORKDeviceMotionRecorderConfiguration(
-            identifier: "motionRecorder",
-            frequency: 50.0
-        )
 
         switch taskType {
         case .leftShoulder:
@@ -116,30 +111,39 @@ struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
             let timestamp = motionResult.startDate
             let minAngle = motionResult.minimum
             let maxAngle = motionResult.maximum
+            let range = motionResult.range
 
             print("DEBUG - Range of Motion Result: \(motionResult)")
             print("Timestamp: \(timestamp)")
             print("Start Angle: \(minAngle)")
             print("Finish Angle: \(maxAngle)")
 
-            let csvString = "Timestamp,Minimum Angle,Maximum Angle\n\(timestamp),\(minAngle),\(maxAngle)\n"
-            
+            let csvString = "Timestamp,Minimum Angle,Maximum Angle,Range\n\(timestamp),\(minAngle),\(maxAngle),\(range)\n"
+
             let fileManager = FileManager.default
             let rangeOfMotionDir = outputDirectory.appendingPathComponent("RangeOfMotion")
             let jointDir: String
-            
+
             switch parent.taskType {
             case .leftShoulder: jointDir = "Left Shoulder"
             case .rightShoulder: jointDir = "Right Shoulder"
             case .leftKnee: jointDir = "Left Knee"
             case .rightKnee: jointDir = "Right Knee"
             }
-            
+
             let saveDirectory = rangeOfMotionDir.appendingPathComponent(jointDir)
-            
+
             do {
                 try fileManager.createDirectory(at: saveDirectory, withIntermediateDirectories: true, attributes: nil)
-                let fileURL = saveDirectory.appendingPathComponent("RangeOfMotionData.csv")
+                
+                // Create a unique filename with timestamp
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
+                let timestampString = dateFormatter.string(from: timestamp)
+                
+                let fileName = "RangeOfMotionData_\(timestampString).csv"
+                let fileURL = saveDirectory.appendingPathComponent(fileName)
+                
                 try csvString.write(to: fileURL, atomically: true, encoding: .utf8)
                 print("CSV file saved successfully at: \(fileURL.path)")
             } catch {
