@@ -4922,6 +4922,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = rawDataiOSAppAcquisition/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.medical";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Rear camera will be accessed to record photo or video";
 				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "the fetched data will be saved into documents directories";
@@ -4985,6 +4986,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = rawDataiOSAppAcquisition/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.medical";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Rear camera will be accessed to record photo or video";
 				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "the fetched data will be saved into documents directories";
@@ -5208,6 +5210,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = rawDataiOSAppAcquisition/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.medical";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Rear camera will be accessed to record photo or video";
 				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "the fetched data will be saved into documents directories";
