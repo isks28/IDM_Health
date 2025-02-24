@@ -159,7 +159,7 @@ struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
             print("Finish Angle: \(finishAngle)")
             print("Range Angle: \(range)")
 
-            let csvString = "Timestamp,Minimum Angle,Maximum Angle,Start Angle,Finish Angle,Range\n\(timestamp),\(minAngle),\(maxAngle),\(startAngle),\(finishAngle),\(range)\n"
+            let csvString = "Date,Time,Minimum Angle,Maximum Angle,Start Angle,Finish Angle,Range\n\(timestamp),\(minAngle),\(maxAngle),\(startAngle),\(finishAngle),\(range)\n"
 
             let fileManager = FileManager.default
             let rangeOfMotionDir = outputDirectory.appendingPathComponent("RangeOfMotion")
