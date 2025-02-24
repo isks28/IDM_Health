@@ -73,7 +73,7 @@ struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
 
         let completionStep = ORKCompletionStep(identifier: "CompletionStep")
         completionStep.title = "Test Completed"
-        completionStep.text = "Thank you for completing the test! result will be saved and alert view to review the results will be displayed when Done button is clicked!"
+        completionStep.text = "Thank you for completing the test! result will be saved and a review of the results will be displayed when Done button is clicked!"
         
         let modifiedTask = ORKOrderedTask(identifier: "ModifiedTask", steps: task.steps + [completionStep])
 
@@ -112,7 +112,7 @@ struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
                                 let range = String(format: "%.2f", motionResult.range)
 
                                 DispatchQueue.main.async {
-                                    let alert = UIAlertController(title: "Showing saved results:", message: """
+                                    let alert = UIAlertController(title: "Saved results:", message: """
                                         Timestamp: \(formattedDate)
                                         Minimum Angle: \(minAngle)°
                                         Maximum Angle: \(maxAngle)°
@@ -121,7 +121,7 @@ struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
                                         Range: \(range)°
                                         """, preferredStyle: .alert)
                                     
-                                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                                    alert.addAction(UIAlertAction(title: "CLOSE", style: .default, handler: { _ in
                                         taskViewController.dismiss(animated: true) {
                                             self.parent.presentationMode.wrappedValue.dismiss()
                                         }

@@ -182,7 +182,7 @@ extension ViewController: CameraFeedManagerDelegate {
 
       // Run pose estimation
       do {
-        let (result, times) = try estimator.estimateSinglePose(
+          let (result, _) = try estimator.estimateSinglePose(
             on: pixelBuffer)
 
         // Return to main thread to show detection results on the app UI.
