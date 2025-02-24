@@ -21,8 +21,10 @@ final class CameraFeedManager: NSObject, AVCaptureVideoDataOutputSampleBufferDel
   func startRunning() {
     DispatchQueue.main.async {
       if !self.captureSession.isRunning {
-        self.captureSession.startRunning()
-      }
+          DispatchQueue.global(qos: .userInitiated).async {
+              self.captureSession.startRunning()
+          }
+        }
     }
   }
 

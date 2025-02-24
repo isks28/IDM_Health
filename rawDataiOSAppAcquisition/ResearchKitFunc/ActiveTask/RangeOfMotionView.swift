@@ -46,32 +46,40 @@ struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
                 withIdentifier: "LeftShoulderRangeOfMotionTask",
                 limbOption: .left,
                 intendedUseDescription: "Measure left shoulder flexibility.",
-                options: []
+                options: [.excludeConclusion]
             )
         case .rightShoulder:
             task = ORKOrderedTask.shoulderRangeOfMotionTask(
                 withIdentifier: "RightShoulderRangeOfMotionTask",
                 limbOption: .right,
                 intendedUseDescription: "Measure right shoulder flexibility.",
-                options: []
+                options: [.excludeConclusion]
             )
         case .leftKnee:
             task = ORKOrderedTask.kneeRangeOfMotionTask(
                 withIdentifier: "LeftKneeRangeOfMotionTask",
                 limbOption: .left,
                 intendedUseDescription: "Measure left knee flexibility.",
-                options: []
+                options: [.excludeConclusion]
             )
         case .rightKnee:
             task = ORKOrderedTask.kneeRangeOfMotionTask(
                 withIdentifier: "RightKneeRangeOfMotionTask",
                 limbOption: .right,
                 intendedUseDescription: "Measure right knee flexibility.",
-                options: []
+                options: [.excludeConclusion]
             )
         }
+        
+        let filteredSteps = task.steps.filter { !($0 is ORKCompletionStep) }
 
-        let taskViewController = ORKTaskViewController(task: task, taskRun: nil)
+        let completionStep = ORKCompletionStep(identifier: "CompletionStep")
+        completionStep.title = "Test Completed"
+        completionStep.text = "Thank you for completing the test! result will be saved and alert view to review the results will be displayed when Done button is clicked!"
+        
+        let modifiedTask = ORKOrderedTask(identifier: "ModifiedTask", steps: task.steps + [completionStep])
+
+        let taskViewController = ORKTaskViewController(task: modifiedTask, taskRun: nil)
         taskViewController.delegate = context.coordinator
         taskViewController.outputDirectory = outputDirectory
         
@@ -94,31 +102,64 @@ struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
                         for stepResult in stepResults {
                             if let motionResult = stepResult.results?.first as? ORKRangeOfMotionResult {
                                 self.saveResultsToCSV(motionResult: motionResult, outputDirectory: taskViewController.outputDirectory!)
+                                
+                                let dateFormatter = DateFormatter()
+                                dateFormatter.dateFormat = "dd MMMM yyyy, HH:mm:ss"
+                                let formattedDate = dateFormatter.string(from: motionResult.startDate)
+
+                                let minAngle = String(format: "%.2f", motionResult.minimum)
+                                let maxAngle = String(format: "%.2f", motionResult.maximum)
+                                let startAngle = String(format: "%.2f", motionResult.start)
+                                let finishAngle = String(format: "%.2f", motionResult.finish)
+                                let range = String(format: "%.2f", motionResult.range)
+
+                                DispatchQueue.main.async {
+                                    let alert = UIAlertController(title: "Showing saved results:", message: """
+                                        Timestamp: \(formattedDate)
+                                        Minimum Angle: \(minAngle)°
+                                        Maximum Angle: \(maxAngle)°
+                                        Start Angle: \(startAngle)°
+                                        Finish Angle: \(finishAngle)°
+                                        Range: \(range)°
+                                        """, preferredStyle: .alert)
+                                    
+                                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                                        taskViewController.dismiss(animated: true) {
+                                            self.parent.presentationMode.wrappedValue.dismiss()
+                                        }
+                                    }))
+                                    
+                                    taskViewController.present(alert, animated: true, completion: nil)
+                                }
                             }
                         }
-                    }
-                }
-                
-                DispatchQueue.main.async {
-                    taskViewController.dismiss(animated: true) {
-                        self.parent.presentationMode.wrappedValue.dismiss()
                     }
                 }
             }
         }
         
         func saveResultsToCSV(motionResult: ORKRangeOfMotionResult, outputDirectory: URL) {
-            let timestamp = motionResult.startDate
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "dd MMMM yyyy, HH:mm:ss"
+            let formattedDate = dateFormatter.string(from: motionResult.startDate)
+            
+            let timestamp = formattedDate
             let minAngle = motionResult.minimum
             let maxAngle = motionResult.maximum
+            let startAngle = motionResult.start
+            let finishAngle = motionResult.finish
             let range = motionResult.range
 
             print("DEBUG - Range of Motion Result: \(motionResult)")
             print("Timestamp: \(timestamp)")
-            print("Start Angle: \(minAngle)")
-            print("Finish Angle: \(maxAngle)")
+            print("Minimum Angle: \(minAngle)")
+            print("Maximum Angle: \(maxAngle)")
+            print("Start Angle: \(startAngle)")
+            print("Finish Angle: \(finishAngle)")
+            print("Range Angle: \(range)")
 
-            let csvString = "Timestamp,Minimum Angle,Maximum Angle,Range\n\(timestamp),\(minAngle),\(maxAngle),\(range)\n"
+            let csvString = "Timestamp,Minimum Angle,Maximum Angle,Start Angle,Finish Angle,Range\n\(timestamp),\(minAngle),\(maxAngle),\(startAngle),\(finishAngle),\(range)\n"
 
             let fileManager = FileManager.default
             let rangeOfMotionDir = outputDirectory.appendingPathComponent("RangeOfMotion")
@@ -139,7 +180,7 @@ struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
                 // Create a unique filename with timestamp
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
-                let timestampString = dateFormatter.string(from: timestamp)
+                let timestampString = dateFormatter.string(from: motionResult.startDate)
                 
                 let fileName = "RangeOfMotionData_\(timestampString).csv"
                 let fileURL = saveDirectory.appendingPathComponent(fileName)
