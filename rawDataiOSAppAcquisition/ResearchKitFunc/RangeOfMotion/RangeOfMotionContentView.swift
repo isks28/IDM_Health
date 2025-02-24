@@ -55,7 +55,7 @@ struct RangeOfMotionContentView: View {
                         Text("Range of motion Information")
                             .font(.largeTitle)
                             .padding()
-                        Text(".....")
+                        Text("Range of Motion (ROM) is the degree a joint can move freely. It affects mobility and can be improved with stretching and exercise.")
                             .font(.body)
                             .multilineTextAlignment(.center)
                             .padding()

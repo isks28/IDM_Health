@@ -51,7 +51,7 @@ struct ResearchKitView: View {
                             Text("ResearchKit Information")
                                 .font(.largeTitle)
                                 .padding()
-                            Text(".....")
+                            Text("ResearchKit is an open-source framework by Apple that helps researchers create iOS apps for medical studies.")
                                 .font(.body)
                                 .multilineTextAlignment(.center)
                                 .padding()
