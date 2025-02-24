@@ -26,6 +26,19 @@ struct ResearchKitView: View {
                         Spacer()
                     }
                 }
+                
+//                NavigationLink(value: "Gait and balance") {
+//                    HStack {
+//                        Image(systemName: "figure.walk")
+//                            .resizable()
+//                            .aspectRatio(contentMode: .fit)
+//                            .frame(width: 50, height: 40)
+//                            .foregroundStyle(Color.blue)
+//                        Text("Gait and balance")
+//                            .font(.title2)
+//                        Spacer()
+//                    }
+//                }
             }
             .navigationTitle("ResearchKit")
             .toolbar {
@@ -53,6 +66,8 @@ struct ResearchKitView: View {
                 switch selectedView {
                 case "Range of motion":
                     RangeOfMotionContentView()
+                case "Gait and balance":
+                    GaitAndBalanceContentView()
                 default:
                     Text("Unknown View: \(selectedView)")
                 }

@@ -70,8 +70,6 @@ struct RangeOfMotionTaskViewController: UIViewControllerRepresentable {
                 options: [.excludeConclusion]
             )
         }
-        
-        let filteredSteps = task.steps.filter { !($0 is ORKCompletionStep) }
 
         let completionStep = ORKCompletionStep(identifier: "CompletionStep")
         completionStep.title = "Test Completed"

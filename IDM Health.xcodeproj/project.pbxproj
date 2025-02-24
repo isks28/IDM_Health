@@ -61,6 +61,9 @@
 		86C9215E2D395637002AD774 /* PhotosAndVideoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C9215D2D395637002AD774 /* PhotosAndVideoManager.swift */; };
 		86C921602D395653002AD774 /* PhotosAndVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C9215F2D395653002AD774 /* PhotosAndVideoView.swift */; };
 		86C921622D395674002AD774 /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C921612D395674002AD774 /* CameraPreview.swift */; };
+		86E4E50E2D6CA64B009F72F4 /* GaitAndBalanceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E4E50D2D6CA64B009F72F4 /* GaitAndBalanceManager.swift */; };
+		86E4E5102D6CA65B009F72F4 /* GaitAndBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E4E50F2D6CA65B009F72F4 /* GaitAndBalanceView.swift */; };
+		86E4E5122D6CA66C009F72F4 /* GaitAndBalanceContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E4E5112D6CA66C009F72F4 /* GaitAndBalanceContentView.swift */; };
 		B7D20CD4024D0CDF14AFD9C4 /* Pods_rawDataiOSAppAcquisition.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8629D5EC2D5A6E32007B553C /* Pods_rawDataiOSAppAcquisition.framework */; };
 /* End PBXBuildFile section */
 
@@ -1574,6 +1577,9 @@
 		86C9215D2D395637002AD774 /* PhotosAndVideoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosAndVideoManager.swift; sourceTree = "<group>"; };
 		86C9215F2D395653002AD774 /* PhotosAndVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosAndVideoView.swift; sourceTree = "<group>"; };
 		86C921612D395674002AD774 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
+		86E4E50D2D6CA64B009F72F4 /* GaitAndBalanceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaitAndBalanceManager.swift; sourceTree = "<group>"; };
+		86E4E50F2D6CA65B009F72F4 /* GaitAndBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaitAndBalanceView.swift; sourceTree = "<group>"; };
+		86E4E5112D6CA66C009F72F4 /* GaitAndBalanceContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaitAndBalanceContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -4200,12 +4206,13 @@
 			isa = PBXGroup;
 			children = (
 				8671B4952D6645380027154A /* ResearchKitView.swift */,
-				8671B4942D66451C0027154A /* ActiveTask */,
+				8671B4942D66451C0027154A /* RangeOfMotion */,
+				86E4E50C2D6CA630009F72F4 /* Gait and Balance */,
 			);
 			path = ResearchKitFunc;
 			sourceTree = "<group>";
 		};
-		8671B4942D66451C0027154A /* ActiveTask */ = {
+		8671B4942D66451C0027154A /* RangeOfMotion */ = {
 			isa = PBXGroup;
 			children = (
 				8671B4982D66454B0027154A /* RangeOfMotionManager.swift */,
@@ -4214,7 +4221,7 @@
 				8671B4A12D6645E70027154A /* rawDataiOSAppAcquisition-Bridging-Header.h */,
 				8671B4A22D6645E70027154A /* ResearchKitObjC.m */,
 			);
-			path = ActiveTask;
+			path = RangeOfMotion;
 			sourceTree = "<group>";
 		};
 		86C921442D393859002AD774 /* photosAndVideoView */ = {
@@ -4226,6 +4233,16 @@
 				5ADF90422D41235200F728AC /* VideoPlacerReview.swift */,
 			);
 			path = photosAndVideoView;
+			sourceTree = "<group>";
+		};
+		86E4E50C2D6CA630009F72F4 /* Gait and Balance */ = {
+			isa = PBXGroup;
+			children = (
+				86E4E50D2D6CA64B009F72F4 /* GaitAndBalanceManager.swift */,
+				86E4E50F2D6CA65B009F72F4 /* GaitAndBalanceView.swift */,
+				86E4E5112D6CA66C009F72F4 /* GaitAndBalanceContentView.swift */,
+			);
+			path = "Gait and Balance";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -4517,6 +4534,8 @@
 				5A554E8F2C8705DB0081747B /* healthKitView.swift in Sources */,
 				863757E82CD38DBA002F4BEA /* SixMinuteWalkTestView.swift in Sources */,
 				86419FE82CB97E800071151C /* StepCountView.swift in Sources */,
+				86E4E5102D6CA65B009F72F4 /* GaitAndBalanceView.swift in Sources */,
+				86E4E50E2D6CA64B009F72F4 /* GaitAndBalanceManager.swift in Sources */,
 				8671B4962D6645380027154A /* ResearchKitView.swift in Sources */,
 				86419FE62CB97E2B0071151C /* StepCountManager.swift in Sources */,
 				5A554E912C8705ED0081747B /* activityView.swift in Sources */,
@@ -4529,6 +4548,7 @@
 				5A554EA72C8706810081747B /* deviceMotionView.swift in Sources */,
 				86B0DE662CBE973C00003F50 /* ServerConfig.swift in Sources */,
 				5A554E9D2C87063D0081747B /* accelerometerDataManager.swift in Sources */,
+				86E4E5122D6CA66C009F72F4 /* GaitAndBalanceContentView.swift in Sources */,
 				86C921622D395674002AD774 /* CameraPreview.swift in Sources */,
 				86419FEC2CB988BF0071151C /* walkingDataView.swift in Sources */,
 				8671B49C2D66454B0027154A /* RangeOfMotionView.swift in Sources */,
@@ -4961,7 +4981,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "rawDataiOSAppAcquisition/ResearchKitFunc/ActiveTask/rawDataiOSAppAcquisition-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "/Users/isks34/Documents/UKGM/2025/rawDataiOSAppAcquisition/rawDataiOSAppAcquisition/ResearchKitFunc/RangeOfMotion/rawDataiOSAppAcquisition-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -5025,7 +5045,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "rawDataiOSAppAcquisition/ResearchKitFunc/ActiveTask/rawDataiOSAppAcquisition-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "/Users/isks34/Documents/UKGM/2025/rawDataiOSAppAcquisition/rawDataiOSAppAcquisition/ResearchKitFunc/RangeOfMotion/rawDataiOSAppAcquisition-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -5249,7 +5269,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "rawDataiOSAppAcquisition/ResearchKitFunc/ActiveTask/rawDataiOSAppAcquisition-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "/Users/isks34/Documents/UKGM/2025/rawDataiOSAppAcquisition/rawDataiOSAppAcquisition/ResearchKitFunc/RangeOfMotion/rawDataiOSAppAcquisition-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
