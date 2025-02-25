@@ -64,6 +64,7 @@
 		86E4E50E2D6CA64B009F72F4 /* GaitAndBalanceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E4E50D2D6CA64B009F72F4 /* GaitAndBalanceManager.swift */; };
 		86E4E5102D6CA65B009F72F4 /* GaitAndBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E4E50F2D6CA65B009F72F4 /* GaitAndBalanceView.swift */; };
 		86E4E5122D6CA66C009F72F4 /* GaitAndBalanceContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E4E5112D6CA66C009F72F4 /* GaitAndBalanceContentView.swift */; };
+		86E4E7482D6E5FCE009F72F4 /* SitToStandView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E4E7472D6E5FCE009F72F4 /* SitToStandView.swift */; };
 		B7D20CD4024D0CDF14AFD9C4 /* Pods_rawDataiOSAppAcquisition.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8629D5EC2D5A6E32007B553C /* Pods_rawDataiOSAppAcquisition.framework */; };
 /* End PBXBuildFile section */
 
@@ -1580,6 +1581,7 @@
 		86E4E50D2D6CA64B009F72F4 /* GaitAndBalanceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaitAndBalanceManager.swift; sourceTree = "<group>"; };
 		86E4E50F2D6CA65B009F72F4 /* GaitAndBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaitAndBalanceView.swift; sourceTree = "<group>"; };
 		86E4E5112D6CA66C009F72F4 /* GaitAndBalanceContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaitAndBalanceContentView.swift; sourceTree = "<group>"; };
+		86E4E7472D6E5FCE009F72F4 /* SitToStandView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SitToStandView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -1872,6 +1874,7 @@
 				86369D5A2D5BED520090B4D0 /* BodyPointsEstimation */,
 				86369BC02D5B64D30090B4D0 /* FingerJointEstimation */,
 				8649C9B42D05E7DA00E15C02 /* Markerless Motion Analysis */,
+				86E4E7462D6E5F88009F72F4 /* MediaPipeSitToStand */,
 			);
 			path = "Visual Data";
 			sourceTree = "<group>";
@@ -4245,6 +4248,14 @@
 			path = "Gait and Balance";
 			sourceTree = "<group>";
 		};
+		86E4E7462D6E5F88009F72F4 /* MediaPipeSitToStand */ = {
+			isa = PBXGroup;
+			children = (
+				86E4E7472D6E5FCE009F72F4 /* SitToStandView.swift */,
+			);
+			path = MediaPipeSitToStand;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -4540,6 +4551,7 @@
 				86419FE62CB97E2B0071151C /* StepCountManager.swift in Sources */,
 				5A554E912C8705ED0081747B /* activityView.swift in Sources */,
 				5AB490012CC106FF0061D5B4 /* animatedMotionSwipeDownClose.swift in Sources */,
+				86E4E7482D6E5FCE009F72F4 /* SitToStandView.swift in Sources */,
 				5A554E992C87061E0081747B /* rawDataView.swift in Sources */,
 				86C921602D395653002AD774 /* PhotosAndVideoView.swift in Sources */,
 				863757E62CD38DAE002F4BEA /* SixMinuteWalkTestManager.swift in Sources */,

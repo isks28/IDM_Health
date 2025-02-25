@@ -65,6 +65,19 @@ struct visualDataView: View {
                         Spacer()
                     }
                 }
+                
+                NavigationLink(value: "Sit To Stand") {
+                    HStack {
+                        Image(systemName: "chair")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("MediaPipe sit to stand")
+                            .font(.title2)
+                        Spacer()
+                    }
+                }
             }
             .navigationTitle("Visual Data")
             .toolbar {
@@ -98,6 +111,8 @@ struct visualDataView: View {
                     CameraView()
                 case "Markerless Motion Data":
                     JointView()
+                case "Sit To Stand":
+                    SitToStandView()
                 default:
                     Text("Unknown View: \(selectedView)")
                 }
