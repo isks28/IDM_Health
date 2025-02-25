@@ -21,8 +21,10 @@ final class CameraFeedManager: NSObject, AVCaptureVideoDataOutputSampleBufferDel
   func startRunning() {
     DispatchQueue.main.async {
       if !self.captureSession.isRunning {
-        self.captureSession.startRunning()
-      }
+          DispatchQueue.global(qos: .userInitiated).async {
+              self.captureSession.startRunning()
+          }
+        }
     }
   }
 
@@ -65,7 +67,7 @@ final class CameraFeedManager: NSObject, AVCaptureVideoDataOutputSampleBufferDel
       captureSession.addOutput(videoOutput)
       if let connection = videoOutput.connection(with: .video) {
         connection.videoOrientation = .portrait
-        connection.isVideoMirrored = true // Enable mirroring for the front camera
+        connection.isVideoMirrored = true
       }
     } else {
       print("Error: Unable to add video output.")

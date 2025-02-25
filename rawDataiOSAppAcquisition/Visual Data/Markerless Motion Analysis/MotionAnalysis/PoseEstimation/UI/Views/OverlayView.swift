@@ -19,8 +19,8 @@ class OverlayView: UIImageView {
         private let sideWarningLabel: UILabel = {
             let label = UILabel()
             label.text = "⚠︎ SHOW YOUR SIDE PROFILE"
-            label.textColor = .white
-            label.font = UIFont.boldSystemFont(ofSize: 24)
+            label.textColor = .red
+            label.font = UIFont.boldSystemFont(ofSize: 26)
             label.textAlignment = .center
             label.isHidden = true // Initially hidden
             return label
@@ -30,7 +30,7 @@ class OverlayView: UIImageView {
         let label = UILabel()
         label.text = "⚠︎ SHOW YOUR FRONT PROFILE"
         label.textColor = .red
-        label.font = UIFont.boldSystemFont(ofSize: 24)
+        label.font = UIFont.boldSystemFont(ofSize: 26)
         label.textAlignment = .center
         label.isHidden = true // Initially hidden
         return label
