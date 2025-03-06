@@ -18,17 +18,36 @@ class GaitAndBalanceManager: NSObject {
         super.init()
     }
     
-    func createGaitTask() -> ORKOrderedTask {
+    func createWalkBackAndForthTask() -> ORKOrderedTask {
         return ORKOrderedTask.walkBackAndForthTask(
-            withIdentifier: "GaitTask",
-            intendedUseDescription: "Measure walking balance and coordination.",
+            withIdentifier: "WalkAndForthTask",
+            intendedUseDescription: "Measure back and forth walk ",
             walkDuration: 10,
             restDuration: 5,
-            options: [.excludeConclusion]
-        )
+            options: [.excludeConclusion])
     }
     
-    func createBalanceTask() -> ORKOrderedTask {
+    func createGaitTask() -> ORKOrderedTask {
+        return ORKOrderedTask.timedWalk(
+            withIdentifier: "GaitTask",
+            intendedUseDescription: "Measure timed walk",
+            distanceInMeters: 10.0,
+            timeLimit: 30,
+            turnAroundTimeLimit: 5,
+            includeAssistiveDeviceForm: true,
+            options: [.excludeConclusion])
+    }
+    
+    func createShortWalkTask() -> ORKOrderedTask {
+        return ORKOrderedTask.shortWalk(
+            withIdentifier: "ShotWalkTask",
+            intendedUseDescription: "Measure short walk",
+            numberOfStepsPerLeg: 25,
+            restDuration: 30,
+            options: [.excludeConclusion])
+    }
+    
+    func createSixMinuteWalkTask() -> ORKOrderedTask {
         return ORKOrderedTask.sixMinuteWalk(
             withIdentifier: "SixMinuteWalk",
             intendedUseDescription: "Measure six minute walk test",

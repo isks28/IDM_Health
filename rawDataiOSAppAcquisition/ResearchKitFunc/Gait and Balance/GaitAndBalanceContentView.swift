@@ -12,9 +12,25 @@ struct GaitAndBalanceContentView: View {
     
     var body: some View {
         List {
+            NavigationLink(destination: GaitAndBalanceView(taskType: .walkBackAndForth)) {
+                HStack {
+                    Text("Back and forth walk")
+                        .font(.title2)
+                    Spacer()
+                }
+            }
+            
+            NavigationLink(destination: GaitAndBalanceView(taskType: .short)) {
+                HStack {
+                    Text("Short walk")
+                        .font(.title2)
+                    Spacer()
+                }
+            }
+            
             NavigationLink(destination: GaitAndBalanceView(taskType: .gait)) {
                 HStack {
-                    Text("Walk back and forth test")
+                    Text("Timed Walk")
                         .font(.title2)
                     Spacer()
                 }

@@ -73,7 +73,7 @@ struct visualDataView: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 50, height: 40)
                             .foregroundStyle(Color.blue)
-                        Text("MediaPipe sit to stand")
+                        Text("MediaPipe Sit To Stand")
                             .font(.title2)
                         Spacer()
                     }

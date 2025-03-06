@@ -27,18 +27,18 @@ struct ResearchKitView: View {
                     }
                 }
                 
-//                NavigationLink(value: "Gait and balance") {
-//                    HStack {
-//                        Image(systemName: "figure.walk")
-//                            .resizable()
-//                            .aspectRatio(contentMode: .fit)
-//                            .frame(width: 50, height: 40)
-//                            .foregroundStyle(Color.blue)
-//                        Text("Gait and balance")
-//                            .font(.title2)
-//                        Spacer()
-//                    }
-//                }
+                NavigationLink(value: "Gait and balance") {
+                    HStack {
+                        Image(systemName: "figure.walk")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 40)
+                            .foregroundStyle(Color.blue)
+                        Text("Gait and balance")
+                            .font(.title2)
+                        Spacer()
+                    }
+                }
             }
             .navigationTitle("ResearchKit")
             .toolbar {
