@@ -1,4 +1,4 @@
-# IDM Health
+# IDM Healths
 
 An iOS application to collect, record and upload a data based on Apple Health App, Inertial measurements unit and camera.
 
